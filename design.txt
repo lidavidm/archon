@@ -1,0 +1,29 @@
+Room: Contains output nodes, input nodes (dynamically looked up from the
+datastore at runtime), description (can be automatic from contents?),
+contents (containers, etc)
+
+A battle is a (special, dynamically generated) room
+
+Storing state of rooms: when a player enters a room, copy it to the "save"
+datastore (or perhaps create a diff) (for multiplayer, use a diff)
+
+Command: Receives context (usually the room), outputter (network,
+console...), player, and *args passed to command
+
+Some commands should simply work like this: The Open command simply tries to
+call the open() method on the indicated entity; if this fails, say you can't
+open it, else, print the message the entity gives back (for instance, a
+container may print its contents (from the datastore) and add objects that
+can be picked up to the room). Let's call this a "derived" command (since it
+is derived from the methods of an Entity)
+
+Entity: Anything that can be the content of a room (containers, monsters,
+players (if multiplayer), etc.)
+How an entity behaves is determined by its methods, which are derived from
+the data (some may be hardcoded, others variable; battle() method initiates
+a hardcoded battle, for instance (or perhaps a data-driven teleport to a
+battle room, which is hardcoded), while an open() method should give a
+message and then run a predefined command)
+
+So classes needed: Room, Command, Entity, Interface (outputter), some sort
+of datastore (JSON or SQLite)
