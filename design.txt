@@ -1,6 +1,15 @@
 Room: Contains output nodes, input nodes (dynamically looked up from the
 datastore at runtime), description (can be automatic from contents?),
 contents (containers, etc)
+When describing contents:
+     @ denotes location
+     ! denotes description
+     < denotes prefix (a, an, that, another...); automatically generated if
+       not specified
+     ? denotes identity (a way to refer to it)
+     An entity can be referred to by prefix-identity or by key. If the
+     identity is provided, then the key is not used; else, the identity
+     defaults to the key.
 
 A battle is a (special, dynamically generated) room
 
@@ -9,6 +18,8 @@ datastore (or perhaps create a diff) (for multiplayer, use a diff)
 
 Command: Receives context (usually the room), outputter (network,
 console...), player, and *args passed to command
+Needs to have aliases as well as IDs (so the command typed won't necessarily
+match how it is referred to in code)
 
 Some commands should simply work like this: The Open command simply tries to
 call the open() method on the indicated entity; if this fails, say you can't
@@ -24,6 +35,18 @@ the data (some may be hardcoded, others variable; battle() method initiates
 a hardcoded battle, for instance (or perhaps a data-driven teleport to a
 battle room, which is hardcoded), while an open() method should give a
 message and then run a predefined command)
+Template entities: referred to by rooms with parameters; new entity type
+created at runtime based on this ('container_entity(entity01, entity02)')
+but this may become complex...
+Rather than defining methods at runtime, use the action system + give the
+entity a "do" method
+The action system has "reflexive" commands, so the action gets the entity as
+the first parameter, "context-transitive" commands, so the action receives
+the context (room), and "player-transitive" commands, so the action receives
+the player. Additionally, all actions receive the player's output.
 
 So classes needed: Room, Command, Entity, Interface (outputter), some sort
 of datastore (JSON or SQLite)
+
+Datastore can specify actions to run, like "add item", which are predefined
+functions in archon

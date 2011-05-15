@@ -1,0 +1,8 @@
+{
+    "type": "entity",
+    "data": {
+        "entity_kind": "test_object",
+        "describe": "A test object.",
+        "take": [["test", 0, 1]]
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "type": "room",
+    "data": {
+        "describe": "a test room.",
+        "kind": "indoors",
+        "contents": {
+            "thing": ["test_object", "@in the northwest corner",
+                     "!interesting"],
+            "thing2": ["test_object", "@under the other thing",
+                      "<another", "?thing"]
+        }
+    }
+}
