@@ -5,8 +5,8 @@ When describing contents:
      @ denotes location
      ! denotes description
      < denotes prefix (a, an, that, another...); automatically generated if
-       not specified
-     ? denotes identity (a way to refer to it)
+       not specified; variable length
+     ? denotes identity (a way to refer to it), should be one-word
      An entity can be referred to by prefix-identity or by key. If the
      identity is provided, then the key is not used; else, the identity
      defaults to the key.

@@ -7,7 +7,8 @@
             "thing": ["test_object", "@in the northwest corner",
                      "!interesting"],
             "thing2": ["test_object", "@under the other thing",
-                      "<another", "?thing"]
+                      "<another", "?thing"],
+            "thing3": ["test_object", "@in the south", "<a", "?thing"]
         }
     }
 }

@@ -23,10 +23,10 @@ getAction = action.get
 
 
 @action('test')
-def testAction(*args):
+def testAction(output, *args):
     print args
 
 
 @action('ui.notify')
-def notify(message):
+def notify(output, message):
     print message

@@ -37,6 +37,21 @@ def go(context, player, output, *args):
 @command('describe')
 def describe(context, player, output, *args):
     if args:
-        pass
+        matches = context.naturalFind(''.join(args))
+        print matches
+        if not matches:
+            output.display("What are you talking about?")
+        elif isinstance(matches, set):
+            output.error("That was ambiguous.")
+            output.display("Did you mean:")
+            for match in matches:
+                edata = context.contents[match]
+                output.display("\t{prefix}{identity}".format(
+                    prefix=edata[4]+' ',
+                    identity=edata[1]
+                    ))
+        else:
+            output.display(context.describe(matches))
     else:
         output.display(context.describe())
+    return context

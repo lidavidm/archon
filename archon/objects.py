@@ -8,9 +8,9 @@ class Entity(object):
     def when(self, name, actions):
         self._capabilities[name] = actions
 
-    def do(self, name):
+    def do(self, name, output):
         for f, args in self.capabilities[name]:
-            f(*args)
+            f(output, *args)
 
     @property
     def capabilities(self):
@@ -28,10 +28,32 @@ class Room(Entity):
         """
         Attempt to find an entity key based on a variety of criteria.
 
-        If there is no unique entity matched, return a list of all possible
+        Returns None if there is no match.
+
+        If there is no unique entity matched, return a set of all possible
         matches. Else, return the only match.
         """
-        pass
+        # identity, prefix-identity, or key, with key taking precedence
+        matches = set()
+        if text in self.contents:  # it's a key
+            matches.add(text)
+
+        crit = text.split()
+
+        for key, entity in self.contents.iteritems():
+            if entity[1] == crit[-1]:
+                matches.add(key)
+        if matches:
+            if len(matches) == 1:
+                return matches[0]
+            elif len(crit) > 1:  # there's a prefix
+                prefix = text[:-crit[-1]].rstrip()  # get the prefix
+                for key, entity in self.contents.iteritems():
+                    if entity[4] == prefix:
+                        return key  # prefix-identity should be unique
+            else:
+                return matches
+        return None
 
     def add(self, entityKind, key, identity,
             location='', description='', prefix=''):
@@ -39,7 +61,7 @@ class Room(Entity):
                                location, description, prefix)
 
     def remove(self, key):
-        pass
+        del self._contents[key]
 
     def describe(self, key=None):
         """
@@ -136,7 +158,7 @@ class ConsoleInterface(Interface):
         lastCommand = ''
         while True:
             try:
-                cmd = self.prompt('>').split()
+                cmd = self.prompt('> ').split()
                 lastCommand = cmd[0]
                 cmd, args = commands.get(cmd[0]), cmd[1:]
                 context = cmd(context, player, self, *args)

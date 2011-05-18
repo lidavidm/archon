@@ -9,10 +9,10 @@ ds = archon.datastore.JSONDatastore('demo/')
 entity = ds['entity.json']
 print entity.capabilities
 room = ds['room.json']
+interface = archon.objects.ConsoleInterface()
 print room.contents
 
 for name in entity.capabilities:
-    entity.do(name)
+    entity.do(name, interface)
 
-interface = archon.objects.ConsoleInterface()
 interface.repl(room, None, archon.commands.command)
