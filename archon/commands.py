@@ -1,5 +1,8 @@
 
 
+class CommandNotFoundError(Exception):pass
+
+
 class command(object):
     """
     Denote a function as an command.
@@ -17,12 +20,15 @@ class command(object):
 
     @classmethod
     def get(cls, name):
-        return cls.commands[name]
+        try:
+            return cls.commands[name]
+        except KeyError:
+            raise CommandNotFoundError
 
 
-@command('test')
+@command('test.restart')
 def test(context, player, output, *args):
-    output.display(''.join(args))
+    output.restart()
     return context
 
 

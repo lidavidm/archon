@@ -1,4 +1,8 @@
 import difflib
+import archon.commands
+
+
+class RestartError(Exception):pass
 
 
 class Entity(object):
@@ -18,11 +22,14 @@ class Entity(object):
 
 
 class Room(Entity):
+    ROOM_ENTITY_KIND = object()
+
     def __init__(self, kind, description):
         super(Room, self).__init__(kind)
         self._description = description
         self._entityCache = None
         self._contents = {}
+        self._outputs = {}
 
     def naturalFind(self, text):
         """
@@ -56,9 +63,13 @@ class Room(Entity):
         return None
 
     def add(self, entityKind, key, identity,
-            location='', description='', prefix=''):
-        self._contents[key] = (entityKind, identity,
-                               location, description, prefix)
+            location='', description='', prefix='', target=''):
+        if entityKind is self.ROOM_ENTITY_KIND:
+            self._outputs[key] = (target, identity,
+                                  location, description, prefix)
+        else:
+            self._contents[key] = (entityKind, identity,
+                                   location, description, prefix)
 
     def remove(self, key):
         del self._contents[key]
@@ -68,7 +79,7 @@ class Room(Entity):
         Describe the specified object, or if not given, the room.
         """
         if key:
-            entity = self.contents[key]
+            entity = self.allContents[key]
             text = 'There is {prefix}{identity}{location}.'.format(
                 prefix=entity[4] + ' ' if entity[4] else '',
                 identity=entity[1],
@@ -80,7 +91,8 @@ class Room(Entity):
         else:
             return '\n'.join(
                 ['You are in ' + self._description] +
-                [self.describe(key) for key in self.contents])
+                [self.describe(key) for key in self.contents] +
+                [self.describe(key) for key in self.outputs])
 
     def enter(self):
         pass
@@ -102,7 +114,11 @@ class Room(Entity):
 
     @property
     def outputs(self):
-        pass
+        return self._outputs
+
+    @property
+    def allContents(self):
+        return dict(self._contents.viewitems() | self._outputs.viewitems())
 
     @property
     def inputs(self):
@@ -124,6 +140,9 @@ class Interface(object):
         pass
 
     def error(self, error):
+        pass
+
+    def restart(self, message=''):
         pass
 
     def repl(self, commands):
@@ -154,6 +173,11 @@ class ConsoleInterface(Interface):
 
     error = display
 
+    def restart(self, message=''):
+        if message:
+            self.display(message)
+        raise RestartError
+
     def repl(self, context, player, commands):
         lastCommand = ''
         while True:
@@ -162,10 +186,9 @@ class ConsoleInterface(Interface):
                 lastCommand = cmd[0]
                 cmd, args = commands.get(cmd[0]), cmd[1:]
                 context = cmd(context, player, self, *args)
-            except KeyboardInterrupt:
-                self.display('Exiting')
-                break
-            except KeyError:
+            except (KeyboardInterrupt, RestartError):
+                return
+            except archon.commands.CommandNotFoundError:
                 self.error('That is not a valid command.')
                 close = difflib.get_close_matches(
                     lastCommand,

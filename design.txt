@@ -1,12 +1,15 @@
 Room: Contains output nodes, input nodes (dynamically looked up from the
 datastore at runtime), description (can be automatic from contents?),
 contents (containers, etc)
-When describing contents:
+Filename minus extension is the room name
+When describing contents and exits:
      @ denotes location
      ! denotes description
      < denotes prefix (a, an, that, another...); automatically generated if
        not specified; variable length
      ? denotes identity (a way to refer to it), should be one-word
+     * denotes comma-delimited configuration options
+     [ denotes this is a room, not an entity
      An entity can be referred to by prefix-identity or by key. If the
      identity is provided, then the key is not used; else, the identity
      defaults to the key.
