@@ -27,13 +27,13 @@ class command(object):
 
 
 @command('test.restart')
-def test(context, player, output, *args):
+def test(output, context, player, *args):
     output.restart()
     return context
 
 
 @command('go')
-def go(context, player, output, *args):
+def go(output, context, player, *args):
     # find the next room, somehow
     context.exit()
     target.enter()
@@ -41,7 +41,7 @@ def go(context, player, output, *args):
 
 
 @command('describe')
-def describe(context, player, output, *args):
+def describe(output, context, player, *args):
     if args:
         matches = context.naturalFind(''.join(args))
         print matches

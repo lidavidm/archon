@@ -14,9 +14,14 @@ class Entity(object):
     def when(self, name, actions):
         self._capabilities[name] = actions
 
-    def do(self, name, output):
+    def do(self, name, output, context=None, player=None):
+        dependencies = [output]
+        if context:
+            dependencies.append(context)
+        if player:
+            dependencies.append(player)
         for f, args in self.capabilities[name]:
-            f(output, *args)
+            f(*(dependencies + args))
 
     @property
     def capabilities(self):
@@ -203,7 +208,7 @@ class ConsoleInterface(Interface):
                 cmd = self.prompt('> ').split()
                 lastCommand = cmd[0]
                 cmd, args = commands.get(cmd[0]), cmd[1:]
-                context = cmd(context, player, self, *args)
+                context = cmd(self, context, player, *args)
             except (KeyboardInterrupt, RestartError):
                 return
             except archon.commands.CommandNotFoundError:

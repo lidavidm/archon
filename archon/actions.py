@@ -17,8 +17,15 @@ class action(object):
         self.kind = kind
 
     def __call__(self, func):
-        self.__class__.actions[self.name] = func
-        return func
+        self.originalFunction = func
+        self.__class__.actions[self.name] = self.activate
+        # mirror the original name
+        # XXX mirror the action name?
+        self.activate.im_func.func_name = func.func_name
+        return self.activate
+
+    def activate(self, *args):
+        return self.originalFunction(*args)
 
     @classmethod
     def get(cls, name):

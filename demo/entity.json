@@ -2,6 +2,7 @@
     "type": "entity",
     "data": {
         "entity_kind": "test_object",
+        "entity_attributes": {},
         "describe": "A test object.",
         "take": [["test", 0, 1]]
     }
