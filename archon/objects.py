@@ -7,7 +7,9 @@ class RestartError(Exception):pass
 
 class Entity(object):
     def __init__(self, kind):
+        self._kind = kind
         self._capabilities = {}
+        self._attributes = {}
 
     def when(self, name, actions):
         self._capabilities[name] = actions
@@ -19,6 +21,14 @@ class Entity(object):
     @property
     def capabilities(self):
         return self._capabilities
+
+    @property
+    def attributes(self):
+        return self._attributes
+
+    @attributes.setter
+    def attributes(self, value):
+        self._attributes = value
 
 
 class Room(Entity):
@@ -80,7 +90,15 @@ class Room(Entity):
         """
         if key:
             entity = self.allContents[key]
-            text = 'There is {prefix}{identity}{location}.'.format(
+            beginning = ''
+            if key in self.contents:
+                beginning = 'There is'
+            elif key in self.outputs:
+                beginning = 'You can go'
+                if entity[4]:  # if there's a prefix, add "to"
+                    beginning += ' to'
+            text = '{beginning} {prefix}{identity}{location}.'.format(
+                beginning=beginning,
                 prefix=entity[4] + ' ' if entity[4] else '',
                 identity=entity[1],
                 location=' ' + entity[2] if entity[2] else ''

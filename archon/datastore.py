@@ -85,8 +85,11 @@ class JSONDatastore(Datastore):
         objdata = data['data']
         if objtype == self.__class__.ENTITY_TYPE:
             ekind = objdata['entity_kind']
+            eattr = objdata['entity_attributes']
             entity = archon.objects.Entity(ekind)
+            entity.attributes = eattr
             del objdata['entity_kind']
+            del objdata['entity_attributes']
             for name, actions in objdata.iteritems():
                 actionFuncs = []
                 if isinstance(actions, basestring):
