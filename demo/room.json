@@ -9,8 +9,10 @@
             "thing2": ["test_object", "@under the other thing",
                       "<another", "?thing"],
             "thing3": ["test_object", "@in the south", "<a", "?thing"],
-            "south": ["[room2"],
             "door": ["[room3", "@to the north", "*one-way", "<a"]
+        },
+        "outputs":{
+            "south": "room2"
         }
     }
 }

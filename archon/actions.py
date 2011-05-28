@@ -1,7 +1,8 @@
-NORMAL = 'normal'
-REFLEXIVE = 'reflexive'
-CONTEXTUAL = 'contextual'
-TRANSITIVE = 'transitive'  # transitive to the player
+NORMAL = 'normal'  # take only output
+REFLEXIVE = 'reflexive'  # instead of taking player, take entity
+CONTEXTUAL = 'contextual'  # take the room
+TRANSITIVE = 'transitive'  # transitive to the player (take the player)
+# XXX how to do unions
 
 
 class action(object):

@@ -21,8 +21,8 @@ while True:
         interface = archon.objects.ConsoleInterface()
 
         interface.repl(room, None, archon.commands.command)
-    except EOFError:
-        sys.exit()
+    except EOFError, SystemExit:
+        raise
     except:
         traceback.print_exc()
         raw_input('Press enter to continue')

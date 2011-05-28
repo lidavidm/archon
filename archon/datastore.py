@@ -43,8 +43,6 @@ def parseContents(contentData, dataPrefixes):
                 entityKind = item
             else:
                 entityInfo[dataPrefixes[item[0]]] = item[1:]
-        if 'target' in entityInfo:
-            entityKind = 'room'
         contents.append((entityKind, eKey, entityInfo))
     ids = [eInfo.get('identity', eKey) for _, eKey, eInfo in contents]
     for eKind, eKey, eInfo in contents:
@@ -59,6 +57,7 @@ def parseContents(contentData, dataPrefixes):
             eInfo['prefix'] = ('yet another ' *
                                (ids.count(identity) - 1)).strip()
     return contents
+
 
 class JSONDatastore(Datastore):
     ENTITY_TYPE = 'entity'

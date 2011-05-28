@@ -1,8 +1,8 @@
-import difflib
+import sys
 import archon.commands
 
 
-class RestartError(Exception):pass
+class RestartError(Exception): pass
 
 
 class Entity(object):
@@ -15,6 +15,9 @@ class Entity(object):
         self._capabilities[name] = actions
 
     def do(self, name, output, context=None, player=None):
+        # WARNING: this won't actually work; we need to pass only the
+        # arguments needed, as well as somehow handle union types for action
+        # requirements
         dependencies = [output]
         if context:
             dependencies.append(context)
@@ -168,6 +171,9 @@ class Interface(object):
     def restart(self, message=''):
         pass
 
+    def quit(self, message=''):
+        pass
+
     def repl(self, commands):
         pass
 
@@ -201,6 +207,11 @@ class ConsoleInterface(Interface):
             self.display(message)
         raise RestartError
 
+    def quit(self, message=''):
+        if message:
+            self.display(message)
+        sys.exit()
+
     def repl(self, context, player, commands):
         lastCommand = ''
         while True:
@@ -213,10 +224,7 @@ class ConsoleInterface(Interface):
                 return
             except archon.commands.CommandNotFoundError:
                 self.error('That is not a valid command.')
-                close = difflib.get_close_matches(
-                    lastCommand,
-                    commands.commands.keys()
-                    )
+                close = commands.nearest(lastCommand)
                 if close:
                     self.display('Did you mean:')
                     self.display('\n'.join(close))
