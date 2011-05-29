@@ -43,6 +43,8 @@ def parseContents(contentData, dataPrefixes):
                 entityKind = item
             else:
                 entityInfo[dataPrefixes[item[0]]] = item[1:]
+        if 'options' in entityInfo:
+            entityInfo['options'] = entityInfo['options'].split(',')
         contents.append((entityKind, eKey, entityInfo))
     ids = [eInfo.get('identity', eKey) for _, eKey, eInfo in contents]
     for eKind, eKey, eInfo in contents:
@@ -68,7 +70,7 @@ class JSONDatastore(Datastore):
         '@': 'location',
         '<': 'prefix',
         '?': 'identity',
-        '[': 'target'
+        '*': 'options'
         }
 
     def __init__(self, path):
@@ -118,10 +120,10 @@ class JSONDatastore(Datastore):
                 objdata['contents'],
                 self.__class__.DATA_PREFIXES
                 ):
-                if eKind == 'room':
-                    room.add(room.ROOM_ENTITY_KIND, eKey, **eInfo)
-                else:
-                    room.add(eKind, eKey, **eInfo)
+                room.add(eKind, eKey, **eInfo)
+
+            for direction, target in objdata['outputs'].iteritems():
+                room.add(room.ROOM_ENTITY_KIND, direction, target)
 
             return room
 

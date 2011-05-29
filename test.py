@@ -22,6 +22,7 @@ while True:
 
         interface.repl(room, None, archon.commands.command)
     except EOFError, SystemExit:
+        print 'Exiting testing loop'
         raise
     except:
         traceback.print_exc()

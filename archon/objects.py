@@ -65,29 +65,32 @@ class Room(Entity):
 
         crit = text.split()
 
+        # find all entities for the identity specified
         for key, entity in self.contents.iteritems():
             if entity[1] == crit[-1]:
                 matches.add(key)
         if matches:
             if len(matches) == 1:
-                return matches[0]
-            elif len(crit) > 1:  # there's a prefix
-                prefix = text[:-crit[-1]].rstrip()  # get the prefix
+                return matches.pop()  # only one match
+            if len(crit) > 1:  # there's a prefix
+                prefix = text[:-len(crit[-1])].rstrip()  # get the prefix
                 for key, entity in self.contents.iteritems():
-                    if entity[4] == prefix:
+                    if entity[4] == prefix and entity[1] == crit[-1]:
                         return key  # prefix-identity should be unique
-            else:
-                return matches
+            return matches
         return None
 
     def add(self, entityKind, key, identity,
-            location='', description='', prefix='', target=''):
+            location='', description='', prefix='', options=None):
         if entityKind is self.ROOM_ENTITY_KIND:
-            self._outputs[key] = (target, identity,
-                                  location, description, prefix)
+            # key is direction, identity is
+            # the target
+            self._outputs[key] = identity
         else:
+            if options is None:
+                options = []
             self._contents[key] = (entityKind, identity,
-                                   location, description, prefix)
+                                   location, description, prefix, options)
 
     def remove(self, key):
         del self._contents[key]
@@ -100,24 +103,21 @@ class Room(Entity):
             entity = self.allContents[key]
             beginning = ''
             if key in self.contents:
-                beginning = 'There is'
-            elif key in self.outputs:
-                beginning = 'You can go'
-                if entity[4]:  # if there's a prefix, add "to"
-                    beginning += ' to'
-            text = '{beginning} {prefix}{identity}{location}.'.format(
+                text = 'There is {prefix}{identity}{location}.'.format(
                 beginning=beginning,
                 prefix=entity[4] + ' ' if entity[4] else '',
                 identity=entity[1],
                 location=' ' + entity[2] if entity[2] else ''
                 ).strip()
-            if entity[3]:
-                text = ' '.join([text, 'It is', entity[3] + '.'])
-            return text
+                if entity[3]:
+                    text = ' '.join([text, 'It is', entity[3] + '.'])
+                return text
+            elif key in self.outputs:
+                return 'You can go {}.'.format(key)
         else:
             return '\n'.join(
                 ['You are in ' + self._description] +
-                [self.describe(key) for key in self.contents] +
+                [self.describe(key) for key in sorted(self.contents)] +
                 [self.describe(key) for key in self.outputs])
 
     def enter(self):
@@ -144,11 +144,21 @@ class Room(Entity):
 
     @property
     def allContents(self):
-        return dict(self._contents.viewitems() | self._outputs.viewitems())
+        return ProxyDict(self.contents, self.outputs)
 
     @property
     def inputs(self):
         pass
+
+
+class ProxyDict(dict):
+    def __init__(self, *dicts):
+        self._dicts = dicts
+    def __getitem__(self, key):
+        for dictionary in self._dicts:
+            if key in dictionary:
+                return dictionary[key]
+        raise KeyError(key)
 
 
 class Interface(object):

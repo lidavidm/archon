@@ -67,8 +67,7 @@ def enter(output, context, player, *args):
 def describe(output, context, player, *args):
     '''Describe the current room or the specified object.'''
     if args:
-        matches = context.naturalFind(''.join(args))
-        print matches
+        matches = context.naturalFind(' '.join(args))
         if not matches:
             output.display("What are you talking about?")
         elif isinstance(matches, set):
