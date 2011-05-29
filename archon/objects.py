@@ -12,9 +12,15 @@ class Entity(object):
         self._attributes = {}
 
     def when(self, name, actions):
+        """
+        Add a capability to the entity.
+        """
         self._capabilities[name] = actions
 
     def do(self, name, output, context=None, player=None):
+        """
+        Run a capability of the entity.
+        """
         # WARNING: this won't actually work; we need to pass only the
         # arguments needed, as well as somehow handle union types for action
         # requirements
@@ -82,6 +88,19 @@ class Room(Entity):
 
     def add(self, entityKind, key, identity,
             location='', description='', prefix='', options=None):
+        """
+        Add an entity or output to the room.
+
+        :param entityKind: The entity's kind. If adding a room, set this to
+                           self.ROOM_ENTITY_KIND.
+        :param key: The key for the entity. If adding a room, this is the
+                    direction.
+        :param identity: The identity for the entity. If adding a room, this
+                         is the target room.
+        :param location: The location description for the entity.
+        :param description: A description of the entity.
+        :param options: Options for the entity.
+        """
         if entityKind is self.ROOM_ENTITY_KIND:
             # key is direction, identity is
             # the target

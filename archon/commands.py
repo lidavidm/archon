@@ -48,10 +48,14 @@ def test(output, context, player, *args):
 @command('go')
 def go(output, context, player, *args):
     '''Go in the specified direction.'''
-    # find the next room, somehow
-    context.exit()
-    target.enter()
-    return target
+    direction = args[0]  # XXX multiword directions?
+    target = context.outputs.get(direction)
+    if target:
+        context.exit()
+        target.enter()
+        return target
+    else:
+        output.error("You can't go that way.")
 
 
 @command('enter')
