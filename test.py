@@ -15,9 +15,10 @@ while True:
         archon.objects = reload(archon.objects)
         archon.commands = reload(archon.commands)
 
-        ds = archon.datastore.JSONDatastore('demo/')
-        entity = ds['entity.json']
-        room = ds['room.json']
+        cache = archon.datastore.LazyCacheDatastore()
+        ds = archon.datastore.JSONDatastore('demo/', cache)
+        entity = ds['entity']
+        room = ds['room']
         interface = archon.objects.ConsoleInterface()
 
         interface.repl(room, None, archon.commands.command)

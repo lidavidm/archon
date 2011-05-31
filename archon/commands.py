@@ -1,5 +1,6 @@
 import sys
 import difflib
+import collections
 
 
 class CommandNotFoundError(Exception): pass
@@ -12,6 +13,7 @@ class command(object):
     # IDEA use this to store global variables for commands (help strings,
     # game name, etc)?
     commands = {}
+    commandData = collections.defaultdict(None)
 
     def __init__(self, *names):
         for name in names:
@@ -25,6 +27,10 @@ class command(object):
         for name in self.names:
             self.__class__.commands[name] = func
         return func
+
+    @property
+    def data(self):
+        return self.__class__.commandData[self.names[0]]
 
     @classmethod
     def get(cls, name):
@@ -60,11 +66,22 @@ def go(output, context, player, *args):
 
 @command('enter')
 def enter(output, context, player, *args):
-    '''If the specified entity is a teleport (e.g. a door), use it.'''
+    '''
+    If the specified entity is a teleport (e.g. a door), use it.
+
+    Also, create an entry in the history chain of visited rooms.
+    '''
     # find the next room, somehow
     context.exit()
     target.enter()
     return target()
+
+
+@command('exit', 'back')
+def exit(output, context, player, *args):
+    '''
+    Return to the previous room, unless the history chain was reset.
+    '''
 
 
 @command('describe')

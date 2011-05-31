@@ -173,6 +173,7 @@ class Room(Entity):
 class ProxyDict(dict):
     def __init__(self, *dicts):
         self._dicts = dicts
+
     def __getitem__(self, key):
         for dictionary in self._dicts:
             if key in dictionary:

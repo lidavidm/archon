@@ -1,5 +1,7 @@
 import os
 import json
+import types
+import collections
 
 import archon.objects
 import archon.actions
@@ -12,14 +14,7 @@ import archon.actions
 # needed, though
 class Datastore(object):
 
-    # __init__ sweep options: when created, a datastore can sweep its
-    # contents and perform initialization steps like building a list of all
-    # rooms and entities it contains
-    RECURSIVE = 'recursive'
-    ROOM = 'room'
-    ENTITY = 'entity'
-
-    def __init__(self, path, initSweep=tuple()):
+    def __init__(self, path):
         pass
 
     def add(self, key, item):
@@ -55,6 +50,29 @@ class CacheDatastore(Datastore):
 
     def __getitem__(self, key):
         return self._cache[key]
+
+    def __contains__(self, key):
+        return key in self._cache
+
+
+class LazyCacheDatastore(CacheDatastore):
+    def __init__(self):
+        super(LazyCacheDatastore, self).__init__()
+        self._didLoad = collections.defaultdict(lambda:False)
+
+    def add(self, key, item):
+        if not type(item) in (types.FunctionType, types.MethodType):
+            # Strict add
+            self._didLoad[key] = True
+        super(LazyCacheDatastore, self).add(key, item)
+
+    def __getitem__(self, key):
+        if key not in self._cache:
+            raise KeyError(key)
+        if not self._didLoad[key]:
+            self._cache[key] = self._cache[key]()
+            self._didLoad[key] = True
+        return super(LazyCacheDatastore, self).__getitem__(key)
 
 
 def parseContents(contentData, dataPrefixes):
@@ -103,18 +121,47 @@ class JSONDatastore(Datastore):
         '*': 'options'
         }
 
-    def __init__(self, path,initSweep=(Datastore.RECURSIVE,
-                            Datastore.ENTITY, Datastore.ROOM),
-                 cacheType=CacheDatastore):
-        self._path = path
-        # Sweep the directory and build a list of all entities and rooms
-        # Create a layer of indirection that only loads them on-demand (so
-        # we need a LazyCacheDatastore that calls a given function when each
-        # of items is accessed for the first time)
+    def __init__(self, path, cache):
+        self._path = os.path.abspath(path)
+        self._name = os.path.basename(os.path.normpath(path))
+        # normpath deals with trailing slash, basename gets directory name
+        if type(cache) == types.ClassType:  # top level
+            self._cache = self._superCache = cache()
+        else:
+            self._superCache = cache
+            self._cache = cache.__class__()
+            # don't add myself - my parent takes care of it
+        for fname in os.listdir(self._path):
+            fullpath = os.path.join(self._path, fname)
+            if os.path.isfile(fullpath):
+                entityID, ext = os.path.splitext(fname)
+                if ext.lower() == '.json':
+                    try:
+                        data = json.load(open(fullpath))
+                    except ValueError:
+                        continue
+                    if ('type' in data and
+                        data['type'] in (self.__class__.ENTITY_TYPE,
+                                         self.__class__.ROOM_TYPE)):
+                        self._cache.add(
+                            entityID,
+                            lambda key=entityID: self.load(key, again=True)
+                            )
+            elif os.path.isdir(fullpath):
+                child = self.__class__(key, cache)
+                self._cache.add(child.name, lambda:child)
 
-    def load(self, key):
+    def load(self, key, again=False):
+        """
+        Load the given key. Do not specify a file extension.
+
+        :param again: If True, reload from scratch, ignoring the cache.
+        """
+        # search the cache unless otherwise specified
+        if not again and key in self._cache:
+            return self._cache[key]
         try:
-            data = json.load(open(os.path.join(self._path, key)))
+            data = json.load(open(os.path.join(self._path, key+'.json')))
         except ValueError:
             raise ValueError("Invalid JSON document")
 
@@ -145,11 +192,6 @@ class JSONDatastore(Datastore):
             return entity
 
         elif objtype == self.__class__.ROOM_TYPE:
-            # We need to hold on to the room. When it is exited/deleted,
-            # serialize the changes to disk.
-            # We also need a database that allows the room to look up
-            # entities as needed. However, we won't handle this; the game
-            # code will manage this responsibility.
             roomKind = objdata['kind']
             room = archon.objects.Room(roomKind, objdata['describe'])
             for eKind, eKey, eInfo in parseContents(
@@ -158,14 +200,28 @@ class JSONDatastore(Datastore):
                 ):
                 room.add(eKind, eKey, **eInfo)
 
-            # Eventually, load the rooms here
             # To avoid circular references, add the current room to the
             # cache, list all the needed rooms, then load each one, looking
             # them up in the cache first
+            self._cache.add(key, room)
             for direction, target in objdata['outputs'].iteritems():
-                room.add(room.ROOM_ENTITY_KIND, direction, target)
+                # Look in this cache, then the super cache
+                # i.e. try relative, then absolute
+                if target in self._cache:
+                    troom = self._cache[target]
+                elif target in self._superCache:
+                    troom = self._superCache[target]
+                else:
+                    raise ValueError(
+                        'Room {} referenced does not exist'.format(target)
+                        )
+                room.add(room.ROOM_ENTITY_KIND, direction, troom)
 
             return room
+
+    @property
+    def name(self):
+        return self._name
 
     def __getitem__(self, key):
         if key in self:
@@ -178,4 +234,4 @@ class JSONDatastore(Datastore):
             raise KeyError(key)
 
     def __contains__(self, key):
-        return os.path.exists(os.path.join(self._path, key))
+        return os.path.exists(os.path.join(self._path, key+'.json'))
