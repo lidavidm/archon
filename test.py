@@ -22,7 +22,7 @@ while True:
         interface = archon.objects.ConsoleInterface()
 
         interface.repl(room, None, archon.commands.command)
-    except EOFError, SystemExit:
+    except (EOFError, SystemExit):
         print 'Exiting testing loop'
         raise
     except:
