@@ -17,7 +17,6 @@ while True:
 
         cache = archon.datastore.LazyCacheDatastore()
         ds = archon.datastore.JSONDatastore('demo/', cache)
-        entity = ds['entity']
         room = ds['room']
         interface = archon.objects.ConsoleInterface()
 

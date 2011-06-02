@@ -11,31 +11,6 @@ class Entity(object):
         self._capabilities = {}
         self._attributes = {}
 
-    def when(self, name, actions):
-        """
-        Add a capability to the entity.
-        """
-        self._capabilities[name] = actions
-
-    def do(self, name, output, context=None, player=None):
-        """
-        Run a capability of the entity.
-        """
-        # WARNING: this won't actually work; we need to pass only the
-        # arguments needed, as well as somehow handle union types for action
-        # requirements
-        dependencies = [output]
-        if context:
-            dependencies.append(context)
-        if player:
-            dependencies.append(player)
-        for f, args in self.capabilities[name]:
-            f(*(dependencies + args))
-
-    @property
-    def capabilities(self):
-        return self._capabilities
-
     @property
     def attributes(self):
         return self._attributes
@@ -48,10 +23,10 @@ class Entity(object):
 class Room(Entity):
     ROOM_ENTITY_KIND = object()
 
-    def __init__(self, kind, description):
+    def __init__(self, kind, description, cache):
         super(Room, self).__init__(kind)
         self._description = description
-        self._entityCache = None
+        self._entityCache = cache
         self._contents = {}
         self._outputs = {}
 
@@ -70,6 +45,8 @@ class Room(Entity):
             matches.add(text)
 
         crit = text.split()
+        if not crit:
+            return None
 
         # find all entities for the identity specified
         for key, entity in self.contents.iteritems():

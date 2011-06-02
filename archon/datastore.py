@@ -165,35 +165,24 @@ class JSONDatastore(Datastore):
         except ValueError:
             raise ValueError("Invalid JSON document")
 
+        key = key.lower()  # XXX case insensitive -- needs doc+rationale
+        # problem: on linux it will be case sensitive...
+
         objtype = data['type']
         objdata = data['data']
         if objtype == self.__class__.ENTITY_TYPE:
-            ekind = objdata['entity_kind']
-            eattr = objdata['entity_attributes']
-            entity = archon.objects.Entity(ekind)
-            entity.attributes = eattr
-            del objdata['entity_kind']
-            del objdata['entity_attributes']
-            for name, actions in objdata.iteritems():
-                actionFuncs = []
-                if isinstance(actions, basestring):
-                    # ``actions`` is a string, treat it as a notification
-                    action = archon.actions.getAction('ui.notify')
-                    actionFuncs.append((action, [actions]))
-                else:
-                    for actionData in actions:
-                        actionName = actionData[0]
-                        actionParams = actionData[1:]
-                        action = archon.actions.getAction(actionName)
-                        actionFuncs.append((action, actionParams))
-
-                entity.when(name, actionFuncs)
+            entity = archon.objects.Entity(key)
+            for name, data in objdata.iteritems():
+                entity.attributes[name] = data
 
             return entity
 
         elif objtype == self.__class__.ROOM_TYPE:
             roomKind = objdata['kind']
-            room = archon.objects.Room(roomKind, objdata['describe'])
+            room = archon.objects.Room(
+                roomKind,
+                objdata['describe'],
+                self._cache)
             for eKind, eKey, eInfo in parseContents(
                 objdata['contents'],
                 self.__class__.DATA_PREFIXES
