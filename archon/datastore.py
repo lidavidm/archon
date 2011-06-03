@@ -5,6 +5,7 @@ import collections
 
 import archon.objects
 import archon.actions
+import archon.dataloaders
 
 
 # TODO possibly use super() as described
@@ -75,51 +76,10 @@ class LazyCacheDatastore(CacheDatastore):
         return super(LazyCacheDatastore, self).__getitem__(key)
 
 
-def parseContents(contentData, dataPrefixes):
-    """
-    Parses a room's contents.
-    """
-    contents = []
-    for eKey, eData in contentData.iteritems():
-        entityInfo = {'identity': eKey}
-        entityKind = None
-        for item in eData:
-            if item[0] not in dataPrefixes:
-                entityKind = item
-            else:
-                entityInfo[dataPrefixes[item[0]]] = item[1:]
-        if 'options' in entityInfo:
-            entityInfo['options'] = entityInfo['options'].split(',')
-        contents.append((entityKind, eKey, entityInfo))
-    ids = [eInfo.get('identity', eKey) for _, eKey, eInfo in contents]
-    for eKind, eKey, eInfo in contents:
-        # identity (or key) is not unique,
-        # no prefix and the key collides with an identity
-        identity = eInfo.get('identity', eKey)
-        if 'prefix' not in eInfo and ids.count(identity) > 1:
-            # we need to generate a prefix
-            # this algorithm is awkward because if there is no 'a
-            # thing', but 'thing' and 'another thing' are present,
-            # it generates 'yet another thing' automatically
-            eInfo['prefix'] = ('yet another ' *
-                               (ids.count(identity) - 1)).strip()
-    return contents
-
-
-class JSONDatastore(Datastore):
+class GameDatastore(Datastore):
     """
     A JSON and file-based datastore.
     """
-    ENTITY_TYPE = 'entity'
-    ROOM_TYPE = 'room'
-
-    DATA_PREFIXES = {
-        '!': 'description',
-        '@': 'location',
-        '<': 'prefix',
-        '?': 'identity',
-        '*': 'options'
-        }
 
     def __init__(self, path, cache):
         self._path = os.path.abspath(path)
@@ -141,8 +101,7 @@ class JSONDatastore(Datastore):
                     except ValueError:
                         continue
                     if ('type' in data and
-                        data['type'] in (self.__class__.ENTITY_TYPE,
-                                         self.__class__.ROOM_TYPE)):
+                        data['type'] in archon.dataloaders.TYPES_SUPPORTED):
                         self._cache.add(
                             entityID,
                             lambda key=entityID: self.load(key, again=True)
@@ -157,7 +116,6 @@ class JSONDatastore(Datastore):
 
         :param again: If True, reload from scratch, ignoring the cache.
         """
-        # search the cache unless otherwise specified
         if not again and key in self._cache:
             return self._cache[key]
         try:
@@ -170,43 +128,15 @@ class JSONDatastore(Datastore):
 
         objtype = data['type']
         objdata = data['data']
-        if objtype == self.__class__.ENTITY_TYPE:
-            entity = archon.objects.Entity(key)
-            for name, data in objdata.iteritems():
-                entity.attributes[name] = data
 
-            return entity
-
-        elif objtype == self.__class__.ROOM_TYPE:
-            roomKind = objdata['kind']
-            room = archon.objects.Room(
-                roomKind,
-                objdata['describe'],
-                self._cache)
-            for eKind, eKey, eInfo in parseContents(
-                objdata['contents'],
-                self.__class__.DATA_PREFIXES
-                ):
-                room.add(eKind, eKey, **eInfo)
-
-            # To avoid circular references, add the current room to the
-            # cache, list all the needed rooms, then load each one, looking
-            # them up in the cache first
-            self._cache.add(key, room)
-            for direction, target in objdata['outputs'].iteritems():
-                # Look in this cache, then the super cache
-                # i.e. try relative, then absolute
-                if target in self._cache:
-                    troom = self._cache[target]
-                elif target in self._superCache:
-                    troom = self._superCache[target]
-                else:
-                    raise ValueError(
-                        'Room {} referenced does not exist'.format(target)
-                        )
-                room.add(room.ROOM_ENTITY_KIND, direction, troom)
-
-            return room
+        if objtype in archon.dataloaders.TYPES_SUPPORTED:
+            obj = archon.dataloaders.dataloader.get(objtype)(
+                key,
+                objdata,
+                self._cache,
+                self._superCache
+                )
+            return obj
 
     @property
     def name(self):

@@ -4,7 +4,7 @@
         "describe": "a test room.",
         "kind": "indoors",
         "contents": {
-            "thing": ["test_object"]
+            "thing": ["test_object", "<a"]
         },
         "outputs":{
             "north": "room"

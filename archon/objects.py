@@ -6,7 +6,7 @@ class RestartError(Exception): pass
 
 
 class Entity(object):
-    def __init__(self, kind):
+    def __init__(self, name, kind):
         self._kind = kind
         self._capabilities = {}
         self._attributes = {}
@@ -23,8 +23,8 @@ class Entity(object):
 class Room(Entity):
     ROOM_ENTITY_KIND = object()
 
-    def __init__(self, kind, description, cache):
-        super(Room, self).__init__(kind)
+    def __init__(self, name, kind, description, cache):
+        super(Room, self).__init__(name, kind)
         self._description = description
         self._entityCache = cache
         self._contents = {}

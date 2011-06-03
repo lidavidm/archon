@@ -1,7 +1,7 @@
 {
     "type": "entity",
     "data": {
-        "kind": "object",
+        "kind": "npc",
         "attributes":{
             "describe": "A test object.",
             "take": true

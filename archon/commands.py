@@ -2,42 +2,18 @@ import sys
 import difflib
 import collections
 
+import archon.common
 
-class CommandNotFoundError(Exception): pass
 
-
-class command(object):
+class command(archon.common.denoter):
     """
     Denote a function as an command.
     """
-    # IDEA use this to store global variables for commands (help strings,
-    # game name, etc)?
-    commands = {}
     commandData = collections.defaultdict(None)
-
-    def __init__(self, *names):
-        for name in names:
-            if name in self.__class__.commands:
-                raise ValueError(
-                    "Command name {} already in use!".format(name)
-                    )
-        self.names = names
-
-    def __call__(self, func):
-        for name in self.names:
-            self.__class__.commands[name] = func
-        return func
 
     @property
     def data(self):
         return self.__class__.commandData[self.names[0]]
-
-    @classmethod
-    def get(cls, name):
-        try:
-            return cls.commands[name]
-        except KeyError:
-            raise CommandNotFoundError
 
     @classmethod
     def nearest(cls, name):
