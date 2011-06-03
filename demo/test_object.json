@@ -1,0 +1,8 @@
+{
+    "type": "entity",
+    "data": {
+        "entity_attributes": {},
+        "describe": "A test object.",
+        "take": true
+    }
+}
