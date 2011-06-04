@@ -1,6 +1,9 @@
 class DenotedNotFoundError(Exception): pass
 
 
+class DenotedInvalidError(Exception): pass
+
+
 class denoter(object):
     """
     Denote a function as something.
@@ -16,9 +19,21 @@ class denoter(object):
         self.names = names
 
     def __call__(self, func):
+        valid = self.verify(func)
+        if not (valid is True):
+            raise DenotedInvalidError(valid)
         for name in self.names:
             self.__class__.functions[name] = func
         return func
+
+    def verify(self, func):
+        """
+        Override to check whether a function meets certain criteria.
+
+        This method must return True. Anything else is treated as the error
+        message to raise.
+        """
+        return True
 
     @classmethod
     def get(cls, name):

@@ -6,6 +6,7 @@ ROOM_TYPE = 'room'
 DATA_TYPE = 'data'
 TYPES_SUPPORTED = (ENTITY_TYPE, ROOM_TYPE, DATA_TYPE)
 
+
 class dataloader(archon.common.denoter):
     pass
 

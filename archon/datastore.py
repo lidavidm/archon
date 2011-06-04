@@ -59,7 +59,7 @@ class CacheDatastore(Datastore):
 class LazyCacheDatastore(CacheDatastore):
     def __init__(self):
         super(LazyCacheDatastore, self).__init__()
-        self._didLoad = collections.defaultdict(lambda:False)
+        self._didLoad = collections.defaultdict(lambda: False)
 
     def add(self, key, item):
         if not type(item) in (types.FunctionType, types.MethodType):
@@ -108,7 +108,7 @@ class GameDatastore(Datastore):
                             )
             elif os.path.isdir(fullpath):
                 child = self.__class__(key, cache)
-                self._cache.add(child.name, lambda:child)
+                self._cache.add(child.name, lambda: child)
 
     def load(self, key, again=False):
         """
@@ -119,7 +119,7 @@ class GameDatastore(Datastore):
         if not again and key in self._cache:
             return self._cache[key]
         try:
-            data = json.load(open(os.path.join(self._path, key+'.json')))
+            data = json.load(open(os.path.join(self._path, key + '.json')))
         except ValueError:
             raise ValueError("Invalid JSON document")
 
@@ -153,4 +153,4 @@ class GameDatastore(Datastore):
             raise KeyError(key)
 
     def __contains__(self, key):
-        return os.path.exists(os.path.join(self._path, key+'.json'))
+        return os.path.exists(os.path.join(self._path, key + '.json'))

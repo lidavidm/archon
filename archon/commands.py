@@ -56,6 +56,7 @@ def go(output, context, player, *args):
         return command.get('describe')(output, target, player)
     else:
         output.error("You can't go that way.")
+        return context
 
 
 @command('enter')
@@ -65,10 +66,22 @@ def enter(output, context, player, *args):
 
     Also, create an entry in the history chain of visited rooms.
     '''
-    # find the next room, somehow
-    context.exit()
-    target.enter()
-    return target()
+    teleport = context.naturalFind(' '.join(args))
+    if not teleport:
+        output.error('No entity found.')
+    elif isinstance(teleport, set):
+        output.error('Please be more specific.')
+    else:
+        entityData = context.allContents[teleport]
+        for option in entityData.options:
+            if option.startswith('to:'):
+                target = option[3:].strip()
+                if output.question("Go to {}?".format(target)):
+                    target = context.entityCache[target]
+                    context.exit()
+                    target.enter()
+                    return command.get('describe')(output, target, player)
+    return context  # we failed teleporting
 
 
 @command('exit', 'back')

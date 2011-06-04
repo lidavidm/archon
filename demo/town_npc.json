@@ -3,8 +3,11 @@
     "data": {
         "kind": "npc",
         "attributes":{
-            "describe": "A test object.",
-            "take": true
+            "describe": "A test NPC.",
+            "dialouge":{
+                "small talk": "Nothing's really going on.",
+                "about me": "Oh, I'm just a test."
+            }
         }
     }
 }

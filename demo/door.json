@@ -1,0 +1,9 @@
+{
+    "type": "entity",
+    "data": {
+        "kind": "object",
+        "attributes":{
+            "describe": "A door."
+        }
+    }
+}

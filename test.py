@@ -7,22 +7,25 @@ import archon.common
 import archon.dataloaders
 import archon.datastore
 import archon.objects
+import archon.interface
 import archon.commands
 
 while True:
     print 'Starting a new instance'
     try:
         archon = reload(archon)
+        # XXX replace this
         archon.common = reload(archon.common)
         archon.dataloaders = reload(archon.dataloaders)
         archon.datastore = reload(archon.datastore)
         archon.objects = reload(archon.objects)
+        archon.interface = reload(archon.interface)
         archon.commands = reload(archon.commands)
 
         cache = archon.datastore.LazyCacheDatastore()
         ds = archon.datastore.GameDatastore('demo/', cache)
         room = ds['room']
-        interface = archon.objects.ConsoleInterface()
+        interface = archon.interface.ConsoleInterface()
 
         interface.repl(room, None, archon.commands.command)
     except (EOFError, SystemExit):

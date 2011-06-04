@@ -2,6 +2,7 @@
     "type": "room",
     "data": {
         "describe": "a test room.",
+        "friendlyName": "Test Room",
         "kind": "indoors",
         "contents": {
             "thing": ["test_object", "@in the northwest corner",
@@ -9,7 +10,7 @@
             "thing2": ["test_object", "@under the other thing",
                       "<another", "?thing"],
             "thing3": ["test_object", "@in the south", "<a", "?thing"],
-            "door": ["room3", "@to the north", "*one-way", "<a"]
+            "door": ["door", "@to the north", "*one-way,to:room2", "<a"]
         },
         "outputs":{
             "south": "room2"
