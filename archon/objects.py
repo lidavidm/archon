@@ -1,24 +1,73 @@
 import collections
-import archon.common
 
 
-class entityhook(archon.common.denoter):
+class EntityHookNotFoundError(Exception):pass
+
+
+class EntityHook(collections.MutableMapping):
     """
     Defines special behavior for the attributes of certain entity kinds.
     """
-    def verify(self, cls):
-        if issubclass(cls, collections.MutableMapping):
-            return True
-        return "Entity hook must subclass collections.MutableMapping"
+    KIND = ''
+
+    def __init__(self, entity):
+        self._attributes = {}
+
+    def __len__(self):
+        return len(self._attributes)
+
+    def __iter__(self):
+        return self._attributes.__iter__()
+
+    def __contains__(self, key):
+        return key in self._attributes
+
+    def __getitem__(self, key):
+        """Override for custom behavior. """
+        return self._attributes.__getitem__(key)
+
+    def __setitem__(self, key, value):
+        """Override for custom behavior."""
+        return self._attributes.__setitem__(key, value)
+
+    def __delitem__(self, key):
+        """Override for custom behavior."""
+        return self._attributes.__delitem__(key)
+
+    @property
+    def attributes(self):
+        return self._attributes
+
+    @classmethod
+    def get(cls, kind):
+        if cls.KIND == kind:
+            return cls
+        else:
+            for subcls in cls.__subclasses__():
+                try:
+                    return subcls.get(kind)
+                except EntityHookNotFoundError:
+                    continue
+        raise EntityHookNotFoundError(kind)
+
+
+class RoomEntityHook(EntityHook):
+    KIND = "room"
+    def __init__(self, entity):
+        super(RoomEntityHook, self).__init__(entity)
+        self.attributes.update(
+            friendlyName=entity.name
+            )
 
 
 class Entity(object):
     def __init__(self, name, kind):
-        self._kind = kind
+        self.name = name
+        self.kind = kind
         try:
-            kindhook = entityhook.get(kind)
-            self._attributes = kindhook()
-        except archon.common.DenotedNotFoundError:
+            kindhook = EntityHook.get(kind)
+            self._attributes = kindhook(self)
+        except EntityHookNotFoundError:
             self._attributes = {}
 
     @property
@@ -37,10 +86,13 @@ EntityData = collections.namedtuple(
 
 
 class Room(Entity):
-    ROOM_ENTITY_KIND = object()
+    ROOM_ENTITY_KIND = 'room'
 
     def __init__(self, name, kind, description, cache):
-        super(Room, self).__init__(name, kind)
+        super(Room, self).__init__(name, Room.ROOM_ENTITY_KIND)
+        self.attributes[kind] = kind
+        # Problem: kind here is "indoors", "outdoors", etc.
+        # but the Entity kind is really "room", "npc"...
         self._description = description
         self._entityCache = cache
         self._contents = {}

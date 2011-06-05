@@ -2,7 +2,9 @@
     "type": "room",
     "data": {
         "describe": "a test room.",
-        "friendlyName": "Test Room",
+        "attributes": {
+            "friendlyName": "Test Room"
+        },
         "kind": "indoors",
         "contents": {
             "thing": ["test_object", "@in the northwest corner",

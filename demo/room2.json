@@ -3,6 +3,9 @@
     "data": {
         "describe": "a test room.",
         "kind": "indoors",
+        "attributes":{
+            "friendlyName": "Test Room 2"
+        },
         "contents": {
             "thing": ["test_object", "<a"]
         },

@@ -5,6 +5,7 @@ ENTITY_TYPE = 'entity'
 ROOM_TYPE = 'room'
 DATA_TYPE = 'data'
 TYPES_SUPPORTED = (ENTITY_TYPE, ROOM_TYPE, DATA_TYPE)
+# Types dictate loading, kind denotes semantic data ("room" vs "indoors")
 
 
 class dataloader(archon.common.denoter):
@@ -33,6 +34,9 @@ DATA_PREFIXES = {
 def room(key, data, cache, superCache):
     kind, description = data['kind'], data['describe']
     room = archon.objects.Room(key, kind, description, cache)
+
+    for name, val in data['attributes'].iteritems():
+        room.attributes[name] = val
 
     contents = []
     for eKey, eData in data['contents'].iteritems():

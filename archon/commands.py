@@ -76,8 +76,10 @@ def enter(output, context, player, *args):
         for option in entityData.options:
             if option.startswith('to:'):
                 target = option[3:].strip()
-                if output.question("Go to {}?".format(target)):
-                    target = context.entityCache[target]
+                target = context.entityCache[target]
+                if output.question(
+                    "Go to {}?".format(target.attributes['friendlyName'])
+                    ):
                     context.exit()
                     target.enter()
                     return command.get('describe')(output, target, player)
