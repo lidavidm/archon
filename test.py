@@ -23,8 +23,11 @@ while True:
         archon.commands = reload(archon.commands)
 
         cache = archon.datastore.LazyCacheDatastore()
-        ds = archon.datastore.GameDatastore('demo/', cache)
+        cache2 = archon.datastore.LazyCacheDatastore()
+        ds = archon.datastore.GameDatastore('demo/data', cache)
+        save = archon.datastore.GameDatastore('demo/save', cache2)
         room = ds['room']
+        player = save['player']
         interface = archon.interface.ConsoleInterface()
 
         interface.repl(room, None, archon.commands.command)

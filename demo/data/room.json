@@ -1,0 +1,31 @@
+{
+    "type": "room",
+    "data": {
+        "describe": "a test room.",
+        "attributes": {
+            "friendlyName": "Test Room"
+        },
+        "kind": "indoors",
+        "contents": {
+            "thing": {
+                "entity": "test_object",
+                "location": "in the northwest corner",
+                "description": "interesting"
+            },
+            "thing2": {
+                "entity": "test_object",
+                "location": "in the south",
+                "prefix": "a",
+                "identity": "thing"
+            },
+            "door": {
+                "entity":"door",
+                "location": "to the north",
+                "options": "one-way,to:room2",
+                "prefix": "a"}
+        },
+        "outputs":{
+            "south": "room2"
+        }
+    }
+}

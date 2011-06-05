@@ -7,7 +7,10 @@
             "friendlyName": "Test Room 2"
         },
         "contents": {
-            "thing": ["test_object", "<a"]
+            "thing": {
+                "entity": "test_object",
+                "prefix": "a"
+            }
         },
         "outputs":{
             "north": "room"
