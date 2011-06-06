@@ -1,0 +1,20 @@
+{
+    "type": "room",
+    "data": {
+        "describe": "an area to start a new game.",
+        "attributes": {
+            "friendlyName": "New Game Room"
+        },
+        "kind": "indoors",
+        "contents": {
+            "customizer": {
+                "entity": "customizer",
+                "prefix": "a",
+                "description": "something you should `use` right now"
+            }
+        },
+        "outputs":{
+            "on": "room"
+        }
+    }
+}

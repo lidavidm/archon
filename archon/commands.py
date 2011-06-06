@@ -17,7 +17,7 @@ class command(archon.common.denoter):
 
     @classmethod
     def nearest(cls, name):
-        return difflib.get_close_matches(name, cls.commands.keys())
+        return difflib.get_close_matches(name, cls.functions.keys())
 
 
 @command('test.restart')
@@ -97,6 +97,9 @@ def exit(output, context, player, *args):
 def describe(output, context, player, *args):
     '''Describe the current room or the specified object.'''
     if args:
+        if args[0].lower() in ('me', 'myself'):
+            output.display(player['character']['description'])
+            return context
         matches = context.naturalFind(' '.join(args))
         if not matches:
             output.display("What are you talking about?")

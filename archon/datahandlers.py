@@ -1,3 +1,5 @@
+import json
+
 import archon.common
 import archon.objects
 
@@ -5,12 +7,31 @@ ENTITY_TYPE = 'entity'
 ROOM_TYPE = 'room'
 DATA_TYPE = 'data'
 JSON_DIFF_TYPE = 'jsondiff'  # TODO: structural diff of JSON for saves
-TYPES_SUPPORTED = (ENTITY_TYPE, ROOM_TYPE, DATA_TYPE)
 # Types dictate loading, kind denotes semantic data ("room" vs "indoors")
 
 
 class dataloader(archon.common.denoter):
-    pass
+    """Denotes a function that takes JSON and creates an object."""
+
+
+class dataparser(archon.common.denoter):
+    """Denotes a function that takes a file and returns JSON."""
+
+
+@dataparser('.json')
+def jsonType(contents):
+    try:
+        data = json.loads(contents)
+        assert 'type' in data
+        assert 'data' in data
+        return data
+    except (ValueError, AssertionError):
+        return None
+
+
+@dataparser('.py')
+def pythonType(contents):
+    return {"type":"script", "data":contents}
 
 
 @dataloader(ENTITY_TYPE)

@@ -21,29 +21,6 @@ class Interface(object):
         pass
 
     def question(self, question):
-        pass
-
-    def display(self, text):
-        pass
-
-    def error(self, error):
-        pass
-
-    def restart(self, message=''):
-        pass
-
-    def quit(self, message=''):
-        pass
-
-    def repl(self, commands):
-        pass
-
-
-class ConsoleInterface(Interface):
-    def prompt(self, prompt):
-        return raw_input(prompt)
-
-    def question(self, question):
         # TODO display input choices to player
         res = self.prompt(question).strip().lower()
         if self.questionYes and res in self.questionYes:
@@ -60,9 +37,10 @@ class ConsoleInterface(Interface):
             return bool(self.questionYes)
 
     def display(self, text):
-        print text
+        pass
 
-    error = display
+    def error(self, error):
+        pass
 
     def restart(self, message=''):
         if message:
@@ -73,6 +51,31 @@ class ConsoleInterface(Interface):
         if message:
             self.display(message)
         sys.exit()
+
+    def menu(self, choiceFormat, prompt, **choices):
+        # XXX needs use-cases so that features can be added/removed
+        for option, description in sorted(
+            choices.iteritems(),
+            key=lambda x: x[0]):
+            self.display(choiceFormat.format(option=option,
+                                             description=description))
+        while True:
+            choice = self.prompt(prompt).strip()
+            if choice in choices:
+                return choice
+
+    def repl(self, commands):
+        pass
+
+
+class ConsoleInterface(Interface):
+    def prompt(self, prompt):
+        return raw_input(prompt)
+
+    def display(self, text):
+        print text
+
+    error = display
 
     def repl(self, context, player, commands):
         lastCommand = ''

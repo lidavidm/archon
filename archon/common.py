@@ -26,6 +26,10 @@ class denoter(object):
             self.__class__.functions[name] = func
         return func
 
+    @classmethod
+    def contains(cls, func):
+        return func in cls.functions
+
     def verify(self, func):
         """
         Override to check whether a function meets certain criteria.

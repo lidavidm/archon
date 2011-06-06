@@ -224,3 +224,7 @@ class UnionDict(dict):
             if key in dictionary:
                 return dictionary[key]
         raise KeyError(key)
+
+
+class Player(object):
+    pass

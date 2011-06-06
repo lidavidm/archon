@@ -1,0 +1,11 @@
+{
+    "type": "data",
+    "data": {
+        "inventory": [],
+        "character": {
+            "name": "",
+            "description": "",
+            "attributes": {}
+        }
+    }
+}

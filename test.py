@@ -4,7 +4,7 @@ import sys
 import traceback
 import archon
 import archon.common
-import archon.dataloaders
+import archon.datahandlers
 import archon.datastore
 import archon.objects
 import archon.interface
@@ -16,7 +16,7 @@ while True:
         archon = reload(archon)
         # XXX replace this
         archon.common = reload(archon.common)
-        archon.dataloaders = reload(archon.dataloaders)
+        archon.datahandlers = reload(archon.datahandlers)
         archon.datastore = reload(archon.datastore)
         archon.objects = reload(archon.objects)
         archon.interface = reload(archon.interface)
@@ -27,10 +27,10 @@ while True:
         ds = archon.datastore.GameDatastore('demo/data', cache)
         save = archon.datastore.GameDatastore('demo/save', cache2)
         room = ds['room']
-        player = save['player']
+        player = save['player_template']
         interface = archon.interface.ConsoleInterface()
 
-        interface.repl(room, None, archon.commands.command)
+        interface.repl(room, player, archon.commands.command)
     except (EOFError, SystemExit):
         print 'Exiting testing loop'
         break

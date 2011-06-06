@@ -4,8 +4,7 @@ import types
 import collections
 
 import archon.objects
-import archon.actions
-import archon.dataloaders
+import archon.datahandlers
 
 
 # TODO possibly use super() as described
@@ -50,6 +49,9 @@ class CacheDatastore(Datastore):
         del self._cache[key]
 
     def __getitem__(self, key):
+        if '.' in key:
+            key, subkey = key.split('.', 1)
+            return self._cache[key][subkey]
         return self._cache[key]
 
     def __contains__(self, key):
@@ -68,12 +70,18 @@ class LazyCacheDatastore(CacheDatastore):
         super(LazyCacheDatastore, self).add(key, item)
 
     def __getitem__(self, key):
+        subkey = None
+        if '.' in key:
+            key, subkey = key.split('.', 1)
         if key not in self._cache:
             raise KeyError(key)
         if not self._didLoad[key]:
             self._cache[key] = self._cache[key]()
             self._didLoad[key] = True
-        return super(LazyCacheDatastore, self).__getitem__(key)
+        if subkey:
+            return super(LazyCacheDatastore, self).__getitem__(subkey)
+        else:
+            return super(LazyCacheDatastore, self).__getitem__(key)
 
 
 class GameDatastore(Datastore):
@@ -95,42 +103,31 @@ class GameDatastore(Datastore):
             fullpath = os.path.join(self._path, fname)
             if os.path.isfile(fullpath):
                 entityID, ext = os.path.splitext(fname)
-                if ext.lower() == '.json':
-                    try:
-                        data = json.load(open(fullpath))
-                    except ValueError:
+                if archon.datahandlers.dataparser.contains(ext):
+                    loader = archon.datahandlers.dataparser.get(ext)
+                    data = loader(open(fullpath).read())
+                    if data is None:
                         continue
-                    if ('type' in data and
-                        data['type'] in archon.dataloaders.TYPES_SUPPORTED):
+                    elif archon.datahandlers.dataloader.contains(
+                        data['type']
+                    ):
                         self._cache.add(
                             entityID,
-                            lambda key=entityID: self.load(key, again=True)
+                            lambda key=entityID, data=data:
+                                self.load(key, data)
                             )
             elif os.path.isdir(fullpath):
-                child = self.__class__(key, cache)
+                child = self.__class__(fullpath, self._cache)
                 self._cache.add(child.name, lambda: child)
 
-    def load(self, key, again=False):
+    def load(self, key, data):
         """
-        Load the given key. Do not specify a file extension.
-
-        :param again: If True, reload from scratch, ignoring the cache.
+        Load the given data. This is an internal method!
         """
-        if not again and key in self._cache:
-            return self._cache[key]
-        try:
-            data = json.load(open(os.path.join(self._path, key + '.json')))
-        except ValueError:
-            raise ValueError("Invalid JSON document")
-
-        key = key.lower()  # XXX case insensitive -- needs doc+rationale
-        # problem: on linux it will be case sensitive...
-
         objtype = data['type']
         objdata = data['data']
-
-        if objtype in archon.dataloaders.TYPES_SUPPORTED:
-            obj = archon.dataloaders.dataloader.get(objtype)(
+        if archon.datahandlers.dataloader.contains(objtype):
+            obj = archon.datahandlers.dataloader.get(objtype)(
                 key,
                 objdata,
                 self._cache,
@@ -142,15 +139,19 @@ class GameDatastore(Datastore):
     def name(self):
         return self._name
 
-    def __getitem__(self, key):
-        if key in self:
-            path = os.path.join(self._path, key)
-            if os.path.isdir(path):
-                return self.__class__(path)
-            else:
-                return self.load(key)
+    def __getitem__(self, key, subkey=None):
+        if '.' in key:
+            key, subkey = key.split('.', 1)
+            return self.__getitem__(key, subkey)
+        target = None
+        if key in self._cache:
+            target = self._cache[key]
         else:
             raise KeyError(key)
+        if subkey:
+            return target[subkey]
+        else:
+            return target
 
     def __contains__(self, key):
         return os.path.exists(os.path.join(self._path, key + '.json'))
