@@ -93,7 +93,7 @@ class GameDatastore(Datastore):
         self._path = os.path.abspath(path)
         self._name = os.path.basename(os.path.normpath(path))
         # normpath deals with trailing slash, basename gets directory name
-        if type(cache) == types.ClassType:  # top level
+        if type(cache) == types.TypeType:  # top level
             self._cache = self._superCache = cache()
         else:
             self._superCache = cache

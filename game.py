@@ -10,10 +10,14 @@ import archon.interface
 import archon.commands
 
 if __name__ == '__main__':
-    cache = archon.datastore.LazyCacheDatastore()
-    cache2 = archon.datastore.LazyCacheDatastore()
-    ds = archon.datastore.GameDatastore('demo/data', cache)
-    save = archon.datastore.GameDatastore('demo/save', cache2)
+    ds = archon.datastore.GameDatastore(
+        'demo/data',
+        archon.datastore.LazyCacheDatastore
+        )
+    save = archon.datastore.GameDatastore(
+        'demo/save',
+        archon.datastore.LazyCacheDatastore
+        )
     room = None
     player = save['player_template']
     interface = archon.interface.ConsoleInterface()
