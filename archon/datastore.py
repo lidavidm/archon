@@ -73,18 +73,13 @@ class LazyCacheDatastore(CacheDatastore):
         super(LazyCacheDatastore, self).add(key, item)
 
     def __getitem__(self, key):
-        subkey = None
         if '.' in key:
             key, subkey = key.split('.', 1)
-        if key not in self._cache:
-            raise KeyError(key)
+            return self[key][subkey]
         if not self._didLoad[key]:
             self._cache[key] = self._cache[key]()
             self._didLoad[key] = True
-        if subkey:
-            return super(LazyCacheDatastore, self).__getitem__(subkey)
-        else:
-            return super(LazyCacheDatastore, self).__getitem__(key)
+        return super(LazyCacheDatastore, self).__getitem__(key)
 
 
 class GameDatastore(Datastore):

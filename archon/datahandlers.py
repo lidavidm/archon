@@ -6,6 +6,7 @@ import archon.objects
 ENTITY_TYPE = 'entity'
 ROOM_TYPE = 'room'
 DATA_TYPE = 'data'
+SCRIPT_TYPE = 'script'
 JSON_DIFF_TYPE = 'jsondiff'  # TODO: structural diff of JSON for saves
 # Types dictate loading, kind denotes semantic data ("room" vs "indoors")
 
@@ -31,7 +32,7 @@ def jsonType(contents):
 
 @dataparser('.py')
 def pythonType(contents):
-    return {"type":"script", "data":contents}
+    return {"type": SCRIPT_TYPE, "data": contents}
 
 
 @dataloader(ENTITY_TYPE)
@@ -98,4 +99,10 @@ def data(key, data, cache):
     # Possibly look for "#reference(key)" strings and replace them so that
     # links to other data files can be made?
     cache.add(key, data)
+    return data
+
+
+@dataloader(SCRIPT_TYPE)
+def script(key, data, cache):
+    """Loads a Python script."""
     return data
