@@ -117,7 +117,7 @@ class Room(Entity):
             return None
 
         # find all entities for the identity specified
-        for key, entity in self.contents.iteritems():
+        for key, entity in self.contents.items():
             if entity[1] == crit[-1]:
                 matches.add(key)
         if matches:
@@ -125,7 +125,7 @@ class Room(Entity):
                 return matches.pop()  # only one match
             if len(crit) > 1:  # there's a prefix
                 prefix = text[:-len(crit[-1])].rstrip()  # get the prefix
-                for key, entity in self.contents.iteritems():
+                for key, entity in self.contents.items():
                     if entity[4] == prefix and entity[1] == crit[-1]:
                         return key  # prefix-identity should be unique
             return matches

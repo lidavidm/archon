@@ -39,7 +39,7 @@ def entity(key, data, cache):
     kind = data['kind']
     entity = archon.objects.Entity(key, kind)
     cache.add(key, entity)
-    for name, data in data['attributes'].iteritems():
+    for name, data in data['attributes'].items():
         entity.attributes[name] = data
     return entity
 
@@ -49,11 +49,11 @@ def room(key, data, cache):
     kind, description = data['kind'], data['describe']
     room = archon.objects.Room(key, kind, description, cache)
 
-    for name, val in data['attributes'].iteritems():
+    for name, val in data['attributes'].items():
         room.attributes[name] = val
 
     contents = []
-    for eKey, eData in data['contents'].iteritems():
+    for eKey, eData in data['contents'].items():
         entityInfo = {'identity': eKey}
         entityKind = eData['entity']
         del eData['entity']
@@ -61,14 +61,14 @@ def room(key, data, cache):
             eData['options'] = eData['options'].split(',')
         entityInfo.update(eData)
         contents.append((entityKind, eKey, entityInfo))
-    ids = [eInfo.get(u'identity', eKey) for _, eKey, eInfo in contents]
+    ids = [eInfo.get('identity', eKey) for _, eKey, eInfo in contents]
     for eKind, eKey, eInfo in contents:
         # identity (or key) is not unique, no prefix and the key collides
         # with an identity
         identity = eInfo.get('identity', eKey)
-        if u'prefix' not in eInfo and ids.count(identity) > 1:
+        if 'prefix' not in eInfo and ids.count(identity) > 1:
             # we need to generate a prefix
-            eInfo[u'prefix'] = (u'yet another ' *
+            eInfo['prefix'] = ('yet another ' *
                                (ids.count(identity) - 1)).strip()
 
     for eKind, eKey, eInfo in contents:
@@ -76,7 +76,7 @@ def room(key, data, cache):
 
     cache.add(key, room)
 
-    for direction, target in data['outputs'].iteritems():
+    for direction, target in data['outputs'].items():
         if target in cache:
             troom = cache[target]
         elif cache.root and target in cache.root:  # absolute lookup

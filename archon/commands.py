@@ -19,7 +19,7 @@ class command(archon.common.denoter):
 
     @classmethod
     def nearest(cls, name):
-        return difflib.get_close_matches(name, cls.functions.keys())
+        return difflib.get_close_matches(name, list(cls.functions.keys()))
 
 
 def find(output, context, player, *args):
@@ -66,7 +66,7 @@ def use(output, context, player, *args):
         # this is hardcoded since it's the only one supported now
         if function == 'script':
             script = context.entityCache.root[arguments[0]]
-            print script
+            print(script)
         else:
             output.error("It doesn't work.")
     else:
@@ -86,7 +86,7 @@ def test_entity_attrs(output, context, player, *args):
     else:
         entity = context.allContents[matches][0]
         entity = context.entityCache[entity]
-        for attr, val in entity.attributes.iteritems():
+        for attr, val in entity.attributes.items():
             output.display('{}: {}'.format(attr, val))
     return context
 
@@ -203,14 +203,14 @@ def trimDocstring(docstring):
     # and split into a list of lines:
     lines = docstring.expandtabs().splitlines()
     # Determine minimum indentation (first line doesn't count):
-    indent = sys.maxint
+    indent = sys.maxsize
     for line in lines[1:]:
         stripped = line.lstrip()
         if stripped:
             indent = min(indent, len(line) - len(stripped))
     # Remove indentation (first line is special):
     trimmed = [lines[0].strip()]
-    if indent < sys.maxint:
+    if indent < sys.maxsize:
         for line in lines[1:]:
             trimmed.append(line[indent:].rstrip())
     # Strip off trailing and leading blank lines:

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 
 import archon
@@ -31,7 +31,7 @@ if __name__ == '__main__':
         if choice == '0':
             room = ds['newGame.newGame']
         elif choice == '1':
-            print 'That is not supported at this time.'
+            print('That is not supported at this time.')
             sys.exit()
         elif choice == '2':
             sys.exit()

@@ -55,7 +55,7 @@ class Interface(object):
     def menu(self, choiceFormat, prompt, **choices):
         # XXX needs use-cases so that features can be added/removed
         for option, description in sorted(
-            choices.iteritems(),
+            iter(choices.items()),
             key=lambda x: x[0]):
             self.display(choiceFormat.format(option=option,
                                              description=description))
@@ -70,10 +70,10 @@ class Interface(object):
 
 class ConsoleInterface(Interface):
     def prompt(self, prompt):
-        return raw_input(prompt)
+        return input(prompt)
 
     def display(self, text):
-        print text
+        print(text)
 
     error = display
 

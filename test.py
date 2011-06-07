@@ -11,7 +11,7 @@ import archon.interface
 import archon.commands
 
 while True:
-    print 'Starting a new instance'
+    print('Starting a new instance')
     try:
         archon = reload(archon)
         # XXX replace this
@@ -32,8 +32,8 @@ while True:
 
         interface.repl(room, player, archon.commands.command)
     except (EOFError, SystemExit):
-        print 'Exiting testing loop'
+        print('Exiting testing loop')
         break
     except:
         traceback.print_exc()
-        raw_input('Press enter to continue')
+        input('Press enter to continue')
