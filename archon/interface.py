@@ -82,7 +82,7 @@ class ConsoleInterface(Interface):
         while True:
             try:
                 cmd = self.prompt('> ').split()
-                lastCommand = cmd[0]
+                lastCommand = cmd[0] if cmd else lastCommand
                 cmd, args = commands.get(cmd[0]), cmd[1:]
                 context = cmd(self, context, player, *args)
             except (KeyboardInterrupt, RestartError):

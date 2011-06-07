@@ -34,10 +34,6 @@ class EntityHook(collections.MutableMapping):
         """Override for custom behavior."""
         return self._attributes.__delitem__(key)
 
-    @property
-    def attributes(self):
-        return self._attributes
-
     @classmethod
     def get(cls, kind):
         if cls.KIND == kind:
@@ -55,7 +51,7 @@ class RoomEntityHook(EntityHook):
     KIND = "room"
     def __init__(self, entity):
         super(RoomEntityHook, self).__init__(entity)
-        self.attributes.update(
+        self._attributes.update(
             friendlyName=entity.name
             )
 
@@ -69,6 +65,37 @@ class Entity(object):
             self._attributes = kindhook(self)
         except EntityHookNotFoundError:
             self._attributes = {}
+
+    # no staticmethod() declaration needed! it causes problems anyways...
+    def override(func):
+        """
+        Decorator to replace a method with a hook's method upon first call.
+
+        A method decorated with this will be replaced by a function closure
+        that contains the original method. When this closure is called, it
+        will check to see if the class is using an entity kind hook. If
+        there is one, and the hook defines a method with the same name as
+        the decorated method, the hook's method will replace the closure and
+        be called. Otherwise, the original method will replace the closure
+        and be called.
+        """
+        funcname = func.__name__
+        def _proxy(self, *args, **kwargs):
+            if issubclass(self._attributes.__class__, EntityHook):
+                if hasattr(self._attributes, funcname):
+                    setattr(self, funcname,
+                            getattr(self._attributes, funcname))
+                else:
+                    setattr(self, func)
+            else:
+                setattr(self, func)
+            return getattr(self, func.__name__)(*args, **kwargs)
+        _proxy.__name__ = func.__name__
+        return _proxy
+
+    @override
+    def describe(self):
+        pass
 
     @property
     def attributes(self):
@@ -224,7 +251,3 @@ class UnionDict(dict):
             if key in dictionary:
                 return dictionary[key]
         raise KeyError(key)
-
-
-class Player(object):
-    pass

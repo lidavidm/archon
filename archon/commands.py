@@ -64,15 +64,26 @@ def use(output, context, player, *args):
         arguments = [ast.literal_eval(x.strip())
                      for x in arguments.split(',')]
         # this is hardcoded since it's the only one supported now
+        # currently, it simply runs the script with some globals
+        # in the future, an entity should specify what functions in the
+        # script should be run, e.g. function(script, functionName)
+        # idea: use function annotations to determine which argument
+        # represents which desired object
         if function == 'script':
             script = context.entityCache.root[arguments[0]]
-            print(script)
+            namespace = {'output': output,
+                         'context': context,
+                         'player': player}
+            script = compile(script, '<string>', 'exec')
+            try:
+                exec(script, namespace)
+            except:  # yes, everything
+                output.error("It doesn't work.")
         else:
             output.error("It doesn't work.")
     else:
         output.error("You can't use that.")
     return context
-
 
 
 @command('test.entity.attrs')
