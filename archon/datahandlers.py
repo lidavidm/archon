@@ -35,7 +35,7 @@ def pythonType(contents):
 
 
 @dataloader(ENTITY_TYPE)
-def entity(key, data, cache, superCache):
+def entity(key, data, cache):
     kind = data['kind']
     entity = archon.objects.Entity(key, kind)
     cache.add(key, entity)
@@ -45,7 +45,7 @@ def entity(key, data, cache, superCache):
 
 
 @dataloader(ROOM_TYPE)
-def room(key, data, cache, superCache):
+def room(key, data, cache):
     kind, description = data['kind'], data['describe']
     room = archon.objects.Room(key, kind, description, cache)
 
@@ -77,11 +77,10 @@ def room(key, data, cache, superCache):
     cache.add(key, room)
 
     for direction, target in data['outputs'].iteritems():
-        # cache, then supercache (relative, then absolute)
         if target in cache:
             troom = cache[target]
-        elif target in superCache:
-            troom = superCache[target]  # this won't actually work
+        elif cache.root and target in cache.root:  # absolute lookup
+            troom = cache.root[target]
         else:
             raise ValueError("Room {} not found!".format(target))
         room.add(
@@ -92,7 +91,7 @@ def room(key, data, cache, superCache):
 
 
 @dataloader(DATA_TYPE)
-def data(key, data, cache, superCache):
+def data(key, data, cache):
     """
     Loads unstructured JSON data, essentially.
     """

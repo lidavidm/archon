@@ -14,7 +14,7 @@ import archon.datahandlers
 # needed, though
 class Datastore(object):
 
-    def __init__(self, path):
+    def __init__(self, parent=None):
         pass
 
     def add(self, key, item):
@@ -27,20 +27,16 @@ class Datastore(object):
         pass
 
     @property
-    def rooms(self):
+    def root(self):
         pass
-
-    @property
-    def entities(self):
-        pass
-
 
 class CacheDatastore(Datastore):
     """
     Holds objects.
     """
-    def __init__(self):
+    def __init__(self, parent=None):
         self._cache = {}
+        self.parent = parent
 
     def add(self, key, item):
         self._cache[key] = item
@@ -57,10 +53,17 @@ class CacheDatastore(Datastore):
     def __contains__(self, key):
         return key in self._cache
 
+    @property
+    def root(self):
+        if self.parent:
+            return self.parent.root
+        else:
+            return self
+
 
 class LazyCacheDatastore(CacheDatastore):
-    def __init__(self):
-        super(LazyCacheDatastore, self).__init__()
+    def __init__(self, parent=None):
+        super(LazyCacheDatastore, self).__init__(parent)
         self._didLoad = collections.defaultdict(lambda: False)
 
     def add(self, key, item):
@@ -89,16 +92,14 @@ class GameDatastore(Datastore):
     A JSON and file-based datastore.
     """
 
-    def __init__(self, path, cache):
+    def __init__(self, path, cacheType, parent=None):
         self._path = os.path.abspath(path)
         self._name = os.path.basename(os.path.normpath(path))
         # normpath deals with trailing slash, basename gets directory name
-        if type(cache) == types.TypeType:  # top level
-            self._cache = self._superCache = cache()
-        else:
-            self._superCache = cache
-            self._cache = cache.__class__()
-            # don't add myself - my parent takes care of it
+        self.parent = parent
+        parentCache = None if parent is None else parent._cache
+        self._cache = cacheType(parentCache)
+        # don't add myself - my parent takes care of it
         for fname in os.listdir(self._path):
             fullpath = os.path.join(self._path, fname)
             if os.path.isfile(fullpath):
@@ -117,7 +118,7 @@ class GameDatastore(Datastore):
                                 self.load(key, data)
                             )
             elif os.path.isdir(fullpath):
-                child = self.__class__(fullpath, self._cache)
+                child = self.__class__(fullpath, cacheType, self)
                 self._cache.add(child.name, lambda: child)
 
     def load(self, key, data):
@@ -130,8 +131,7 @@ class GameDatastore(Datastore):
             obj = archon.datahandlers.dataloader.get(objtype)(
                 key,
                 objdata,
-                self._cache,
-                self._superCache
+                self._cache
                 )
             return obj
 
@@ -154,4 +154,8 @@ class GameDatastore(Datastore):
             return target
 
     def __contains__(self, key):
-        return os.path.exists(os.path.join(self._path, key + '.json'))
+        if '.' in key:
+            key, subkey = key.split('.', 1)
+            return key in self._cache and subkey in self._cache[key]
+        else:
+            return key in self._cache

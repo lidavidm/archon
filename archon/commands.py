@@ -1,4 +1,6 @@
+import re
 import sys
+import ast
 import difflib
 import collections
 
@@ -20,11 +22,57 @@ class command(archon.common.denoter):
         return difflib.get_close_matches(name, cls.functions.keys())
 
 
+def find(output, context, player, *args):
+    if ' '.join(args) in ('me', 'myself'):
+        return player
+    matches = context.naturalFind(' '.join(args))
+    if not matches:
+        output.error('No entity found.')
+    elif isinstance(matches, set):
+        output.error('Please be more specific.')
+    else:
+        entity = context.allContents[matches][0]
+        entity = context.entityCache[entity]
+        return entity
+    return None
+
+
 @command('test.restart')
 def test(output, context, player, *args):
     '''Restart the Archon session, if possible. This is a test command.'''
     output.restart()
     return context
+
+
+useFunctionRe = re.compile(
+    r'(?P<function>[a-zA-Z0-9]+)\((?P<arguments>[\S]+)\)'
+    )
+
+
+@command('use')
+def use(output, context, player, *args):
+    '''Use an object.'''
+    item = find(output, context, player, *args)
+    if not item or not 'use' in item.attributes:
+        output.error("You can't use that.")
+        return context
+    usage = item.attributes['use']
+    result = useFunctionRe.match(usage)
+    if result:
+        result = result.groupdict()
+        function, arguments = result['function'], result['arguments']
+        arguments = [ast.literal_eval(x.strip())
+                     for x in arguments.split(',')]
+        # this is hardcoded since it's the only one supported now
+        if function == 'script':
+            script = context.entityCache.root[arguments[0]]
+            print script
+        else:
+            output.error("It doesn't work.")
+    else:
+        output.error("You can't use that.")
+    return context
+
 
 
 @command('test.entity.attrs')
@@ -37,9 +85,7 @@ def test_entity_attrs(output, context, player, *args):
         output.error('Please be more specific.')
     else:
         entity = context.allContents[matches][0]
-        print context.entityCache._cache
         entity = context.entityCache[entity]
-        print entity
         for attr, val in entity.attributes.iteritems():
             output.display('{}: {}'.format(attr, val))
     return context
