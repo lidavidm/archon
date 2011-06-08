@@ -1,3 +1,4 @@
+import types
 import collections
 
 
@@ -52,7 +53,8 @@ class RoomEntityHook(EntityHook):
     def __init__(self, entity):
         super(RoomEntityHook, self).__init__(entity)
         self._attributes.update(
-            friendlyName=entity.name
+            friendlyName=entity.name,
+            time=0  # time is in minutes
             )
 
 
@@ -72,12 +74,11 @@ class Entity(object):
         Decorator to replace a method with a hook's method upon first call.
 
         A method decorated with this will be replaced by a function closure
-        that contains the original method. When this closure is called, it
-        will check to see if the class is using an entity kind hook. If
-        there is one, and the hook defines a method with the same name as
-        the decorated method, the hook's method will replace the closure and
-        be called. Otherwise, the original method will replace the closure
-        and be called.
+        containing the original method. When this closure is called, it will
+        check to see if the class has an entity kind hook. If there is one,
+        and the hook has a method with the same name as the decorated
+        method, the hook method will replace the closure and be called.
+        Else, the original method will replace the closure and be called.
         """
         funcname = func.__name__
         def _proxy(self, *args, **kwargs):
@@ -86,16 +87,19 @@ class Entity(object):
                     setattr(self, funcname,
                             getattr(self._attributes, funcname))
                 else:
-                    setattr(self, func)
+                    setattr(self, funcname, types.MethodType(func, self))
             else:
-                setattr(self, func)
+                setattr(self, funcname, types.MethodType(func, self))
             return getattr(self, func.__name__)(*args, **kwargs)
         _proxy.__name__ = func.__name__
         return _proxy
 
     @override
     def describe(self):
-        pass
+        if 'describe' in self.attributes:
+            return self.attributes['describe']
+        else:
+            return 'No description.'
 
     @property
     def attributes(self):
@@ -174,42 +178,42 @@ class Room(Entity):
         :param options: Options for the entity.
         """
         if entityKind is self.ROOM_ENTITY_KIND:
-            # key is direction, identity is
-            # the target
+            # key is direction, identity is the target
             self._outputs[key] = identity
         else:
-            if options is None:
-                options = []
+            options = [] if options is None else options
             self._contents[key] = EntityData(entityKind, identity,
                                    location, description, prefix, options)
 
     def remove(self, key):
         del self._contents[key]
 
-    def describe(self, key=None):
+    def describe(self, key=None, verbose=False):
         """
         Describe the specified object, or if not given, the room.
         """
         if key:
             entity = self.allContents[key]
-            beginning = ''
             if key in self.contents:
-                text = 'There is {prefix}{identity}{location}.'.format(
-                beginning=beginning,
-                prefix=entity[4] + ' ' if entity[4] else '',
-                identity=entity[1],
-                location=' ' + entity[2] if entity[2] else ''
-                ).strip()
-                if entity[3]:
-                    text = ' '.join([text, 'It is', entity[3] + '.'])
-                return text
+                if verbose:
+                    entity = self.entityCache[entity[0]]
+                    return entity.describe()
+                else:
+                    text = 'There is {prefix}{identity}{location}.'.format(
+                        prefix=entity[4] + ' ' if entity[4] else '',
+                        identity=entity[1],
+                        location=' ' + entity[2] if entity[2] else ''
+                        ).strip()
+                    if entity[3]:
+                        text = ' '.join([text, 'It is', entity[3] + '.'])
+                    return text
             elif key in self.outputs:
                 return 'You can go {}.'.format(key)
         else:
             return '\n'.join(
                 ['You are in ' + self._description] +
                 [self.describe(key) for key in sorted(self.contents)] +
-                [self.describe(key) for key in self.outputs])
+                [self.describe(key) for key in sorted(self.outputs)])
 
     def enter(self):
         pass

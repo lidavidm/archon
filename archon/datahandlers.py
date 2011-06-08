@@ -74,7 +74,6 @@ def room(key, data, cache):
 
     for eKind, eKey, eInfo in contents:
         room.add(eKind, eKey, **eInfo)
-
     cache.add(key, room)
 
     for direction, target in data['outputs'].items():

@@ -170,7 +170,7 @@ def describe(output, context, player, *args):
                     identity=edata[1]
                     ))
         else:
-            output.display(context.describe(matches))
+            output.display(context.describe(matches, verbose=True))
     else:
         output.display(context.describe())
     return context
