@@ -39,7 +39,6 @@ def pythonType(contents):
 def entity(key, data, cache):
     kind = data['kind']
     entity = archon.objects.Entity(key, kind)
-    cache.add(key, entity)
     for name, data in data['attributes'].items():
         entity.attributes[name] = data
     return entity
@@ -57,10 +56,10 @@ def room(key, data, cache):
     for eKey, eData in data['contents'].items():
         entityInfo = {'identity': eKey}
         entityKind = eData['entity']
-        del eData['entity']
         if 'options' in eData:
             eData['options'] = eData['options'].split(',')
         entityInfo.update(eData)
+        del entityInfo['entity']  # this key doesn't need to be there
         contents.append((entityKind, eKey, entityInfo))
     ids = [eInfo.get('identity', eKey) for _, eKey, eInfo in contents]
     for eKind, eKey, eInfo in contents:
@@ -74,6 +73,11 @@ def room(key, data, cache):
 
     for eKind, eKey, eInfo in contents:
         room.add(eKind, eKey, **eInfo)
+
+    # Unlike the others, this MUST be here to break circular references when
+    # loading rooms (although the thunk is present in the cache,
+    # dereferencing it will cause a loop where we continually reload the
+    # same room)
     cache.add(key, room)
 
     for direction, target in data['outputs'].items():
@@ -97,7 +101,6 @@ def data(key, data, cache):
     """
     # Possibly look for "#reference(key)" strings and replace them so that
     # links to other data files can be made?
-    cache.add(key, data)
     return data
 
 
