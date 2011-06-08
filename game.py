@@ -35,5 +35,6 @@ if __name__ == '__main__':
             sys.exit()
         elif choice == '2':
             sys.exit()
+        room.enter(0)
         interface.repl(room, player, archon.commands.command)
 

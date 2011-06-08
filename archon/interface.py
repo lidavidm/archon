@@ -79,9 +79,13 @@ class ConsoleInterface(Interface):
 
     def repl(self, context, player, commands):
         lastCommand = ''
+        prompt = '{time}> '
         while True:
             try:
-                cmd = self.prompt('> ').split()
+                promptString = prompt.format(
+                    time=context.attributes['timeString']
+                    )
+                cmd = self.prompt(promptString).split()
                 lastCommand = cmd[0] if cmd else lastCommand
                 cmd, args = commands.get(cmd[0]), cmd[1:]
                 context = cmd(self, context, player, *args)

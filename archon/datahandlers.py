@@ -107,4 +107,4 @@ def data(key, data, cache):
 @dataloader(SCRIPT_TYPE)
 def script(key, data, cache):
     """Loads a Python script."""
-    return data
+    return compile(data, '<string>', 'exec')

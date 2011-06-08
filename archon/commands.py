@@ -74,9 +74,10 @@ def use(output, context, player, *args):
             namespace = {'output': output,
                          'context': context,
                          'player': player}
-            script = compile(script, '<string>', 'exec')
             try:
                 exec(script, namespace)
+                if 'elapsedTime' in namespace:
+                    context.attributes['time'] += namespace['elapsedTime']
             except:  # yes, everything
                 output.error("It doesn't work.")
         else:
@@ -108,8 +109,7 @@ def go(output, context, player, *args):
     direction = args[0]  # XXX multiword directions?
     target = context.outputs.get(direction)
     if target:
-        context.exit()
-        target.enter()
+        target.enter(context.exit())
         return command.get('describe')(output, target, player)
     else:
         output.error("You can't go that way.")
@@ -137,8 +137,7 @@ def enter(output, context, player, *args):
                 if output.question(
                     "Go to {}?".format(target.attributes['friendlyName'])
                     ):
-                    context.exit()
-                    target.enter()
+                    target.enter(context.exit())
                     return command.get('describe')(output, target, player)
     return context  # we failed teleporting
 
@@ -199,6 +198,7 @@ def help(output, context, player, *args):
                 output.display('Did you mean: {}'.format(close[0]))
     else:
         output.display(STRING_HELP)
+    return context
 
 
 def trimDocstring(docstring):
@@ -235,5 +235,6 @@ def trimDocstring(docstring):
 
 STRING_HELP = '''
 Welcome to the Archon demo. Type 'help [name]' for help on a specific
-command or topic.
+command or topic. If you're just starting, try 'describe' to see what your
+area is like.
 '''

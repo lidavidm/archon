@@ -24,8 +24,12 @@ class EntityHook(collections.MutableMapping):
         return key in self._attributes
 
     def __getitem__(self, key):
-        """Override for custom behavior. """
-        return self._attributes.__getitem__(key)
+        """Override for custom behavior."""
+        item = self._attributes.__getitem__(key)
+        if hasattr(item, '_dynamicProperty') and item._dynamicProperty:
+            return item()
+        else:
+            return item
 
     def __setitem__(self, key, value):
         """Override for custom behavior."""
@@ -47,14 +51,30 @@ class EntityHook(collections.MutableMapping):
                     continue
         raise EntityHookNotFoundError(kind)
 
+    @property
+    def attributes(self):
+        return self._attributes
+
+    def dynamicproperty(func):
+        func._dynamicProperty = True
+        return func
+
 
 class RoomEntityHook(EntityHook):
     KIND = "room"
     def __init__(self, entity):
         super(RoomEntityHook, self).__init__(entity)
-        self._attributes.update(
+        self.attributes.update(
             friendlyName=entity.name,
-            time=0  # time is in minutes
+            time=0,  # time is in minutes
+            timeString=self.formatTime
+            )
+
+    @EntityHook.dynamicproperty
+    def formatTime(self):
+        return '{hour}:{minute}'.format(
+            hour=self.attributes['time'] // 60,
+            minute=self.attributes['time'] % 60
             )
 
 
@@ -215,11 +235,11 @@ class Room(Entity):
                 [self.describe(key) for key in sorted(self.contents)] +
                 [self.describe(key) for key in sorted(self.outputs)])
 
-    def enter(self):
-        pass
+    def enter(self, elapsedTime):
+        self.attributes['time'] = elapsedTime
 
     def exit(self):
-        pass
+        return self.attributes['time']
 
     @property
     def entityCache(self):

@@ -8,8 +8,11 @@ player["character"].update(
     gender=gender,
     description=description
     )
+context.outputs['on'] = context.entityCache.root['room']
+del context.contents['customizer']
 output.display(
     'Welcome, {name}, to the demo. Try `go on` to continue.'.format(
         name=name
         )
     )
+elapsedTime = 20
