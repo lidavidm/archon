@@ -1,11 +1,19 @@
 {
-    "type": "data",
+    "type": "entity",
     "data": {
-        "inventory": [],
-        "character": {
-            "name": "",
-            "description": "",
-            "attributes": {}
+        "kind": "player",
+        "attributes":{
+            "inventory": [],
+            "character": {
+                "name": "",
+                "description": "",
+                "gender": "",
+                "acumen": {
+                    "physical": 0,
+                    "mental": 0,
+                    "spiritual": 0
+                }
+            }
         }
     }
 }

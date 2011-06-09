@@ -78,6 +78,22 @@ class RoomEntityHook(EntityHook):
             )
 
 
+class PlayerEntityHook(EntityHook):
+    KIND = "player"
+    @property
+    def character(self):
+        return self.attributes['character']
+
+    @property
+    def acumen(self):
+        return self.character['acumen']
+
+    def describe(self):
+        return 'You are {name}, a {gender}: {description}'.format(
+            **self.character
+              )
+
+
 class Entity(object):
     def __init__(self, name, kind):
         self.name = name

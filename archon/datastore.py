@@ -30,56 +30,9 @@ class Datastore(object):
     def root(self):
         pass
 
-class CacheDatastore(Datastore):
-    """
-    Holds objects.
-    """
-    def __init__(self, parent=None):
-        self._cache = {}
-        self.parent = parent
-
-    def add(self, key, item):
-        self._cache[key] = item
-
-    def remove(self, key):
-        del self._cache[key]
-
-    def __getitem__(self, key):
-        if '.' in key:
-            key, subkey = key.split('.', 1)
-            return self._cache[key][subkey]
-        return self._cache[key]
-
-    def __contains__(self, key):
-        return key in self._cache
-
-    @property
-    def root(self):
-        if self.parent:
-            return self.parent.root
-        else:
-            return self
 
 
-class LazyCacheDatastore(CacheDatastore):
-    def __init__(self, parent=None):
-        super(LazyCacheDatastore, self).__init__(parent)
-        self._didLoad = collections.defaultdict(lambda: False)
 
-    def add(self, key, item):
-        if not type(item) in (types.FunctionType, types.MethodType):
-            # Strict add
-            self._didLoad[key] = True
-        super(LazyCacheDatastore, self).add(key, item)
-
-    def __getitem__(self, key):
-        if '.' in key:
-            key, subkey = key.split('.', 1)
-            return self[key][subkey]
-        if not self._didLoad[key]:
-            self._cache[key] = self._cache[key]()
-            self._didLoad[key] = True
-        return super(LazyCacheDatastore, self).__getitem__(key)
 
 
 class GameDatastore(Datastore):
@@ -87,13 +40,13 @@ class GameDatastore(Datastore):
     A JSON and file-based datastore.
     """
 
-    def __init__(self, path, cacheType, parent=None):
+    def __init__(self, path, parent=None):
         self._path = os.path.abspath(path)
         self._name = os.path.basename(os.path.normpath(path))
         # normpath deals with trailing slash, basename gets directory name
         self.parent = parent
-        parentCache = None if parent is None else parent._cache
-        self._cache = cacheType(parentCache)
+        self._cache = {}
+        self._didLoad = collections.defaultdict(lambda: False)
         # don't add myself - my parent takes care of it
         for fname in os.listdir(self._path):
             fullpath = os.path.join(self._path, fname)
@@ -102,19 +55,17 @@ class GameDatastore(Datastore):
                 if archon.datahandlers.dataparser.contains(ext):
                     loader = archon.datahandlers.dataparser.get(ext)
                     data = loader(open(fullpath).read())
-                    if data is None:
-                        continue
-                    elif archon.datahandlers.dataloader.contains(
+                    if data and archon.datahandlers.dataloader.contains(
                         data['type']
-                    ):
-                        self._cache.add(
+                        ):
+                        self.add(
                             entityID,
                             lambda key=entityID, data=data:
-                                self.load(key, data)
-                            )
+                                self.load(key, data))
             elif os.path.isdir(fullpath):
-                child = self.__class__(fullpath, cacheType, self)
-                self._cache.add(child.name, lambda: child)
+                child = self.__class__(fullpath, self)
+                self.add(child.name,
+                         lambda child=child: child)
 
     def load(self, key, data):
         """
@@ -126,31 +77,42 @@ class GameDatastore(Datastore):
             obj = archon.datahandlers.dataloader.get(objtype)(
                 key,
                 objdata,
-                self._cache
+                self
                 )
             return obj
+
+    def add(self, key, item):
+        if not type(item) in (types.FunctionType, types.MethodType):
+            self._didLoad[key] = True  # Strict add
+        self._cache[key] = item
+
+    def remove(self, key):
+        del self._cache[key]
 
     @property
     def name(self):
         return self._name
 
-    def __getitem__(self, key, subkey=None):
+    @property
+    def root(self):
+        if self.parent:
+            return self.parent.root
+        else:
+            return self
+
+    def __getitem__(self, key):
         if '.' in key:
             key, subkey = key.split('.', 1)
-            return self.__getitem__(key, subkey)
-        target = None
-        if key in self._cache:
-            target = self._cache[key]
+            return self[key][subkey]
         else:
-            raise KeyError(key)
-        if subkey:
-            return target[subkey]
-        else:
-            return target
+            if not self._didLoad[key]:
+                self._cache[key] = self._cache[key]()
+                self._didLoad[key] = True
+            return self._cache[key]
 
     def __contains__(self, key):
         if '.' in key:
             key, subkey = key.split('.', 1)
-            return key in self._cache and subkey in self._cache[key]
+            return key in self._cache and subkey in self[key]
         else:
             return key in self._cache

@@ -1,7 +1,7 @@
 {
     "type": "entity",
     "data": {
-        "kind": "object",
+        "kind": "door",
         "attributes":{
             "describe": "A door."
         }

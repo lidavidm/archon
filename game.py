@@ -11,12 +11,10 @@ import archon.commands
 
 if __name__ == '__main__':
     ds = archon.datastore.GameDatastore(
-        'demo/data',
-        archon.datastore.LazyCacheDatastore
+        'demo/data'
         )
     save = archon.datastore.GameDatastore(
-        'demo/save',
-        archon.datastore.LazyCacheDatastore
+        'demo/save'
         )
     room = None
     player = save['player_template']

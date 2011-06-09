@@ -154,7 +154,7 @@ def describe(output, context, player, *args):
     '''Describe the current room or the specified object.'''
     if args:
         if args[0].lower() in ('me', 'myself'):
-            output.display(player['character']['description'])
+            output.display(player.describe())
             return context
         matches = context.naturalFind(' '.join(args))
         if not matches:
