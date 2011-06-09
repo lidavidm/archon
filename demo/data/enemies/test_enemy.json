@@ -1,0 +1,17 @@
+{
+    "type": "entity",
+    "data": {
+        "kind": "enemy",
+        "attributes":{
+            "name": "Imp (Tester)",
+            "description": "An imp, designed for your testing pleasure.",
+            "acumen":{
+                "physical": 15,
+                "mental": 22,
+                "spiritual": -10
+            },
+            "stats":{
+            }
+        }
+    }
+}

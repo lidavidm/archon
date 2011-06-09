@@ -13,6 +13,16 @@
                     "mental": 0,
                     "spiritual": 0
                 }
+            },
+            "stats":{
+                "physical":{
+                    "success": 0,
+                    "evade": 0,
+                    "absorb": 0,
+                    "fatigue": 0,
+                    "drain": 0,
+                    "cooldown": 0
+                }
             }
         }
     }

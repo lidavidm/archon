@@ -13,7 +13,7 @@ class Interface(object):
     Ideally there should be default implementations so that only display,
     restart, and prompt need be implemented (and perhaps repl).
     """
-    def __init__(self, questionYes=('y', 'yes'), questionNo=None):
+    def __init__(self, questionYes=('y', 'yes'), questionNo=('n', 'no')):
         self.questionYes = questionYes
         self.questionNo = questionNo
 

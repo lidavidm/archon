@@ -1,0 +1,27 @@
+Acumen: Physical, Mental, Spiritual
+
+        Physical: Guides physical attacks/skills, such as melee, ranged,
+        etc.
+
+        Mental: Guides mental attacks/skills, such as magic, enchanting
+
+        Spiritual: Guides summoning, prayer, enchanting (negative = "evil"
+        magic, etc.)
+
+Stats: Success, absorb, evade, fatigue, drain, cooldown
+
+       Success: Percent-of-success multiplier
+
+       Absorb: Damage-absorbed multiplier
+
+       Evade: Evade-chance multiplier
+
+       Fatigue: Fatigue-gained multiplier
+
+       Drain: AP-drain multiplier
+
+       Cooldown: Cooldown multiplier
+
+Stats are based on acumen (physical drain, spiritual evade). When acumen for
+a particular trait increases, the stats of that trait increase by a random
+amount as well.
