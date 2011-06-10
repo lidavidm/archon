@@ -10,11 +10,16 @@ import archon.interface
 import archon.commands
 
 if __name__ == '__main__':
-    ds = archon.datastore.GameDatastore('demo/data')
-    save = archon.datastore.GameDatastore('demo/save')
+    ds = archon.datastore.GameDatastore('demo')
+    data = ds['data']
+    save = ds['save']
+    print(save._cache, save._path, save._name)
     room = None
-    player = save['player_template']
+    template = save['player_template']
+    player = template.copy()
     interface = archon.interface.ConsoleInterface()
+
+    archon.objects.PlayerEntityHook.template = template
     while True:
         interface.display('Welcome to the demo.')
         interface.display('Choose an option:')
@@ -23,7 +28,7 @@ if __name__ == '__main__':
                                 '1': 'Load Game',
                                 '2': 'Exit'})
         if choice == '0':
-            room = ds['newGame.newGame']
+            room = data['newGame.newGame']
         elif choice == '1':
             print('That is not supported at this time.')
             sys.exit()

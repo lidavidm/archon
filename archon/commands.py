@@ -70,7 +70,7 @@ def use(output, context, player, *args):
         # idea: use function annotations to determine which argument
         # represents which desired object
         if function == 'script':
-            script = context.entityCache.root[arguments[0]]
+            script = context.entityCache[arguments[0]]
             namespace = {'output': output,
                          'context': context,
                          'player': player}

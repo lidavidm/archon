@@ -15,13 +15,13 @@
                 }
             },
             "stats":{
-                "physical":{
-                    "success": 0,
-                    "evade": 0,
-                    "absorb": 0,
-                    "fatigue": 0,
-                    "drain": 0,
-                    "cooldown": 0
+                "template":{
+                    "success": "increasing",
+                    "evade": "increasing",
+                    "absorb": "increasing",
+                    "fatigue": "decreasing",
+                    "drain": "decreasing",
+                    "cooldown": "decreasing"
                 }
             }
         }

@@ -22,14 +22,21 @@ for tries in range(3):
     for trait in acumen:
         acumen[trait] = random.randint(10, 40)
     output.display('Try #{}'.format(tries + 1))
+    player.attributes.acumen.update(acumen)
+    stats = player.attributes.stats
     for trait in sorted(acumen):
         output.display('{trait}: {value}'.format(
                 trait=trait, value=acumen[trait]
                 ))
+        for stat in sorted(stats[trait]):
+            format = '  {stat}: {value[0]:.2} to {value[1]:.2} multiplier'
+            output.display(format.format(
+                    stat=stat, value=stats[trait][stat]
+                    ))
     if tries != 2 and output.question('Accept? '):
         break
-player.attributes.acumen.update(acumen)
-context.outputs['on'] = context.entityCache.root['room']
+
+context.outputs['on'] = context.entityCache.root['data.room']
 del context.contents['customizer']
 output.display(
     'Welcome, {name}, to the demo. Try `go on` to continue.'.format(

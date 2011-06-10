@@ -1,3 +1,4 @@
+import math
 import types
 import collections
 
@@ -12,6 +13,7 @@ class EntityHook(collections.MutableMapping):
     KIND = ''
 
     def __init__(self, entity):
+        self.entity = entity
         self._attributes = {}
 
     def __len__(self):
@@ -38,6 +40,9 @@ class EntityHook(collections.MutableMapping):
     def __delitem__(self, key):
         """Override for custom behavior."""
         return self._attributes.__delitem__(key)
+
+    def copy(self):
+        return self._attributes.copy()
 
     @classmethod
     def get(cls, kind):
@@ -82,6 +87,20 @@ class RoomEntityHook(EntityHook):
 class PlayerEntityHook(EntityHook):
     KIND = "player"
 
+    template = None
+    equations = {
+        "increasing": {
+            "equation": lambda x: 1 / (1 + math.exp(-x)),
+            "variance": (-0.1, 0.1),
+            "scale": 0.02
+            },
+        "decreasing": {
+            "equation": lambda x: 1 / math.exp(x),
+            "variance": (-0.1, 0.1),
+            "scale": 0.02
+            }
+        }
+
     @property
     def character(self):
         return self.attributes['character']
@@ -89,6 +108,18 @@ class PlayerEntityHook(EntityHook):
     @property
     def acumen(self):
         return self.character['acumen']
+
+    @property
+    def stats(self):
+        allStats = collections.defaultdict(dict)
+        template = PlayerEntityHook.template.attributes['stats']['template']
+        for acumenName, acumenSkill in self.acumen.items():
+            for statName, statType in template.items():
+                eqData = PlayerEntityHook.equations[statType]
+                baseStat = eqData['equation'](acumenSkill * eqData['scale'])
+                allStats[acumenName][statName] = [baseStat * (1 + v) for v
+                                                  in eqData['variance']]
+        return allStats
 
     def describe(self):
         return 'You are {name}, a {gender}: {description}'.format(
@@ -105,6 +136,11 @@ class Entity(object):
             self._attributes = kindhook(self)
         except EntityHookNotFoundError:
             self._attributes = {}
+
+    def copy(self):
+        copy = Entity(self.name, self.kind)
+        copy.attributes = self.attributes.copy()
+        return copy
 
     # no staticmethod() declaration needed! it causes problems anyways...
     def override(func):
