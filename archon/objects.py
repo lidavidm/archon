@@ -2,7 +2,7 @@ import types
 import collections
 
 
-class EntityHookNotFoundError(Exception):pass
+class EntityHookNotFoundError(Exception): pass
 
 
 class EntityHook(collections.MutableMapping):
@@ -62,6 +62,7 @@ class EntityHook(collections.MutableMapping):
 
 class RoomEntityHook(EntityHook):
     KIND = "room"
+
     def __init__(self, entity):
         super(RoomEntityHook, self).__init__(entity)
         self.attributes.update(
@@ -80,6 +81,7 @@ class RoomEntityHook(EntityHook):
 
 class PlayerEntityHook(EntityHook):
     KIND = "player"
+
     @property
     def character(self):
         return self.attributes['character']
@@ -117,6 +119,7 @@ class Entity(object):
         Else, the original method will replace the closure and be called.
         """
         funcname = func.__name__
+
         def _proxy(self, *args, **kwargs):
             if issubclass(self._attributes.__class__, EntityHook):
                 if hasattr(self._attributes, funcname):

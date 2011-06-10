@@ -26,14 +26,16 @@ class Interface(object):
             separator = ' ' if question.endswith(' ') else ''
             question = separator.join([
                     question,
-                    '['+(', '.join(self.questionYes))+']',
-                    '['+(', '.join(self.questionNo))+']'
+                    '[' + (', '.join(self.questionYes)) + ']',
+                    '[' + (', '.join(self.questionNo)) + ']'
                     ])
         res = self.prompt(question).strip().lower()
         if self.questionYes and res in self.questionYes:
             return True
         elif self.questionNo and res in self.questionNo:
             return False
+        elif self.questionYes and self.questionNo:
+            return self.question(question, annotate=False)
         else:
             # If there is no yes-answer list, and the result is not in the
             # no-answer list, then this returns False (anything not negative

@@ -31,10 +31,6 @@ class Datastore(object):
         pass
 
 
-
-
-
-
 class GameDatastore(Datastore):
     """
     A JSON and file-based datastore.
