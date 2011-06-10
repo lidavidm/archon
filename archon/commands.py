@@ -87,22 +87,6 @@ def use(output, context, player, *args):
     return context
 
 
-@command('test.entity.attrs')
-def test_entity_attrs(output, context, player, *args):
-    '''List the attributes of an entity. This is a test command.'''
-    matches = context.naturalFind(' '.join(args))
-    if not matches:
-        output.error('No entity found.')
-    elif isinstance(matches, set):
-        output.error('Please be more specific.')
-    else:
-        entity = context.allContents[matches][0]
-        entity = context.entityCache[entity]
-        for attr, val in entity.attributes.items():
-            output.display('{}: {}'.format(attr, val))
-    return context
-
-
 @command('go')
 def go(output, context, player, *args):
     '''Go in the specified direction.'''
@@ -187,9 +171,7 @@ def help(output, context, player, *args):
     if args:
         try:
             output.display(
-                trimDocstring(
-                    command.get(args[0]).__doc__
-                    )
+                trimDocstring(command.get(args[0]).__doc__)
                 )
         except CommandNotFoundError:
             output.error('Command {} not found!'.format(args[0]))

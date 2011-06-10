@@ -10,12 +10,8 @@ import archon.interface
 import archon.commands
 
 if __name__ == '__main__':
-    ds = archon.datastore.GameDatastore(
-        'demo/data'
-        )
-    save = archon.datastore.GameDatastore(
-        'demo/save'
-        )
+    ds = archon.datastore.GameDatastore('demo/data')
+    save = archon.datastore.GameDatastore('demo/save')
     room = None
     player = save['player_template']
     interface = archon.interface.ConsoleInterface()

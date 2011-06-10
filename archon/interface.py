@@ -20,8 +20,15 @@ class Interface(object):
     def prompt(self, prompt):
         pass
 
-    def question(self, question):
+    def question(self, question, annotate=True):
         # TODO display input choices to player
+        if annotate:
+            separator = ' ' if question.endswith(' ') else ''
+            question = separator.join([
+                    question,
+                    '['+(', '.join(self.questionYes))+']',
+                    '['+(', '.join(self.questionNo))+']'
+                    ])
         res = self.prompt(question).strip().lower()
         if self.questionYes and res in self.questionYes:
             return True
