@@ -1,5 +1,6 @@
 import math
 import types
+import datetime
 import collections
 
 
@@ -41,6 +42,13 @@ class EntityHook(collections.MutableMapping):
         """Override for custom behavior."""
         return self._attributes.__delitem__(key)
 
+    def __repr__(self):
+        return '{clsname}: Hook for kind {kind}, attributes {attrs}'.format(
+            clsname=self.__class__.__name__,
+            kind=self.__class__.KIND,
+            attrs=self.attributes
+            )
+
     def copy(self):
         return self._attributes.copy()
 
@@ -72,16 +80,13 @@ class RoomEntityHook(EntityHook):
         super(RoomEntityHook, self).__init__(entity)
         self.attributes.update(
             friendlyName=entity.name,
-            time=0,  # time is in minutes
+            time=datetime.datetime(1000, 1, 1),
             timeString=self.formatTime
             )
 
     @EntityHook.dynamicproperty
     def formatTime(self):
-        return '{hour}:{minute}'.format(
-            hour=self.attributes['time'] // 60,
-            minute=self.attributes['time'] % 60
-            )
+        return self.attributes['time'].strftime('%a, %b %d %H:%M')
 
 
 class PlayerEntityHook(EntityHook):

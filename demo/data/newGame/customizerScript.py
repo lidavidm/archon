@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import random
+import datetime
 
 output.display('Welcome to the customization routine.')
 name = output.prompt('Name? ')
@@ -43,4 +44,4 @@ output.display(
         name=name
         )
     )
-elapsedTime = 20
+elapsedTime = datetime.timedelta(minutes=20)

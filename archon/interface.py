@@ -27,7 +27,8 @@ class Interface(object):
             question = separator.join([
                     question,
                     '[' + (', '.join(self.questionYes)) + ']',
-                    '[' + (', '.join(self.questionNo)) + ']'
+                    '[' + (', '.join(self.questionNo)) + ']',
+                    ''
                     ])
         res = self.prompt(question).strip().lower()
         if self.questionYes and res in self.questionYes:

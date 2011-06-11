@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+import datetime
 
 import archon
 import archon.common
@@ -34,5 +35,5 @@ if __name__ == '__main__':
             sys.exit()
         elif choice == '2':
             sys.exit()
-        room.enter(0)
+        room.enter(datetime.datetime(1000, 1, 1, 12, 0))
         interface.repl(room, player, archon.commands.command)
