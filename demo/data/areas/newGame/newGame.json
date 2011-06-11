@@ -8,7 +8,7 @@
         "kind": "indoors",
         "contents": {
             "customizer": {
-                "entity": "customizer",
+                "entity": "data.items.customizer",
                 "prefix": "a",
                 "description": "something you should `use` right now"
             }

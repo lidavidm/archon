@@ -37,7 +37,7 @@ for tries in range(3):
     if tries != 2 and output.question('Accept? '):
         break
 
-context.outputs['on'] = context.entityCache.root['data.room']
+context.outputs['on'] = context.entityCache.root['data.areas.room']
 del context.contents['customizer']
 output.display(
     'Welcome, {name}, to the demo. Try `go on` to continue.'.format(

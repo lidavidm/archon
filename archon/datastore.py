@@ -96,8 +96,17 @@ class GameDatastore(Datastore):
         else:
             return self
 
+    def lookup(self, key):
+        """Convenience function: try relative, then absolute."""
+        if key in self:
+            return self[key]
+        else:
+            return self.root[key]
+
     def __getitem__(self, key):
-        if '.' in key:
+        if key.startswith('.'):  # absolute lookup
+            return self.root[key[1:]]
+        elif '.' in key:
             key, subkey = key.split('.', 1)
             return self[key][subkey]
         else:

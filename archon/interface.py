@@ -13,9 +13,13 @@ class Interface(object):
     Ideally there should be default implementations so that only display,
     restart, and prompt need be implemented (and perhaps repl).
     """
-    def __init__(self, questionYes=('y', 'yes'), questionNo=('n', 'no')):
+    def __init__(self,
+                 permissions={'debug': False},
+                 questionYes=('y', 'yes'),
+                 questionNo=('n', 'no')):
         self.questionYes = questionYes
         self.questionNo = questionNo
+        self.permissions = permissions
 
     def prompt(self, prompt):
         pass
@@ -40,10 +44,7 @@ class Interface(object):
         else:
             # If there is no yes-answer list, and the result is not in the
             # no-answer list, then this returns False (anything not negative
-            # is True)
-            # If there is no no-answer list, and the result is not in the
-            # yes-answer list, then this returns True (anything not
-            # affirmative is False)
+            # is True); similar for no no-answer list
             return bool(self.questionYes)
 
     def display(self, text):

@@ -276,7 +276,7 @@ class Room(Entity):
             entity = self.allContents[key]
             if key in self.contents:
                 if verbose:
-                    entity = self.entityCache[entity[0]]
+                    entity = self.entityCache.lookup(entity[0])
                     return entity.describe()
                 else:
                     text = 'There is {prefix}{identity}{location}.'.format(

@@ -8,18 +8,18 @@
         "kind": "indoors",
         "contents": {
             "thing": {
-                "entity": "test_object",
+                "entity": "data.items.test_object",
                 "location": "in the northwest corner",
                 "description": "interesting"
             },
             "thing2": {
-                "entity": "test_object",
+                "entity": "data.items.test_object",
                 "location": "in the south",
                 "prefix": "a",
                 "identity": "thing"
             },
             "door": {
-                "entity":"door",
+                "entity": "data.items.door",
                 "location": "to the north",
                 "options": "one-way,to:room2",
                 "prefix": "a"}

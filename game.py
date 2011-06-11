@@ -18,8 +18,9 @@ if __name__ == '__main__':
     room = None
     template = save['player_template']
     player = template.copy()
-    interface = archon.interface.ConsoleInterface()
-
+    interface = archon.interface.ConsoleInterface(
+        permissions={'debug': True}
+        )
     archon.objects.PlayerEntityHook.template = template
     while True:
         interface.display('Welcome to the demo.')
@@ -29,7 +30,7 @@ if __name__ == '__main__':
                                 '1': 'Load Game',
                                 '2': 'Exit'})
         if choice == '0':
-            room = data['newGame.newGame']
+            room = data['areas.newGame.newGame']
         elif choice == '1':
             print('That is not supported at this time.')
             sys.exit()

@@ -2,6 +2,7 @@ import re
 import sys
 import ast
 import difflib
+import traceback
 import collections
 
 import archon.common
@@ -32,7 +33,12 @@ def find(output, context, player, *args):
         output.error('Please be more specific.')
     else:
         entity = context.allContents[matches][0]
-        entity = context.entityCache[entity]
+        if entity in context.entityCache:
+            entity = context.entityCache[entity]
+        elif entity in context.entityCache.root:
+            entity = context.entityCache.root[entity]
+        else:
+            raise KeyError(entity)
         return entity
     return None
 
@@ -80,6 +86,8 @@ def use(output, context, player, *args):
                     context.attributes['time'] += namespace['elapsedTime']
             except:  # yes, everything
                 output.error("It doesn't work.")
+                if output.permissions.get('debug', False):
+                    output.error(traceback.format_exc())
         else:
             output.error("It doesn't work.")
     else:

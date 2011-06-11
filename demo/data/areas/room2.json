@@ -8,7 +8,7 @@
         },
         "contents": {
             "thing": {
-                "entity": "test_object",
+                "entity": "data.items.test_object",
                 "prefix": "a"
             }
         },

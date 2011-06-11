@@ -4,7 +4,7 @@
         "kind": "object",
         "attributes":{
             "describe": "Customizes your character.",
-            "use": "script('customizerScript')"
+            "use": "script('.data.scripts.customizerScript')"
         }
     }
 }
