@@ -72,6 +72,18 @@ def findInventory(output, context, player, *args):
         raise output.error("Item not found.")
 
 
+def findEquip(output, context, player, *args):
+    if not args:
+        return []
+    criterion = ' '.join(args)
+    for slot, item in player.attributes.equip.items():
+        if criterion in (slot, item.friendlyName):
+            player.attributes.equip[slot] = None
+            output.display('Unequipped item {} from {}'.format(
+                    item.friendlyName, slot))
+
+
+
 @command('inventory')
 def inventory(output, context, player, *args):
     output.display(
@@ -79,17 +91,21 @@ def inventory(output, context, player, *args):
             length=len(player.attributes.inventory)
             ))
     for item in sorted(player.attributes.inventory,
-                       key=lambda k:k.friendlyName):
+                       key=lambda k: k.friendlyName):
         output.display(item.friendlyName)
     return context
 
 
 @command('equip')
-def equip(output, context, player, *args:findInventory):
+def equip(output, context, player, *args: findInventory):
     if not args:
         for slot, item in player.attributes.equip.items():
+            if item is None:
+                item = '<Empty>'
+            else:
+                item=item.friendlyName
             output.display('{slot}: {item}'.format(
-                    slot=slot, item=item.friendlyName
+                    slot=slot, item=item
                     ))
     else:
         args = args[0]
@@ -106,6 +122,11 @@ def equip(output, context, player, *args:findInventory):
                     equip[slot] = args
                     break
             equip[possibleSlots[0]] = args
+
+
+@command('unequip')
+def unequip(output, context, player, *args: findEquip):
+    args = args[0]
 
 
 @command('test.restart')
