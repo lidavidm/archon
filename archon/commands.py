@@ -1,6 +1,7 @@
 import re
 import sys
 import ast
+import inspect
 import difflib
 import traceback
 import collections
@@ -14,6 +15,21 @@ class command(archon.common.denoter):
     """
     commandData = collections.defaultdict(None)
 
+    def __call__(self, func):
+        def closure(output, context, player, *args):
+            argspec = inspect.getfullargspec(func)
+            if argspec.varargs in argspec.annotations:
+                args = argspec.annotations[argspec.varargs](
+                    output, context, player, *args
+                    )
+            res = func(output, context, player, *args)
+            if not res:
+                res = context
+            return res
+
+        closure.__name__ = func.__name__
+        return super().__call__(closure)
+
     @property
     def data(self):
         return self.__class__.commandData[self.names[0]]
@@ -23,9 +39,9 @@ class command(archon.common.denoter):
         return difflib.get_close_matches(name, list(cls.functions.keys()))
 
 
-def find(output, context, player, *args, get='entity'):
+def find(output, context, player, *args):
     if ' '.join(args) in ('me', 'myself'):
-        return player
+        return [player]
     matches = context.naturalFind(' '.join(args))
     if not matches:
         output.error('No entity found.')
@@ -33,13 +49,8 @@ def find(output, context, player, *args, get='entity'):
         output.error('Please be more specific.')
     else:
         entity = context.allContents[matches]
-        if get == 'entity':
-            return context.entityCache.lookup(entity[0])
-        elif get == 'both':
-            return entity, context.entityCache.lookup(entity[0])
-        else:
-            return entity
-    return None
+        return entity, context.entityCache.lookup(entity[0])
+    return [None]
 
 
 @command('inventory')
@@ -61,15 +72,13 @@ def test(output, context, player, *args):
 
 
 @command('take')
-def take(output, context, player, *args):
-    item = find(output, context, player, *args, get='both')
+def take(output, context, player, *item: find):
     if not item or not item[1].attributes.get('take', False):
         output.error("You can't take that.")
     else:
         data, item = item
         player.attributes.inventory.append(item)
         del context.contents[data.key]
-    return context
 
 useFunctionRe = re.compile(
     r'(?P<function>[a-zA-Z0-9]+)\((?P<arguments>[\S]+)\)'
@@ -77,9 +86,9 @@ useFunctionRe = re.compile(
 
 
 @command('use')
-def use(output, context, player, *args):
+def use(output, context, player, *item: find):
     '''Use an object.'''
-    item = find(output, context, player, *args)
+    data, item = item
     if not item or not 'use' in item.attributes:
         output.error("You can't use that.")
         return context
