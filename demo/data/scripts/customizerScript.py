@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import random
+import base64
 import datetime
 
 output.display('Welcome to the customization routine.')
@@ -10,6 +11,9 @@ player.attributes.character.update(
     name=name,
     gender=gender,
     description=description
+    )
+player.name = base64.urlsafe_b64encode(
+    player.attributes.character['name'].encode('utf-8')
     )
 
 output.display('''Your acumen in the three traits, Physical, Mental, and

@@ -16,7 +16,17 @@ class dataloader(archon.common.denoter):
 
 
 class dataparser(archon.common.denoter):
-    """Denotes a function that takes a file and returns JSON."""
+    """Denotes a function that converts a file to a JSON-like representation
+    of the data."""
+
+
+class dataserializer(archon.common.denoter):
+    """Denotes a function that takes an object and creates JSON.
+
+    Private properties should not be needed by this function; ideally, the
+    public API of the object should expose all the needed information to
+    save it to disk.
+    """
 
 
 @dataparser('.json')

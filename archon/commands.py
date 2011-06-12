@@ -23,7 +23,7 @@ class command(archon.common.denoter):
         return difflib.get_close_matches(name, list(cls.functions.keys()))
 
 
-def find(output, context, player, *args):
+def find(output, context, player, *args, get='entity'):
     if ' '.join(args) in ('me', 'myself'):
         return player
     matches = context.naturalFind(' '.join(args))
@@ -32,15 +32,25 @@ def find(output, context, player, *args):
     elif isinstance(matches, set):
         output.error('Please be more specific.')
     else:
-        entity = context.allContents[matches][0]
-        if entity in context.entityCache:
-            entity = context.entityCache[entity]
-        elif entity in context.entityCache.root:
-            entity = context.entityCache.root[entity]
+        entity = context.allContents[matches]
+        if get == 'entity':
+            return context.entityCache.lookup(entity[0])
+        elif get == 'both':
+            return entity, context.entityCache.lookup(entity[0])
         else:
-            raise KeyError(entity)
-        return entity
+            return entity
     return None
+
+
+@command('inventory')
+def inventory(output, context, player, *args):
+    output.display(
+        'Inventory ({length})'.format(
+            length=len(player.attributes.inventory)
+            ))
+    for item in player.attributes.inventory:
+        output.display(item.friendlyName)
+    return context
 
 
 @command('test.restart')
@@ -49,6 +59,17 @@ def test(output, context, player, *args):
     output.restart()
     return context
 
+
+@command('take')
+def take(output, context, player, *args):
+    item = find(output, context, player, *args, get='both')
+    if not item or not item[1].attributes.get('take', False):
+        output.error("You can't take that.")
+    else:
+        data, item = item
+        player.attributes.inventory.append(item)
+        del context.contents[data.key]
+    return context
 
 useFunctionRe = re.compile(
     r'(?P<function>[a-zA-Z0-9]+)\((?P<arguments>[\S]+)\)'

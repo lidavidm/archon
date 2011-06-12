@@ -111,6 +111,10 @@ class PlayerEntityHook(EntityHook):
         return self.attributes['character']
 
     @property
+    def inventory(self):
+        return self.attributes['inventory']
+
+    @property
     def acumen(self):
         return self.character['acumen']
 
@@ -176,10 +180,11 @@ class Entity(object):
 
     @override
     def describe(self):
-        if 'describe' in self.attributes:
-            return self.attributes['describe']
-        else:
-            return 'No description.'
+        return self.attributes.get('describe', 'No description.')
+
+    @property
+    def friendlyName(self):
+        return self.attributes.get('friendlyName', self.name)
 
     @property
     def attributes(self):
@@ -192,7 +197,7 @@ class Entity(object):
 
 EntityData = collections.namedtuple(
     'EntityData',
-    'kind identity location description prefix options'
+    'kind identity location description prefix options key'
     )
 
 
@@ -262,8 +267,9 @@ class Room(Entity):
             self._outputs[key] = identity
         else:
             options = [] if options is None else options
-            self._contents[key] = EntityData(entityKind, identity,
-                                   location, description, prefix, options)
+            self._contents[key] = EntityData(
+                entityKind, identity, location,
+                description, prefix, options, key)
 
     def remove(self, key):
         del self._contents[key]

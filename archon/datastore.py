@@ -33,7 +33,14 @@ class Datastore(object):
 
 class GameDatastore(Datastore):
     """
-    A JSON and file-based datastore.
+    A lazy, mostly-read datastore.
+
+    This datastore, when created, will scan its directory for possible game
+    files (any that have a file extension specified by
+    archon.datahandlers.dataparser), but will not load them until an object
+    requests them. After loaded, the datastore will continue to hold on to
+    the object. No changes made will be saved unless the save() method is
+    called.
     """
 
     def __init__(self, path, parent=None):
@@ -76,6 +83,18 @@ class GameDatastore(Datastore):
                 self
                 )
             return obj
+
+    def save(self, key, data=None, immediately=False):
+        """
+        Save the data to disk, or if the key exists, mark it for saving.
+
+        By default, GameDatastore will not save any changes to disk. If
+        changes should be saved, then call this method to mark it for
+        saving. The data will not be immediately saved unless otherwise
+        specified; instead, it will be saved at the end of the datastore's
+        lifetime. This method can also add a new object to the database at
+        runtime.
+        """
 
     def add(self, key, item):
         if not type(item) in (types.FunctionType, types.MethodType):

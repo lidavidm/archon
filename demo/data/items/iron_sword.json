@@ -1,0 +1,18 @@
+{
+    "type": "entity",
+    "data": {
+        "kind": "weapon",
+        "attributes":{
+            "friendlyName": "Iron Sword",
+            "describe": "A plain iron sword.",
+            "take": true,
+            "attack":{
+                "damage": [0, 10],
+                "success": 1.00,
+                "drain": 20,
+                "fatigue": [4, 5],
+                "cooldown": 0
+            }
+        }
+    }
+}

@@ -14,7 +14,6 @@ if __name__ == '__main__':
     ds = archon.datastore.GameDatastore('demo')
     data = ds['data']
     save = ds['save']
-    print(save._cache, save._path, save._name)
     room = None
     template = save['player_template']
     player = template.copy()

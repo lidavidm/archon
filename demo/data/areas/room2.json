@@ -10,6 +10,11 @@
             "thing": {
                 "entity": "data.items.test_object",
                 "prefix": "a"
+            },
+            "iron sword":{
+                "entity": "data.items.iron_sword",
+                "prefix": "a",
+                "description": "something you should `take`"
             }
         },
         "outputs":{

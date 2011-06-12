@@ -1,1 +1,0 @@
-david@david-ubuntu.2557:1307827089
