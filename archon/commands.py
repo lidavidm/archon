@@ -73,15 +73,11 @@ def findInventory(output, context, player, *args):
 
 
 def findEquip(output, context, player, *args):
-    if not args:
-        return []
     criterion = ' '.join(args)
     for slot, item in player.attributes.equip.items():
-        if criterion in (slot, item.friendlyName):
-            player.attributes.equip[slot] = None
-            output.display('Unequipped item {} from {}'.format(
-                    item.friendlyName, slot))
-
+        if item and criterion in (slot, item.friendlyName):
+            return slot, item
+    raise output.error("Slot or item not found, or empty slot.")
 
 
 @command('inventory')
@@ -99,11 +95,11 @@ def inventory(output, context, player, *args):
 @command('equip')
 def equip(output, context, player, *args: findInventory):
     if not args:
-        for slot, item in player.attributes.equip.items():
+        for slot, item in sorted(player.attributes.equip.items()):
             if item is None:
                 item = '<Empty>'
             else:
-                item=item.friendlyName
+                item = item.friendlyName
             output.display('{slot}: {item}'.format(
                     slot=slot, item=item
                     ))
@@ -126,7 +122,10 @@ def equip(output, context, player, *args: findInventory):
 
 @command('unequip')
 def unequip(output, context, player, *args: findEquip):
-    args = args[0]
+    slot, item = args
+    player.attributes.equip[slot] = None
+    output.display('Unequipped item {} from {}'.format(
+            item.friendlyName, slot))
 
 
 @command('test.restart')
