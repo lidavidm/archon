@@ -6,6 +6,7 @@
             "friendlyName": "Iron Sword",
             "describe": "A plain iron sword.",
             "take": true,
+            "equip": ["left hand", "right hand"],
             "attack":{
                 "damage": [0, 10],
                 "success": 1.00,

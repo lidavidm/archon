@@ -4,6 +4,7 @@
         "kind": "player",
         "attributes":{
             "inventory": [],
+            "equip": {},
             "character": {
                 "name": "",
                 "description": "",

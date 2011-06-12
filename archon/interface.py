@@ -6,6 +6,11 @@ import archon.common
 class RestartError(Exception): pass
 
 
+class CommandExecutionError(Exception):
+    def __init__(self, message):
+        self.message = message
+
+
 class Interface(object):
     """
     Defines a player's interface to the game.
@@ -51,7 +56,8 @@ class Interface(object):
         pass
 
     def error(self, error):
-        pass
+        self.display(error)
+        return CommandExecutionError(error)
 
     def restart(self, message=''):
         if message:
@@ -86,8 +92,6 @@ class ConsoleInterface(Interface):
     def display(self, text):
         print(text)
 
-    error = display
-
     def repl(self, context, player, commands):
         lastCommand = ''
         prompt = '{time}> '
@@ -102,6 +106,8 @@ class ConsoleInterface(Interface):
                 context = cmd(self, context, player, *args)
             except (KeyboardInterrupt, RestartError):
                 return
+            except CommandExecutionError as e:
+                pass
             except archon.common.DenotedNotFoundError:
                 self.error('That is not a valid command.')
                 close = commands.nearest(lastCommand)

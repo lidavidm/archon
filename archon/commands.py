@@ -22,6 +22,8 @@ class command(archon.common.denoter):
                 args = argspec.annotations[argspec.varargs](
                     output, context, player, *args
                     )
+                if not isinstance(args, collections.Iterable):
+                    args = [args]
             res = func(output, context, player, *args)
             if not res:
                 res = context
@@ -41,16 +43,33 @@ class command(archon.common.denoter):
 
 def find(output, context, player, *args):
     if ' '.join(args) in ('me', 'myself'):
-        return [player]
+        return player
     matches = context.naturalFind(' '.join(args))
     if not matches:
-        output.error('No entity found.')
+        raise output.error('No entity found.')
     elif isinstance(matches, set):
-        output.error('Please be more specific.')
+        raise output.error('Please be more specific.')
     else:
         entity = context.allContents[matches]
         return entity, context.entityCache.lookup(entity[0])
-    return [None]
+    return None
+
+
+def findInventory(output, context, player, *args):
+    '''Lookup an item by friendly name or index.'''
+    if not args:
+        return []
+    criterion = ' '.join(args)
+    try:
+        criterion = int(criterion)
+        return list(sorted(player.attributes.inventory))[criterion]
+    except IndexError:
+        raise output.error("Invalid index.")
+    except ValueError:
+        for item in player.attributes.inventory:
+            if item.friendlyName == criterion:
+                return item
+        raise output.error("Item not found.")
 
 
 @command('inventory')
@@ -59,9 +78,34 @@ def inventory(output, context, player, *args):
         'Inventory ({length})'.format(
             length=len(player.attributes.inventory)
             ))
-    for item in player.attributes.inventory:
+    for item in sorted(player.attributes.inventory,
+                       key=lambda k:k.friendlyName):
         output.display(item.friendlyName)
     return context
+
+
+@command('equip')
+def equip(output, context, player, *args:findInventory):
+    if not args:
+        for slot, item in player.attributes.equip.items():
+            output.display('{slot}: {item}'.format(
+                    slot=slot, item=item.friendlyName
+                    ))
+    else:
+        args = args[0]
+        if not args.attributes.get('equip'):
+            raise output.error('Cannot equip item.')
+        elif (list(player.attributes.equip.values()).count(args) ==
+              player.attributes.inventory.count(args)):
+            raise output.error('Already equipped all of that item.')
+        else:
+            possibleSlots = args.attributes['equip']
+            equip = player.attributes.equip
+            for slot in possibleSlots:
+                if slot not in equip or not equip[slot]:
+                    equip[slot] = args
+                    break
+            equip[possibleSlots[0]] = args
 
 
 @command('test.restart')
@@ -91,7 +135,7 @@ def use(output, context, player, *item: find):
     data, item = item
     if not item or not 'use' in item.attributes:
         output.error("You can't use that.")
-        return context
+        return
     usage = item.attributes['use']
     result = useFunctionRe.match(usage)
     if result:
@@ -122,7 +166,6 @@ def use(output, context, player, *item: find):
             output.error("It doesn't work.")
     else:
         output.error("You can't use that.")
-    return context
 
 
 @command('go')
@@ -194,13 +237,11 @@ def describe(output, context, player, *args):
             output.display(context.describe(matches, verbose=True))
     else:
         output.display(context.describe())
-    return context
 
 
 @command('quit', 'test.exit')
 def quit(output, context, player, *args):
     output.quit()
-    return context
 
 
 @command('help')
@@ -218,7 +259,6 @@ def help(output, context, player, *args):
                 output.display('Did you mean: {}'.format(close[0]))
     else:
         output.display(STRING_HELP)
-    return context
 
 
 def trimDocstring(docstring):

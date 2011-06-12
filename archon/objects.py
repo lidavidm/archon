@@ -119,6 +119,10 @@ class PlayerEntityHook(EntityHook):
         return self.character['acumen']
 
     @property
+    def equip(self):
+        return self.attributes['equip']
+
+    @property
     def stats(self):
         allStats = collections.defaultdict(dict)
         template = PlayerEntityHook.template.attributes['stats']['template']
