@@ -198,6 +198,14 @@ class Entity(object):
     def attributes(self, value):
         self._attributes.update(value)
 
+    @property
+    def entityCache(self):
+        return self._entityCache
+
+    @entityCache.setter
+    def entityCache(self, cache):
+        self._entityCache = cache
+
 
 EntityData = collections.namedtuple(
     'EntityData',
@@ -310,14 +318,6 @@ class Room(Entity):
 
     def exit(self):
         return self.attributes['time']
-
-    @property
-    def entityCache(self):
-        return self._entityCache
-
-    @entityCache.setter
-    def entityCache(self, cache):
-        self._entityCache = cache
 
     @property
     def contents(self):
