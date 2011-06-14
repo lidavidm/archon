@@ -3,7 +3,7 @@
     "data": {
         "describe": "the beginning of a dark cave.",
         "attributes":{
-            "friendlyName": "Dark Cave: Entrance",
+            "friendlyName": "Entrance",
             "kind": "indoors"
         },
         "contents": {

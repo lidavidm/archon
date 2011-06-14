@@ -57,14 +57,11 @@ def entity(key, data, cache):
 
 @dataloader(AREA_TYPE)
 def area(key, data, cache):
-    name, description = data['name'], data['description']
-    area = archon.objects.Area(key)
+    name = data['name']
+    area = archon.objects.Entity(key, 'area')
     area.entityCache = cache
-    area.attributes.update(name=name, description=description)
-    for item in cache.values():
-        # generally, each item should be a room
-        if isinstance(item, archon.objects.Room):
-            item.area = area
+    area.attributes['name'] = name
+    area.attributes.update(data['attributes'])
     return area
 
 
@@ -97,6 +94,10 @@ def room(key, data, cache):
 
     for eKind, eKey, eInfo in contents:
         room.add(eKind, eKey, **eInfo)
+
+    # Load the area if present.
+    if 'area' in cache:
+        room.area = cache['area']
 
     # Unlike the others, this MUST be here to break circular references when
     # loading rooms (although the thunk is present in the cache,

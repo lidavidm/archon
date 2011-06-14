@@ -16,12 +16,13 @@
                 "prefix": "a",
                 "description": "something you should `take`"
             },
-            "cave entrance": {
+            "cave": {
                 "entity": "data.items.entrance",
                 "location": "on the side of a cliff",
                 "options": "to:data.areas.dark_cave.entrance",
                 "prefix": "a",
-                "description": "quite interesting, but looks dangerous"
+                "description": "quite interesting, but looks dangerous",
+                "identity": "cave entrance"
             }
         },
         "outputs":{

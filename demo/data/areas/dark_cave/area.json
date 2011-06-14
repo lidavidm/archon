@@ -1,8 +1,10 @@
 {
     "type": "area",
     "data": {
-        "describe": "a dark cave, full of danger but quite intriguing",
         "name": "Dark Cave",
-        "battleScene": "data.areas.battle_scenes.cave"
+        "attributes": {
+            "describe": "A dark cave, full of danger and enemies.",
+            "battleScene": "data.areas.battle_scenes.cave"
+        }
     }
 }

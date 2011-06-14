@@ -129,6 +129,8 @@ class GameDatastore(Datastore):
             key, subkey = key.split('.', 1)
             return self[key][subkey]
         else:
+            if key not in self._cache:
+                raise KeyError(key)
             if not self._didLoad[key]:
                 self._cache[key] = self._cache[key]()
                 self._didLoad[key] = True

@@ -86,9 +86,9 @@ def inventory(output, context, player, *args):
         'Inventory ({length})'.format(
             length=len(player.attributes.inventory)
             ))
-    for item in sorted(player.attributes.inventory,
-                       key=lambda k: k.friendlyName):
-        output.display(item.friendlyName)
+    for index, item in enumerate(sorted(player.attributes.inventory,
+                                        key=lambda k: k.friendlyName)):
+        output.display('{}. {}'.format(index, item.friendlyName))
     return context
 
 
@@ -144,6 +144,13 @@ def take(output, context, player, *item: find):
         player.attributes.inventory.append(item)
         del context.contents[data.key]
 
+
+@command('fight')
+def fight(output, context, player, *enemy: find):
+    if not item or item[1].kind != 'enemy':
+        raise output.error("You can't fight that.")
+    data, enemy = enemy
+
 useFunctionRe = re.compile(
     r'(?P<function>[a-zA-Z0-9]+)\((?P<arguments>[\S]+)\)'
     )
@@ -194,6 +201,8 @@ def go(output, context, player, *args):
     direction = args[0]  # XXX multiword directions?
     target = context.outputs.get(direction)
     if target:
+        if target.area != context.area:
+            output.display(target.area.describe())
         target.enter(context.exit())
         return command.get('describe')(output, target, player)
     else:
@@ -218,10 +227,12 @@ def enter(output, context, player, *args):
         for option in entityData.options:
             if option.startswith('to:'):
                 target = option[3:].strip()
-                target = context.entityCache[target]
+                target = context.entityCache.lookup(target)
                 if output.question(
-                    "Go to {}?".format(target.attributes['friendlyName'])
+                    "Go to {}? ".format(target.attributes['friendlyName'])
                     ):
+                    if target.area != context.area:
+                        output.display(target.area.describe())
                     target.enter(context.exit())
                     return command.get('describe')(output, target, player)
     return context  # we failed teleporting

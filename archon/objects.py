@@ -91,6 +91,14 @@ class RoomEntityHook(EntityHook):
     def timeString(self):
         return self.attributes['time'].strftime('%a, %b %d %H:%M')
 
+    @EntityHook.dynamicproperty
+    def friendlyName(self):
+        name = self.attributes['friendlyName']
+        if self.entity.area:
+            return ': '.join([self.entity.area.attributes['name'], name])
+        else:
+            return name
+
 
 class PlayerEntityHook(EntityHook):
     KIND = "player"
@@ -232,7 +240,7 @@ class Room(Entity):
         self._entityCache = cache
         self._contents = {}
         self._outputs = {}
-        self._area = None
+        self.area = None
 
     def naturalFind(self, text):
         """
