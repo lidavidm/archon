@@ -1,0 +1,21 @@
+{
+    "type": "room",
+    "data": {
+        "describe": "the beginning of a dark cave.",
+        "attributes":{
+            "friendlyName": "Dark Cave: Entrance",
+            "kind": "indoors"
+        },
+        "contents": {
+            "imp":{
+                "entity": "data.enemies.test_enemy",
+                "location": "in front of you",
+                "prefix": "an",
+                "description": "perhaps something you could defeat"
+            }
+        },
+        "outputs":{
+            "out": "data.areas.room2"
+        }
+    }
+}

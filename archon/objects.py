@@ -223,12 +223,8 @@ EntityData = collections.namedtuple(
 class Room(Entity):
     ROOM_ENTITY_KIND = 'room'
 
-    def __init__(self, name, kind, description, cache):
+    def __init__(self, name, description, cache):
         super(Room, self).__init__(name, Room.ROOM_ENTITY_KIND)
-        self.attributes[kind] = kind
-        # Problem: kind here is "indoors", "outdoors", etc., but the Entity
-        # kind is really "room", "npc", so the "kind" here is really the
-        # room kind
         self._description = description
         self._entityCache = cache
         self._contents = {}

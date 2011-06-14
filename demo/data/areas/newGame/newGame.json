@@ -3,9 +3,9 @@
     "data": {
         "describe": "an area to start a new game.",
         "attributes": {
-            "friendlyName": "New Game Room"
+            "friendlyName": "New Game Room",
+            "kind": "indoors"
         },
-        "kind": "indoors",
         "contents": {
             "customizer": {
                 "entity": "data.items.customizer",

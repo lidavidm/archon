@@ -3,9 +3,9 @@
     "data": {
         "describe": "a test room.",
         "attributes": {
-            "friendlyName": "Test Room"
+            "friendlyName": "Test Room",
+            "kind": "indoors"
         },
-        "kind": "indoors",
         "contents": {
             "thing": {
                 "entity": "data.items.test_object",

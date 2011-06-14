@@ -70,8 +70,8 @@ def area(key, data, cache):
 
 @dataloader(ROOM_TYPE)
 def room(key, data, cache):
-    kind, description = data['kind'], data['describe']
-    room = archon.objects.Room(key, kind, description, cache)
+    description = data['describe']
+    room = archon.objects.Room(key, description, cache)
 
     for name, val in data['attributes'].items():
         room.attributes[name] = val

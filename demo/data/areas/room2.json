@@ -2,9 +2,9 @@
     "type": "room",
     "data": {
         "describe": "a test room.",
-        "kind": "indoors",
         "attributes":{
-            "friendlyName": "Test Room 2"
+            "friendlyName": "Test Room 2",
+            "kind": "outdoors"
         },
         "contents": {
             "thing": {
@@ -15,6 +15,13 @@
                 "entity": "data.items.iron_sword",
                 "prefix": "a",
                 "description": "something you should `take`"
+            },
+            "cave entrance": {
+                "entity": "data.items.entrance",
+                "location": "on the side of a cliff",
+                "options": "to:data.areas.dark_cave.entrance",
+                "prefix": "a",
+                "description": "quite interesting, but looks dangerous"
             }
         },
         "outputs":{
