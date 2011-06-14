@@ -16,6 +16,12 @@ class EntityHook(collections.MutableMapping):
     def __init__(self, entity):
         self.entity = entity
         self._attributes = {}
+        self._dynamicProperties = {}
+        for attr, prop in self.__class__.__dict__.items():
+            if hasattr(prop, '_dynamicProperty') and prop._dynamicProperty:
+                self._dynamicProperties[attr] = types.MethodType(
+                    prop, self
+                    )
 
     def __len__(self):
         return len(self._attributes)
@@ -28,11 +34,10 @@ class EntityHook(collections.MutableMapping):
 
     def __getitem__(self, key):
         """Override for custom behavior."""
-        item = self._attributes.__getitem__(key)
-        if hasattr(item, '_dynamicProperty') and item._dynamicProperty:
-            return item()
+        if key in self._dynamicProperties:
+            return self._dynamicProperties[key]()
         else:
-            return item
+            return self._attributes.__getitem__(key)
 
     def __setitem__(self, key, value):
         """Override for custom behavior."""
@@ -79,13 +84,11 @@ class RoomEntityHook(EntityHook):
     def __init__(self, entity):
         super(RoomEntityHook, self).__init__(entity)
         self.attributes.update(
-            friendlyName=entity.name,
-            time=datetime.datetime(1000, 1, 1),
-            timeString=self.formatTime
+            time=datetime.datetime(1000, 1, 1)
             )
 
     @EntityHook.dynamicproperty
-    def formatTime(self):
+    def timeString(self):
         return self.attributes['time'].strftime('%a, %b %d %H:%M')
 
 
@@ -229,6 +232,7 @@ class Room(Entity):
         self._entityCache = cache
         self._contents = {}
         self._outputs = {}
+        self._area = None
 
     def naturalFind(self, text):
         """
