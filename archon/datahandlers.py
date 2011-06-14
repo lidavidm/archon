@@ -7,6 +7,7 @@ ENTITY_TYPE = 'entity'
 ROOM_TYPE = 'room'
 DATA_TYPE = 'data'
 SCRIPT_TYPE = 'script'
+AREA_TYPE = 'area'
 JSON_DIFF_TYPE = 'jsondiff'  # TODO: structural diff of JSON for saves
 # Types dictate loading, kind denotes semantic data ("room" vs "indoors")
 
@@ -54,6 +55,19 @@ def entity(key, data, cache):
     return entity
 
 
+@dataloader(AREA_TYPE)
+def area(key, data, cache):
+    name, description = data['name'], data['description']
+    area = archon.objects.Area(key)
+    area.entityCache = cache
+    area.attributes.update(name=name, description=description)
+    for item in cache.values():
+        # generally, each item should be a room
+        if isinstance(item, archon.objects.Room):
+            item.area = area
+    return area
+
+
 @dataloader(ROOM_TYPE)
 def room(key, data, cache):
     kind, description = data['kind'], data['describe']
@@ -91,16 +105,15 @@ def room(key, data, cache):
     cache.add(key, room)
 
     for direction, target in data['outputs'].items():
-        if target in cache:
-            troom = cache[target]
-        elif cache.root and target in cache.root:  # absolute lookup
-            troom = cache.root[target]
-        else:
+        try:
+            troom = cache.lookup(target)
+            room.add(
+                archon.objects.Room.ROOM_ENTITY_KIND,
+                direction,
+                troom
+                )
+        except KeyError:
             raise ValueError("Room {} not found!".format(target))
-        room.add(
-            archon.objects.Room.ROOM_ENTITY_KIND,
-            direction,
-            troom)
     return room
 
 

@@ -142,6 +142,13 @@ class PlayerEntityHook(EntityHook):
 
 class Entity(object):
     def __init__(self, name, kind):
+        """
+        :param name: The name of the entity (the key in the datastore)
+        :param kind: The entity's kind (enemy, door, object, etc.)
+
+        Change the type of an entity when it needs special
+        loading/processing, as with a room, but the kind otherwise.
+        """
         self.name = name
         self.kind = kind
         try:
@@ -219,8 +226,9 @@ class Room(Entity):
     def __init__(self, name, kind, description, cache):
         super(Room, self).__init__(name, Room.ROOM_ENTITY_KIND)
         self.attributes[kind] = kind
-        # Problem: kind here is "indoors", "outdoors", etc.
-        # but the Entity kind is really "room", "npc"...
+        # Problem: kind here is "indoors", "outdoors", etc., but the Entity
+        # kind is really "room", "npc", so the "kind" here is really the
+        # room kind
         self._description = description
         self._entityCache = cache
         self._contents = {}
