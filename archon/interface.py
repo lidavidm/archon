@@ -1,4 +1,5 @@
 import sys
+import collections
 import archon.commands
 import archon.common
 
@@ -21,10 +22,13 @@ class Interface(object):
     def __init__(self,
                  permissions={'debug': False},
                  questionYes=('y', 'yes'),
-                 questionNo=('n', 'no')):
+                 questionNo=('n', 'no'),
+                 replPrompt='{data}> '):
         self.questionYes = questionYes
         self.questionNo = questionNo
         self.permissions = permissions
+        self._replPrompt = replPrompt
+        self.promptData = collections.OrderedDict()
 
     def prompt(self, prompt):
         pass
@@ -84,6 +88,13 @@ class Interface(object):
     def repl(self, commands):
         pass
 
+    @property
+    def replPrompt(self):
+        data = ' '.join([''.join(['{', name, '}'])
+                         for name in self.promptData.keys()])
+        prompt = self._replPrompt.format(data=data)
+        return prompt.format(**self.promptData)
+
 
 class ConsoleInterface(Interface):
     def prompt(self, prompt):
@@ -94,13 +105,10 @@ class ConsoleInterface(Interface):
 
     def repl(self, context, player, commands):
         lastCommand = ''
-        prompt = '{time}> '
         while True:
             try:
-                promptString = prompt.format(
-                    time=context.attributes['timeString']
-                    )
-                cmd = self.prompt(promptString).split()
+                self.promptData['time'] = context.attributes['timeString']
+                cmd = self.prompt(self.replPrompt).split()
                 lastCommand = cmd[0] if cmd else lastCommand
                 cmd, args = commands.get(cmd[0]), cmd[1:]
                 context = cmd(self, context, player, *args)
