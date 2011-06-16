@@ -42,17 +42,20 @@ class command(archon.common.denoter):
 
 
 def find(output, context, player, *args):
-    if ' '.join(args) in ('me', 'myself'):
-        return player
     matches = context.naturalFind(' '.join(args))
     if not matches:
-        raise output.error('No entity found.')
+        return []
+    elif matches is None:
+        return None
     elif isinstance(matches, set):
-        raise output.error('Please be more specific.')
+        result = []
+        for key in matches:
+            entity = context.allContents[key]
+            result.append(entity, context.entityCache.lookup(entity[0]))
+        return result
     else:
         entity = context.allContents[matches]
-        return entity, context.entityCache.lookup(entity[0])
-    return None
+        return [(entity, context.entityCache.lookup(entity[0]))]
 
 
 def findInventory(output, context, player, *args):
@@ -77,7 +80,7 @@ def findEquip(output, context, player, *args):
     for slot, item in player.attributes.equip.items():
         if item and criterion in (slot, item.friendlyName):
             return slot, item
-    raise output.error("Slot or item not found, or empty slot.")
+    return None
 
 
 @command('inventory')
@@ -128,28 +131,19 @@ def unequip(output, context, player, *args: findEquip):
             item.friendlyName, slot))
 
 
-@command('test.restart')
-def test(output, context, player, *args):
-    '''Restart the Archon session, if possible. This is a test command.'''
-    output.restart()
-    return context
-
-
 @command('take')
 def take(output, context, player, *item: find):
-    if not item or not item[1].attributes.get('take', False):
+    if not item:
         output.error("You can't take that.")
+    elif len(item) > 1:  # ambiguous reference
+        raise output.error("What did you want to take?")
     else:
-        data, item = item
+        data, item = item[0]
+        if not item.attributes.get("take", False):
+            raise output.error("You can't take that.")
         player.attributes.inventory.append(item)
         del context.contents[data.key]
 
-
-@command('fight')
-def fight(output, context, player, *enemy: find):
-    if not item or item[1].kind != 'enemy':
-        raise output.error("You can't fight that.")
-    data, enemy = enemy
 
 useFunctionRe = re.compile(
     r'(?P<function>[a-zA-Z0-9]+)\((?P<arguments>[\S]+)\)'
@@ -159,10 +153,11 @@ useFunctionRe = re.compile(
 @command('use')
 def use(output, context, player, *item: find):
     '''Use an object.'''
-    data, item = item
-    if not item or not 'use' in item.attributes:
-        output.error("You can't use that.")
-        return
+    if not item or len(item) > 1:
+        raise output.error("What did you want to use?")
+    data, item = item[0]
+    if not 'use' in item.attributes:
+        raise output.error("You can't use that.")
     usage = item.attributes['use']
     result = useFunctionRe.match(usage)
     if result:
@@ -211,30 +206,26 @@ def go(output, context, player, *args):
 
 
 @command('enter')
-def enter(output, context, player, *args):
+def enter(output, context, player, *target: find):
     '''
     If the specified entity is a teleport (e.g. a door), use it.
 
     Also, create an entry in the history chain of visited rooms.
     '''
-    teleport = context.naturalFind(' '.join(args))
-    if not teleport:
-        output.error('No entity found.')
-    elif isinstance(teleport, set):
-        output.error('Please be more specific.')
-    else:
-        entityData = context.allContents[teleport]
-        for option in entityData.options:
-            if option.startswith('to:'):
-                target = option[3:].strip()
-                target = context.entityCache.lookup(target)
-                if output.question(
-                    "Go to {}? ".format(target.attributes['friendlyName'])
-                    ):
-                    if target.area != context.area:
-                        output.display(target.area.describe())
-                    target.enter(context.exit())
-                    return command.get('describe')(output, target, player)
+    if not target or len(target) > 1:
+        raise output.error("Where did you want to enter?")
+    entityData, entity = target[0]
+    for option in entityData.options:
+        if option.startswith('to:'):
+            target = option[3:].strip()
+            target = context.entityCache.lookup(target)
+            if output.question(
+                "Go to {}? ".format(target.attributes['friendlyName'])
+                ):
+                if target.area != context.area:
+                    output.display(target.area.describe())
+                target.enter(context.exit())
+                return command.get('describe')(output, target, player)
     return context  # we failed teleporting
 
 
@@ -248,26 +239,22 @@ def exit(output, context, player, *args):
 @command('describe')
 def describe(output, context, player, *args):
     '''Describe the current room or the specified object.'''
-    if args:
-        if args[0].lower() in ('me', 'myself'):
-            output.display(player.describe())
-            return context
-        matches = context.naturalFind(' '.join(args))
-        if not matches:
-            output.display("What are you talking about?")
-        elif isinstance(matches, set):
-            output.error("That was ambiguous.")
-            output.display("Did you mean:")
-            for match in matches:
-                edata = context.contents[match]
-                output.display("\t{prefix}{identity}".format(
-                    prefix=edata[4] + ' ',
-                    identity=edata[1]
-                    ))
-        else:
-            output.display(context.describe(matches, verbose=True))
-    else:
+    if args and args[0].lower() in ('me', 'myself'):
+        output.display(player.describe())
+    items = find(output, context, player, *args)
+    if items is None:
+        output.error("What did you want to describe?")
+    elif not items:
         output.display(context.describe())
+    elif len(items) > 1:
+        output.error("That was ambiguous. Did you mean:")
+        for data, entity in items:
+            output.display("\t{prefix} {identity}".format(
+                    prefix=data[4],
+                    identity=data[1]
+                    ))
+    else:
+        output.display(items[0][1].describe())
 
 
 @command('quit', 'test.exit')
