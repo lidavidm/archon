@@ -10,6 +10,8 @@ import archon.objects
 import archon.interface
 import archon.commands
 
+import battlecommands
+
 if __name__ == '__main__':
     ds = archon.datastore.GameDatastore('demo')
     data = ds['data']

@@ -13,9 +13,9 @@ class EntityHook(collections.MutableMapping):
     """
     KIND = ''
 
-    def __init__(self, entity):
+    def __init__(self, entity, attributes):
         self.entity = entity
-        self._attributes = {}
+        self._attributes = attributes
         self._dynamicProperties = {}
         for attr, prop in self.__class__.__dict__.items():
             if hasattr(prop, '_dynamicProperty') and prop._dynamicProperty:
@@ -58,13 +58,13 @@ class EntityHook(collections.MutableMapping):
         return self._attributes.copy()
 
     @classmethod
-    def get(cls, kind):
+    def getHook(cls, kind):
         if cls.KIND == kind:
             return cls
         else:
             for subcls in cls.__subclasses__():
                 try:
-                    return subcls.get(kind)
+                    return subcls.getHook(kind)
                 except EntityHookNotFoundError:
                     continue
         raise EntityHookNotFoundError(kind)
@@ -81,8 +81,8 @@ class EntityHook(collections.MutableMapping):
 class RoomEntityHook(EntityHook):
     KIND = "room"
 
-    def __init__(self, entity):
-        super(RoomEntityHook, self).__init__(entity)
+    def __init__(self, entity, attributes):
+        super(RoomEntityHook, self).__init__(entity, attributes)
         self.attributes.update(
             time=datetime.datetime(1000, 1, 1)
             )
@@ -117,6 +117,10 @@ class PlayerEntityHook(EntityHook):
             }
         }
 
+    def __init__(self, entity, attributes):
+        super().__init__(entity, attributes)
+        self.attributes['vitals'] = self.maxVitals
+
     @property
     def character(self):
         return self.attributes['character']
@@ -126,12 +130,24 @@ class PlayerEntityHook(EntityHook):
         return self.attributes['inventory']
 
     @property
+    def equip(self):
+        return self.attributes['equip']
+
+    @property
     def acumen(self):
         return self.character['acumen']
 
     @property
-    def equip(self):
-        return self.attributes['equip']
+    def vitals(self):
+        return self.attributes['vitals']
+
+    @property
+    def maxVitals(self):
+        res = {}
+        for vital, multipliers in self.attributes['maxVitals'].items():
+            res[vital] = sum(multiplier * acumen for multiplier, acumen in
+                             zip(multipliers, sorted(self.acumen.values())))
+        return res
 
     @property
     def stats(self):
@@ -151,8 +167,16 @@ class PlayerEntityHook(EntityHook):
               )
 
 
+class EnemyEntityHook(EntityHook):
+    KIND = 'enemy'
+
+
+class WeaponEntityHook(EntityHook):
+    KIND = 'weapon'
+
+
 class Entity(object):
-    def __init__(self, name, kind):
+    def __init__(self, name, kind, attributes={}):
         """
         :param name: The name of the entity (the key in the datastore)
         :param kind: The entity's kind (enemy, door, object, etc.)
@@ -163,15 +187,13 @@ class Entity(object):
         self.name = name
         self.kind = kind
         try:
-            kindhook = EntityHook.get(kind)
-            self._attributes = kindhook(self)
+            kindhook = EntityHook.getHook(kind)
+            self._attributes = kindhook(self, attributes)
         except EntityHookNotFoundError:
-            self._attributes = {}
+            self._attributes = attributes
 
     def copy(self):
-        copy = Entity(self.name, self.kind)
-        copy.attributes = self.attributes.copy()
-        return copy
+        return Entity(self.name, self.kind, self.attributes.copy())
 
     # no staticmethod() declaration needed! it causes problems anyways...
     def override(func):
@@ -235,7 +257,7 @@ class Room(Entity):
     ROOM_ENTITY_KIND = 'room'
 
     def __init__(self, name, description, cache):
-        super(Room, self).__init__(name, Room.ROOM_ENTITY_KIND)
+        super().__init__(name, Room.ROOM_ENTITY_KIND, {})
         self._description = description
         self._entityCache = cache
         self._contents = {}
@@ -275,13 +297,13 @@ class Room(Entity):
             return matches
         return None
 
-    def add(self, entityKind, key, identity,
+    def add(self, entityKey, key, identity,
             location='', description='', prefix='', options=None):
         """
         Add an entity or output to the room.
 
-        :param entityKind: The entity's kind. If adding a room, set this to
-                           self.ROOM_ENTITY_KIND.
+        :param entityKey: The entity's key (e.g. data.items.entity_name). If
+                           adding a room, set this to self.ROOM_ENTITY_KIND.
         :param key: The key for the entity. If adding a room, this is the
                     direction.
         :param identity: The identity for the entity. If adding a room, this
@@ -290,13 +312,13 @@ class Room(Entity):
         :param description: A description of the entity.
         :param options: Options for the entity.
         """
-        if entityKind is self.ROOM_ENTITY_KIND:
+        if entityKey is self.ROOM_ENTITY_KIND:
             # key is direction, identity is the target
             self._outputs[key] = identity
         else:
             options = [] if options is None else options
             self._contents[key] = EntityData(
-                entityKind, identity, location,
+                entityKey, identity, location,
                 description, prefix, options, key)
 
     def remove(self, key):

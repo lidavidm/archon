@@ -36,6 +36,10 @@ class command(archon.common.denoter):
     def data(self):
         return self.__class__.commandData[self.names[0]]
 
+    @data.setter
+    def data(self, value):
+        self.__class__.commandData[self.names[0]] = value
+
     @classmethod
     def nearest(cls, name):
         return difflib.get_close_matches(name, list(cls.functions.keys()))
@@ -43,15 +47,13 @@ class command(archon.common.denoter):
 
 def find(output, context, player, *args):
     matches = context.naturalFind(' '.join(args))
-    if not matches:
-        return []
-    elif matches is None:
+    if matches is None:
         return None
     elif isinstance(matches, set):
         result = []
         for key in matches:
             entity = context.allContents[key]
-            result.append(entity, context.entityCache.lookup(entity[0]))
+            result.append((entity, context.entityCache.lookup(entity[0])))
         return result
     else:
         entity = context.allContents[matches]
@@ -239,22 +241,23 @@ def exit(output, context, player, *args):
 @command('describe')
 def describe(output, context, player, *args):
     '''Describe the current room or the specified object.'''
-    if args and args[0].lower() in ('me', 'myself'):
-        output.display(player.describe())
-    items = find(output, context, player, *args)
-    if items is None:
-        output.error("What did you want to describe?")
-    elif not items:
+    if not args:
         output.display(context.describe())
-    elif len(items) > 1:
-        output.error("That was ambiguous. Did you mean:")
-        for data, entity in items:
-            output.display("\t{prefix} {identity}".format(
-                    prefix=data[4],
-                    identity=data[1]
-                    ))
+    elif args[0].lower() in ('me', 'myself'):
+        output.display(player.describe())
     else:
-        output.display(items[0][1].describe())
+        items = find(output, context, player, *args)
+        if items is None:
+            output.error("What did you want to describe?")
+        elif len(items) > 1:
+            output.error("That was ambiguous. Did you mean:")
+            for data, entity in items:
+                output.display("\t{prefix} {identity}".format(
+                        prefix=data[4],
+                        identity=data[1]
+                        ))
+        else:
+            output.display(items[0][1].describe())
 
 
 @command('quit', 'test.exit')

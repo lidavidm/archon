@@ -31,6 +31,14 @@
                     "fatigue": "decreasing",
                     "drain": "decreasing"
                 }
+            },
+            "vitals":{
+                "health": 0,
+                "ap": 0
+            },
+            "maxVitals":{
+                "health": [0.1, 0.3, 0.2],
+                "ap": [0.1, 0.2, 0.2]
             }
         }
     }

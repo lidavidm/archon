@@ -17,7 +17,7 @@
                 "description": "something you should `take`"
             },
             "cave": {
-                "entity": "data.items.entrance",
+                "entity": "data.items.door",
                 "location": "on the side of a cliff",
                 "options": "to:data.areas.dark_cave.entrance",
                 "prefix": "a",

@@ -49,9 +49,7 @@ def pythonType(contents):
 @dataloader(ENTITY_TYPE)
 def entity(key, data, cache):
     kind = data['kind']
-    entity = archon.objects.Entity(key, kind)
-    for name, data in data['attributes'].items():
-        entity.attributes[name] = data
+    entity = archon.objects.Entity(key, kind, data['attributes'])
     return entity
 
 
