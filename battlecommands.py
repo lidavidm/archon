@@ -64,8 +64,8 @@ def fight(output, context, player, *enemy: archon.commands.find):
         context.area.attributes['battleScene']
         )
     scene.entityCache = context.entityCache
-    scene.add(data.kind, 0, data.identity, data.location, data.description,
-              data.prefix, data.options)
+    scene.add(data.objectLocation, 0, data.identity, data.location,
+              data.description, data.prefix, data.options)
     # TODO find way of generating key for multiple-enemy battles
     battleOutput = ProxyInterface(output.__class__)()
     battleOutput.repl(scene, player, battlecommand)
@@ -79,12 +79,12 @@ def attack(output, context, player, *target: enemy):
     data, target = target[0]
     weapons = []
     for slot in ('left hand', 'right hand'):
-        if slot in player.equip:
-            weapons.append(player.equip[slot])
+        if slot in player.attributes.equip:
+            weapons.append(player.attributes.equip[slot])
     if not weapons:
         raise output.error("You need a weapon equipped to fight!")
-    stats = player.stats['physical']
-    physicalAcumen = player.acumen['physical']
+    stats = player.attributes.stats['physical']
+    physicalAcumen = player.attributes.acumen['physical']
     for weapon in weapons:
         if weapon.hits(multiplier=stats['success']):
             damage = weapon.damage(multiplier=physicalAcumen)
@@ -92,4 +92,4 @@ def attack(output, context, player, *target: enemy):
             fatigue, fatigueTurns = weapon.fatigue(
                 multiplier=stats['fatigue'])
             # enemy absorb
-    # run the enemy's turn
+    battlecommand.get('enemyTurn')(output, context, player)

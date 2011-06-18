@@ -7,22 +7,18 @@
             "kind": "outdoors"
         },
         "contents": {
-            "thing": {
-                "entity": "data.items.test_object",
-                "prefix": "a"
+            "thing, a": {
+                "entity": "data.items.test_object"
             },
-            "iron sword":{
+            "iron sword, an":{
                 "entity": "data.items.iron_sword",
-                "prefix": "a",
                 "description": "something you should `take`"
             },
-            "cave": {
+            "cave, a": {
                 "entity": "data.items.door",
                 "location": "on the side of a cliff",
                 "options": "to:data.areas.dark_cave.entrance",
-                "prefix": "a",
-                "description": "quite interesting, but looks dangerous",
-                "identity": "cave entrance"
+                "description": "quite interesting, but looks dangerous"
             }
         },
         "outputs":{

@@ -7,9 +7,8 @@
             "kind": "indoors"
         },
         "contents": {
-            "customizer": {
+            "customizer, a": {
                 "entity": "data.items.customizer",
-                "prefix": "a",
                 "description": "something you should `use` right now"
             }
         },

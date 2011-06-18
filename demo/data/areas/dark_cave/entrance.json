@@ -7,10 +7,9 @@
             "kind": "indoors"
         },
         "contents": {
-            "imp":{
+            "imp, an":{
                 "entity": "data.enemies.test_enemy",
                 "location": "in front of you",
-                "prefix": "an",
                 "description": "perhaps something you could defeat"
             }
         },

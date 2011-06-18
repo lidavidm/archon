@@ -249,7 +249,7 @@ class Entity(object):
 
 EntityData = collections.namedtuple(
     'EntityData',
-    'kind identity location description prefix options key'
+    'objectLocation key location description prefix options'
     )
 
 
@@ -297,29 +297,25 @@ class Room(Entity):
             return matches
         return None
 
-    def add(self, entityKey, key, identity,
+    def add(self, entityLocation, key,
             location='', description='', prefix='', options=None):
         """
         Add an entity or output to the room.
 
-        :param entityKey: The entity's key (e.g. data.items.entity_name). If
-                           adding a room, set this to self.ROOM_ENTITY_KIND.
-        :param key: The key for the entity. If adding a room, this is the
-                    direction.
-        :param identity: The identity for the entity. If adding a room, this
-                         is the target room.
+        :param entityLocation: The entity object's location
+                               (e.g. data.items.entity_name).
+        :param key: The key for the entity.
         :param location: The location description for the entity.
         :param description: A description of the entity.
         :param options: Options for the entity.
         """
-        if entityKey is self.ROOM_ENTITY_KIND:
-            # key is direction, identity is the target
-            self._outputs[key] = identity
-        else:
-            options = [] if options is None else options
-            self._contents[key] = EntityData(
-                entityKey, identity, location,
-                description, prefix, options, key)
+        options = [] if options is None else options
+        self._contents[key] = EntityData(
+            entityLocation, key, location,
+            description, prefix, options)
+
+    def addRoom(self, direction, target):
+        self._outputs[direction] = target
 
     def remove(self, key):
         del self._contents[key]

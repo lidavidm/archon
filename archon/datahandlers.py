@@ -1,4 +1,5 @@
 import json
+import warnings
 
 import archon.common
 import archon.objects
@@ -37,7 +38,13 @@ def jsonType(contents):
         assert 'type' in data
         assert 'data' in data
         return data
-    except (ValueError, AssertionError):
+    except ValueError:
+        warnings.warn("Error loading JSON data!",
+                      RuntimeWarning, stacklevel=2)
+        return None
+    except AssertionError:
+        warnings.warn('JSON data is not well-formed!',
+                      RuntineWarning, stacklevel=2)
         return None
 
 
@@ -73,25 +80,29 @@ def room(key, data, cache):
 
     contents = []
     for eKey, eData in data['contents'].items():
-        entityInfo = {'identity': eKey}
-        entityKind = eData['entity']
+        entityInfo = {}
+        entityLocation = eData['entity']
+
+        if ',' in eKey:
+            eKey, prefix = eKey.split(',')
+            entityInfo['prefix'] = prefix.strip()
+
         if 'options' in eData:
             eData['options'] = eData['options'].split(',')
         entityInfo.update(eData)
         del entityInfo['entity']  # this key doesn't need to be there
-        contents.append((entityKind, eKey, entityInfo))
-    ids = [eInfo.get('identity', eKey) for _, eKey, eInfo in contents]
-    for eKind, eKey, eInfo in contents:
+        contents.append((entityLocation, eKey, entityInfo))
+    ids = [eKey for _, eKey, _ in contents]
+    for eLocation, eKey, eInfo in contents:
         # identity (or key) is not unique, no prefix and the key collides
         # with an identity
-        identity = eInfo.get('identity', eKey)
-        if 'prefix' not in eInfo and ids.count(identity) > 1:
+        if 'prefix' not in eInfo and ids.count(eKey) > 1:
             # we need to generate a prefix
             eInfo['prefix'] = ('yet another ' *
-                               (ids.count(identity) - 1)).strip()
+                               (ids.count(Key) - 1)).strip()
 
-    for eKind, eKey, eInfo in contents:
-        room.add(eKind, eKey, **eInfo)
+    for eLocation, eKey, eInfo in contents:
+        room.add(eLocation, eKey, **eInfo)
 
     # Load the area if present.
     if 'area' in cache:
@@ -106,11 +117,7 @@ def room(key, data, cache):
     for direction, target in data['outputs'].items():
         try:
             troom = cache.lookup(target)
-            room.add(
-                archon.objects.Room.ROOM_ENTITY_KIND,
-                direction,
-                troom
-                )
+            room.addRoom(direction, troom)
         except KeyError:
             raise ValueError("Room {} not found!".format(target))
     return room
