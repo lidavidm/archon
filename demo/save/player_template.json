@@ -29,8 +29,7 @@
                     "evade": "increasing",
                     "absorb": "increasing",
                     "fatigue": "decreasing",
-                    "drain": "decreasing",
-                    "cooldown": "decreasing"
+                    "drain": "decreasing"
                 }
             }
         }

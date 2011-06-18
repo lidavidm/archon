@@ -20,7 +20,8 @@ Stats: Success, absorb, evade, fatigue, drain, cooldown
 
        Drain: AP-drain multiplier
 
-       Cooldown: Cooldown multiplier
+       Cooldown: Cooldown multiplier (REMOVED since everything is done by
+       turn, this wouldn't have an effect most of the time)
 
 Stats are based on acumen (physical drain, spiritual evade) via a set of
 equations that provide lower and upper bounds for the stats.
