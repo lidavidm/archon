@@ -1,0 +1,14 @@
+{
+    "type": "room",
+    "data": {
+        "describe": "the area in the cave where you are fighting.",
+        "attributes":{
+            "friendlyName": "Cave Battle Area",
+            "kind": "indoors,battle"
+        },
+        "contents": {
+        },
+        "outputs":{
+        }
+    }
+}
