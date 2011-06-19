@@ -45,10 +45,11 @@ class command(archon.common.denoter):
         return difflib.get_close_matches(name, list(cls.functions.keys()))
 
 
+# XXX always return an iterable - else the closure will wrap it in a list
 def find(output, context, player, *args):
     matches = context.naturalFind(' '.join(args))
     if matches is None:
-        return None
+        return []
     elif isinstance(matches, set):
         result = []
         for key in matches:
@@ -82,7 +83,16 @@ def findEquip(output, context, player, *args):
     for slot, item in player.attributes.equip.items():
         if item and criterion in (slot, item.friendlyName):
             return slot, item
-    return None
+    return []
+
+
+@command('vitals')
+def vitals(output, context, player, *args):
+    values = player.attributes.vitals
+    maxVals = player.attributes.maxVitals
+    output.display("Health: {}/{}".format(values['health'],
+                                          maxVals['health']))
+    output.display("AP    : {}/{}".format(values['ap'], maxVals['ap']))
 
 
 @command('inventory')

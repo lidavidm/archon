@@ -11,6 +11,7 @@ import archon.interface
 import archon.commands
 
 import battlecommands
+import entityhooks
 
 if __name__ == '__main__':
     ds = archon.datastore.GameDatastore('demo')
@@ -23,6 +24,7 @@ if __name__ == '__main__':
         permissions={'debug': True}
         )
     archon.objects.PlayerEntityHook.template = template
+    entityhooks.EnemyEntityHook.template = data['enemies.test_enemy'].copy()
     while True:
         interface.display('Welcome to the demo.')
         interface.display('Choose an option:')

@@ -8,10 +8,10 @@
             "take": true,
             "equip": ["left hand", "right hand"],
             "attack":{
-                "damage": [0, 10],
+                "damage": [0, 5],
                 "success": 1.00,
-                "drain": 20,
-                "fatigue": [4, 5],
+                "drain": 2,
+                "fatigue": [1, 5],
                 "cooldown": 0
             }
         }

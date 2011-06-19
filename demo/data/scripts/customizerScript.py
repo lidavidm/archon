@@ -41,6 +41,8 @@ for tries in range(3):
     if tries != 2 and output.question('Accept? '):
         break
 
+player.attributes.vitals.update(player.attributes.maxVitals)
+
 context.outputs['on'] = context.entityCache.root['data.areas.room']
 del context.contents['customizer']
 output.display(

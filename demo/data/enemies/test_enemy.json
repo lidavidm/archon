@@ -3,12 +3,41 @@
     "data": {
         "kind": "enemy",
         "attributes":{
-            "name": "Imp (Tester)",
-            "description": "An imp, designed for your testing pleasure.",
-            "acumen":{
-                "physical": 15,
-                "mental": 22,
-                "spiritual": -10
+            "character": {
+                "name": "Imp (Tester)",
+                "description": "An imp, designed for your testing pleasure."
+            },
+            "inventory": [],
+            "equip": {
+                "left hand": null,
+                "right hand": null,
+                "head": null,
+                "neck": null,
+                "shoulders": null,
+                "legs": null,
+                "feet": null
+            },
+            "acumen": {
+                    "physical": 15,
+                    "mental": 22,
+                    "spiritual": -10
+            },
+            "stats":{
+                "template":{
+                    "success": "increasing",
+                    "evade": "increasing",
+                    "absorb": "increasing",
+                    "fatigue": "decreasing",
+                    "drain": "decreasing"
+                }
+            },
+            "vitals":{
+                "health": 0,
+                "ap": 0
+            },
+            "maxVitals":{
+                "health": [0.1, 0.3, 0.2],
+                "ap": [0.1, 0.2, 0.2]
             }
         }
     }

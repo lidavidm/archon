@@ -1,5 +1,6 @@
 import math
 import types
+import random
 import datetime
 import collections
 
@@ -119,7 +120,12 @@ class PlayerEntityHook(EntityHook):
 
     def __init__(self, entity, attributes):
         super().__init__(entity, attributes)
-        self.attributes['vitals'] = self.maxVitals
+
+    def damage(self, damage, kind, target='health'):
+        absorb = random.uniform(*self.stats[kind]['absorb'])
+        realDamage = absorb * damage
+        self.vitals[target] -= realDamage
+        return realDamage
 
     @property
     def character(self):
@@ -135,7 +141,7 @@ class PlayerEntityHook(EntityHook):
 
     @property
     def acumen(self):
-        return self.character['acumen']
+        return self.attributes['acumen']
 
     @property
     def vitals(self):
@@ -145,17 +151,18 @@ class PlayerEntityHook(EntityHook):
     def maxVitals(self):
         res = {}
         for vital, multipliers in self.attributes['maxVitals'].items():
-            res[vital] = sum(multiplier * acumen for multiplier, acumen in
-                             zip(multipliers, sorted(self.acumen.values())))
+            res[vital] = sum(
+                multiplier * abs(acumen) for multiplier, acumen in
+                zip(multipliers, sorted(self.acumen.values())))
         return res
 
     @property
     def stats(self):
         allStats = collections.defaultdict(dict)
-        template = PlayerEntityHook.template.attributes['stats']['template']
+        template = self.__class__.template.attributes['stats']['template']
         for acumenName, acumenSkill in self.acumen.items():
             for statName, statType in template.items():
-                eqData = PlayerEntityHook.equations[statType]
+                eqData = self.__class__.equations[statType]
                 baseStat = eqData['equation'](acumenSkill * eqData['scale'])
                 allStats[acumenName][statName] = [baseStat * (1 + v) for v
                                                   in eqData['variance']]
@@ -165,14 +172,6 @@ class PlayerEntityHook(EntityHook):
         return 'You are {name}, a {gender}: {description}'.format(
             **self.character
               )
-
-
-class EnemyEntityHook(EntityHook):
-    KIND = 'enemy'
-
-
-class WeaponEntityHook(EntityHook):
-    KIND = 'weapon'
 
 
 class Entity(object):
