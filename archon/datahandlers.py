@@ -85,7 +85,9 @@ def room(key, data, cache):
 
         if ',' in eKey:
             eKey, prefix = eKey.split(',')
-            entityInfo['prefix'] = prefix.strip()
+            prefix = prefix.strip()
+            eKey = archon.objects.EntityKey(eKey, prefix)
+            entityInfo['prefix'] = prefix
 
         if 'options' in eData:
             eData['options'] = eData['options'].split(',')

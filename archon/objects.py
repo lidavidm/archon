@@ -122,7 +122,10 @@ class PlayerEntityHook(EntityHook):
         super().__init__(entity, attributes)
 
     def damage(self, damage, kind, target='health'):
-        absorb = random.uniform(*self.stats[kind]['absorb'])
+        if kind is None:
+            absorb = 1
+        else:
+            absorb = random.uniform(*self.stats[kind]['absorb'])
         realDamage = absorb * damage
         self.vitals[target] -= realDamage
         return realDamage
@@ -151,9 +154,9 @@ class PlayerEntityHook(EntityHook):
     def maxVitals(self):
         res = {}
         for vital, multipliers in self.attributes['maxVitals'].items():
-            res[vital] = sum(
-                multiplier * abs(acumen) for multiplier, acumen in
-                zip(multipliers, sorted(self.acumen.values())))
+            res[vital] = round(sum(
+                    multiplier * abs(acumen) for multiplier, acumen in
+                    zip(multipliers, sorted(self.acumen.values()))))
         return res
 
     @property
@@ -252,6 +255,11 @@ EntityData = collections.namedtuple(
     )
 
 
+class EntityKey(collections.namedtuple('EntityKey', 'key prefix')):
+    def __str__(self):
+        return ' '.join([self.prefix, self.key])
+
+
 class Room(Entity):
     ROOM_ENTITY_KIND = 'room'
 
@@ -267,34 +275,34 @@ class Room(Entity):
         """
         Attempt to find an entity key based on a variety of criteria.
 
-        Returns None if there is no match.
-
         If there is no unique entity matched, return a set of all possible
-        matches. Else, return the only match.
+        matches. Else, return the only match. Returns None if there is no
+        match.
+
+        This method is case-insensitive.
         """
-        # identity, prefix-identity, or key, with key taking precedence
+        criteria = [word.strip().lower() for word in text.split()]
         matches = set()
-        if text in self.contents:  # it's a key
-            matches.add(text)
-
-        crit = text.split()
-        if not crit:
+        for eKey in self.contents:
+            prefix = [word.strip().lower() for word in eKey.prefix.split()]
+            key = [word.strip().lower() for word in eKey.key.split()]
+            prefixLength, keyLength = len(prefix), len(key)
+            # 2 cases: only identity, or prefix-identity
+            if len(criteria) < prefixLength + keyLength:
+                # in this case, only identity
+                if criteria == key:
+                    matches.add(eKey)
+            else:
+                if (criteria[:prefixLength] == prefix and
+                    criteria[prefixLength:] == key):
+                    matches.add(eKey)
+        if not matches:
             return None
-
-        # find all entities for the identity specified
-        for key, entity in self.contents.items():
-            if entity[1] == crit[-1]:
-                matches.add(key)
-        if matches:
-            if len(matches) == 1:
-                return matches.pop()  # only one match
-            if len(crit) > 1:  # there's a prefix
-                prefix = text[:-len(crit[-1])].rstrip()  # get the prefix
-                for key, entity in self.contents.items():
-                    if entity[4] == prefix and entity[1] == crit[-1]:
-                        return key  # prefix-identity should be unique
+        elif len(matches) == 1:
+            return matches.pop()
+        else:
             return matches
-        return None
+
 
     def add(self, entityLocation, key,
             location='', description='', prefix='', options=None):
@@ -330,8 +338,7 @@ class Room(Entity):
                     entity = self.entityCache.lookup(entity[0])
                     return entity.describe()
                 else:
-                    text = 'There is {prefix}{identity}{location}.'.format(
-                        prefix=entity[4] + ' ' if entity[4] else '',
+                    text = 'There is {identity}{location}.'.format(
                         identity=entity[1],
                         location=' ' + entity[2] if entity[2] else ''
                         ).strip()

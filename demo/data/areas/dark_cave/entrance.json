@@ -11,6 +11,10 @@
                 "entity": "data.enemies.test_enemy",
                 "location": "in front of you",
                 "description": "perhaps something you could defeat"
+            },
+            "imp, another": {
+                "entity": "data.enemies.test_enemy",
+                "location": "blocking the route to the rest of the cave"
             }
         },
         "outputs":{
