@@ -54,11 +54,11 @@ def find(output, context, player, *args):
         result = []
         for key in matches:
             entity = context.allContents[key]
-            result.append((entity, context.entityCache.lookup(entity[0])))
+            result.append((entity, context.entityFor(key)))
         return result
     else:
         entity = context.allContents[matches]
-        return [(entity, context.entityCache.lookup(entity[0]))]
+        return [(entity, context.entityFor(matches))]
 
 
 def findInventory(output, context, player, *args):
@@ -184,7 +184,7 @@ def use(output, context, player, *item: find):
         # idea: use function annotations to determine which argument
         # represents which desired object
         if function == 'script':
-            script = context.entityCache[arguments[0]]
+            script = context.entityCache.lookup(arguments[0])
             namespace = {'output': output,
                          'context': context,
                          'player': player}
@@ -257,7 +257,7 @@ def describe(output, context, player, *args):
         output.display(player.describe())
     else:
         items = find(output, context, player, *args)
-        if items is None:
+        if not items:
             output.error("What did you want to describe?")
         elif len(items) > 1:
             output.error("That was ambiguous. Did you mean:")

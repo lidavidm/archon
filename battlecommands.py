@@ -20,6 +20,7 @@ class Effect(collections.namedtuple('Effect', 'turns target amount')):
 
 
 enemy = archon.commands.find
+# TODO: also lookup by index (for duplicate enemies)
 
 
 def ProxyInterface(parent):
@@ -28,14 +29,11 @@ def ProxyInterface(parent):
             lastCommand = ''
             while True:
                 try:
-                    self.promptData['turn'] = 'Turn {}'.format(
-                        context.attributes['turn']
-                        )
-                    self.promptData['health'] = 'HP {}'.format(
-                        player.attributes.vitals['health']
-                        )
-                    self.promptData['ap'] = 'AP {}'.format(
-                        player.attributes.vitals['ap']
+                    vitals = player.attributes.vitals
+                    self.promptData.update(
+                        turn='Turn {}'.format(context.attributes['turn']),
+                        hp='HP {:.1g}'.format(vitals['health']),
+                        ap='AP {:.1g}'.format(vitals['ap'])
                         )
                     cmd = self.prompt(self.replPrompt).split()
                     lastCommand = cmd[0] if cmd else lastCommand
@@ -72,10 +70,10 @@ def applyBattleEffects(output, context, player):
 @battlecommand('playerTurn')
 def playerTurn(output, context, player, *args):
     context.attributes['turn'] += 1
-    for key, data in context.contents.items():
-        entity = context.entityCache.lookup(data.objectLocation)
+    for key in context.contents:
+        entity = context.entityFor(key)
         if entity.kind == 'enemy':
-            output.display('{}: {} HP'.format(
+            output.display('{}: {:.1g} HP'.format(
                     entity.friendlyName,
                     entity.attributes.vitals['health']
                     ))
@@ -91,6 +89,7 @@ def enemyTurn(output, context, player, *args):
 
 @archon.commands.command('fight')
 def fight(output, context, player, *enemy: archon.commands.find):
+    # TODO doesn't check if enemy found was ambiguous
     if not enemy or enemy[0][1].kind != 'enemy':
         raise output.error("You can't fight that.")
     battlecommand('battle').data = {'effects': {
@@ -107,7 +106,6 @@ def fight(output, context, player, *enemy: archon.commands.find):
     scene.entityCache = context.entityCache
     scene.add(data.objectLocation, data.key, data.location,
               data.description, data.prefix, data.options)
-    # TODO find way of generating key for multiple-enemy battles
     # XXX problem: entity object is recreated each time - how to preserve
     # enemy data through turns?
     battleOutput = ProxyInterface(output.__class__)()
@@ -129,16 +127,20 @@ def attack(output, context, player, *target: enemy):
     stats = player.attributes.stats['physical']
     physicalAcumen = player.attributes.acumen['physical']
     for weapon in weapons:
+        apCost = weapon.attributes.apUse(multiplier=stats['drain'])
+        player.attributes.damage(apCost, None, 'ap')
         if weapon.attributes.hits(multiplier=stats['success']):
             damage = weapon.attributes.damage(multiplier=physicalAcumen)
-            apCost = weapon.attributes.apUse(multiplier=stats['drain'])
             fatigue, fatigueTurns = weapon.attributes.fatigue(
                 multiplier=stats['fatigue'])
-            realDamage = target.attributes.damage(damage, 'physical')
-            output.display("You hit with {} for {}".format(
-                    weapon.friendlyName,
-                    realDamage
-                    ))
+            if apCost <= player.attributes.vitals['ap']:
+                realDamage = target.attributes.damage(damage, 'physical')
+                output.display("You hit with {} for {}".format(
+                        weapon.friendlyName,
+                        realDamage
+                        ))
+            else:
+                output.display("You don't have enough AP to attack.")
         else:
             output.display("You missed with {}".format(
                     weapon.friendlyName

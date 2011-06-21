@@ -6,6 +6,10 @@ import archon.objects
 class EnemyEntityHook(archon.objects.PlayerEntityHook):
     KIND = 'enemy'
 
+    def __init__(self, entity, attributes):
+        super().__init__(entity, attributes)
+        self.attributes['friendlyName'] = attributes['character']['name']
+
 
 class WeaponEntityHook(archon.objects.EntityHook):
     KIND = 'weapon'
@@ -20,13 +24,13 @@ class WeaponEntityHook(archon.objects.EntityHook):
 
     def damage(self, multiplier):
         multiplier /= 20
-        return round(random.randint(*self.stats['damage']) * multiplier)
+        return random.randint(*self.stats['damage']) * multiplier
 
     def apUse(self, multiplier):
         multiplier = random.uniform(*multiplier)
-        return round(multiplier * self.stats['drain'])
+        return multiplier * self.stats['drain']
 
     def fatigue(self, multiplier):
         multiplier = random.uniform(*multiplier)
-        return (round(multiplier * self.stats['fatigue'][0]),
+        return (multiplier * self.stats['fatigue'][0],
                 self.stats['fatigue'][1])

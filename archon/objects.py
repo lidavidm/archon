@@ -265,8 +265,9 @@ class Room(Entity):
 
     def __init__(self, name, description, cache):
         super().__init__(name, Room.ROOM_ENTITY_KIND, {})
+        self.entityCache = cache
+        self._entityCopies = {}
         self._description = description
-        self._entityCache = cache
         self._contents = {}
         self._outputs = {}
         self.area = None
@@ -303,7 +304,6 @@ class Room(Entity):
         else:
             return matches
 
-
     def add(self, entityLocation, key,
             location='', description='', prefix='', options=None):
         """
@@ -327,6 +327,12 @@ class Room(Entity):
     def remove(self, key):
         del self._contents[key]
 
+    def entityFor(self, key):
+        if key not in self._entityCopies:
+            loc = self.contents[key].objectLocation
+            self._entityCopies[key] = self._entityCache.lookup(loc).copy()
+        return self._entityCopies[key]
+
     def describe(self, key=None, verbose=False):
         """
         Describe the specified object, or if not given, the room.
@@ -335,7 +341,7 @@ class Room(Entity):
             entity = self.allContents[key]
             if key in self.contents:
                 if verbose:
-                    entity = self.entityCache.lookup(entity[0])
+                    entity = self.entityFor(key)
                     return entity.describe()
                 else:
                     text = 'There is {identity}{location}.'.format(
