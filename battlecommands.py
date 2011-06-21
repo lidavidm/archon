@@ -32,8 +32,8 @@ def ProxyInterface(parent):
                     vitals = player.attributes.vitals
                     self.promptData.update(
                         turn='Turn {}'.format(context.attributes['turn']),
-                        hp='HP {:.1g}'.format(vitals['health']),
-                        ap='AP {:.1g}'.format(vitals['ap'])
+                        hp='HP {:.1f}'.format(vitals['health']),
+                        ap='AP {:.1f}'.format(vitals['ap'])
                         )
                     cmd = self.prompt(self.replPrompt).split()
                     lastCommand = cmd[0] if cmd else lastCommand
@@ -73,7 +73,7 @@ def playerTurn(output, context, player, *args):
     for key in context.contents:
         entity = context.entityFor(key)
         if entity.kind == 'enemy':
-            output.display('{}: {:.1g} HP'.format(
+            output.display('{}: {:.1f} HP'.format(
                     entity.friendlyName,
                     entity.attributes.vitals['health']
                     ))
@@ -128,21 +128,22 @@ def attack(output, context, player, *target: enemy):
     physicalAcumen = player.attributes.acumen['physical']
     for weapon in weapons:
         apCost = weapon.attributes.apUse(multiplier=stats['drain'])
-        player.attributes.damage(apCost, None, 'ap')
-        if weapon.attributes.hits(multiplier=stats['success']):
-            damage = weapon.attributes.damage(multiplier=physicalAcumen)
-            fatigue, fatigueTurns = weapon.attributes.fatigue(
-                multiplier=stats['fatigue'])
-            if apCost <= player.attributes.vitals['ap']:
+        if apCost <= player.attributes.vitals['ap']:
+            player.attributes.damage(apCost, None, 'ap')
+            if weapon.attributes.hits(multiplier=stats['success']):
+                damage = weapon.attributes.damage(multiplier=physicalAcumen)
+                fatigue, fatigueTurns = weapon.attributes.fatigue(
+                    multiplier=stats['fatigue'])
                 realDamage = target.attributes.damage(damage, 'physical')
-                output.display("You hit with {} for {}".format(
+                output.display("You hit with {} for {:.1f}".format(
                         weapon.friendlyName,
                         realDamage
                         ))
             else:
-                output.display("You don't have enough AP to attack.")
+                output.display("You missed with {}".format(
+                        weapon.friendlyName
+                        ))
         else:
-            output.display("You missed with {}".format(
-                    weapon.friendlyName
-                    ))
+            output.display("You don't have enough AP to attack.")
+
     battlecommand.get('enemyTurn')(output, context, player)
