@@ -74,6 +74,13 @@ class EntityHook(collections.MutableMapping):
     def attributes(self):
         return self._attributes
 
+    @property
+    def friendlyName(self):
+        if 'friendlyName' in self:
+            return self['friendlyName']
+        else:
+            return self.entity.name
+
     def dynamicproperty(func):
         func._dynamicProperty = True
         return func
@@ -92,7 +99,7 @@ class RoomEntityHook(EntityHook):
     def timeString(self):
         return self.attributes['time'].strftime('%a, %b %d %H:%M')
 
-    @EntityHook.dynamicproperty
+    @property
     def friendlyName(self):
         name = self.attributes['friendlyName']
         if self.entity.area:
@@ -128,7 +135,15 @@ class PlayerEntityHook(EntityHook):
             absorb = random.uniform(*self.stats[kind]['absorb'])
         realDamage = absorb * damage
         self.vitals[target] -= realDamage
+        if self.vitals[target] < 0:
+            self.vitals[target] = 0
+        elif self.vitals[target] > self.maxVitals[target]:
+            self.vitals[target] = self.maxVitals[target]
         return realDamage
+
+    @property
+    def friendlyName(self):
+        return self.character['name']
 
     @property
     def character(self):
@@ -230,7 +245,7 @@ class Entity(object):
 
     @property
     def friendlyName(self):
-        return self.attributes.get('friendlyName', self.name)
+        return self.attributes.friendlyName
 
     @property
     def attributes(self):

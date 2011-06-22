@@ -232,7 +232,7 @@ def enter(output, context, player, *target: find):
             target = option[3:].strip()
             target = context.entityCache.lookup(target)
             if output.question(
-                "Go to {}? ".format(target.attributes['friendlyName'])
+                "Go to {}? ".format(target.friendlyName)
                 ):
                 if target.area != context.area:
                     output.display(target.area.describe())

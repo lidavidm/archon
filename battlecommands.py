@@ -12,11 +12,40 @@ class battlecommand(archon.commands.command):
     pass
 
 
-class Effect(collections.namedtuple('Effect', 'turns target amount')):
+class Effect:
+    """
+    Defines an effect from battle, such as healing, that is multi-turn.
+    """
+    # reorder params - should this just be another entity?
+    def __init__(self, participle, turns, amount, targetName, target):
+        """
+        :param participle: A past participle describing the effect (e.g.
+                           "healed" or "damaged by fire").
+        :param turns: The number of turns to run the effect for. If
+                      negative, then the effect is infinite.
+        :param amount: The effect magnitude.
+        :param targetName: The name of the target.
+        :param target: A function, accepting the amount as a parameter, that
+                       applies the effect, and optionally returns a value
+                       denoting the actual magnitude of the effect.
+
+        When describing an effect, a template of the form "{targetName} was
+        {participle} for {magnitude}" will be used.
+        """
+        self.participle = participle
+        self.turns = turns
+        self.amount = amount
+        self.targetName = targetName
+        self.target = target
+
     @classmethod
-    def healing(cls):
-        pass
-# target should be a callable or property
+    def healing(cls, participle, turns, amount,
+                targetEntity, targetAttribute):
+        def _healing(amt):
+            targetEntity.attributes.damage(-amount, None, targetAttribute)
+
+        return cls(participle, turns, amount,
+                   targetEntity.friendlyName, _healing)
 
 
 enemy = archon.commands.find
@@ -52,19 +81,21 @@ def ProxyInterface(parent):
     return ProxyInterface
 
 
-def _healPlayerAP(player):
-    def _healAP(amount):
-        player.vitals['ap'] += amount
-        if player.vitals['ap'] > player.maxVitals['ap']:
-            player.vitals['ap'] = player.maxVitals['ap']
-    return _healAP
-
-
 # XXX some way of hiding this from the player
 @battlecommand('applyBattleEffects')
 def applyBattleEffects(output, context, player):
     for effect in battlecommand('battle').data['effects'][player]:
-        pass  # apply fatigue, continuous damage, etc.
+        magnitude = effect.target(effect.amount) or effect.amount
+        effect.turns -= 1
+        output.display(
+            "{targetName} was {participle} for {magnitude}".format(
+                targetName=effect.targetName,
+                participle=effect.participle,
+                magnitude=magnitude
+                )
+            )
+        if effect.turns == 0:  # negative value -> infinite turns
+            battlecommand('battle').data['effects'].remove(effect)
 
 
 @battlecommand('playerTurn')
@@ -94,8 +125,10 @@ def fight(output, context, player, *enemy: archon.commands.find):
         raise output.error("You can't fight that.")
     battlecommand('battle').data = {'effects': {
             player: [
-                Effect(-1, _healPlayerAP(player),
-                        player.attributes.maxVitals['ap'] / 10)
+                Effect.healing("healed", -1,
+                               player.attributes.maxVitals['ap'] / 25,
+                               player, 'ap'
+                               )
                 ]
             }}
     data, enemy = enemy[0]
