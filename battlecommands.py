@@ -12,42 +12,6 @@ class battlecommand(archon.commands.command):
     pass
 
 
-class Effect:
-    """
-    Defines an effect from battle, such as healing, that is multi-turn.
-    """
-    # reorder params - should this just be another entity?
-    def __init__(self, participle, turns, amount, targetName, target):
-        """
-        :param participle: A past participle describing the effect (e.g.
-                           "healed" or "damaged by fire").
-        :param turns: The number of turns to run the effect for. If
-                      negative, then the effect is infinite.
-        :param amount: The effect magnitude.
-        :param targetName: The name of the target.
-        :param target: A function, accepting the amount as a parameter, that
-                       applies the effect, and optionally returns a value
-                       denoting the actual magnitude of the effect.
-
-        When describing an effect, a template of the form "{targetName} was
-        {participle} for {magnitude}" will be used.
-        """
-        self.participle = participle
-        self.turns = turns
-        self.amount = amount
-        self.targetName = targetName
-        self.target = target
-
-    @classmethod
-    def healing(cls, participle, turns, amount,
-                targetEntity, targetAttribute):
-        def _healing(amt):
-            targetEntity.attributes.damage(-amount, None, targetAttribute)
-
-        return cls(participle, turns, amount,
-                   targetEntity.friendlyName, _healing)
-
-
 enemy = archon.commands.find
 # TODO: also lookup by index (for duplicate enemies)
 
@@ -119,28 +83,28 @@ def enemyTurn(output, context, player, *args):
 
 
 @archon.commands.command('fight')
-def fight(output, context, player, *enemy: archon.commands.find):
-    # TODO doesn't check if enemy found was ambiguous
-    if not enemy or enemy[0][1].kind != 'enemy':
-        raise output.error("You can't fight that.")
-    battlecommand('battle').data = {'effects': {
-            player: [
-                Effect.healing("healed", -1,
-                               player.attributes.maxVitals['ap'] / 25,
-                               player, 'ap'
-                               )
-                ]
-            }}
-    data, enemy = enemy[0]
+def fight(output, context, player, *enemies: archon.commands.findMulti):
+    if not enemies:
+        raise output.error("You need to fight something.")
     scene = context.entityCache.lookup(
         context.area.attributes['battleScene']
         )
     scene.attributes['turn'] = 0
     scene.entityCache = context.entityCache
-    scene.add(data.objectLocation, data.key, data.location,
-              data.description, data.prefix, data.options)
-    # XXX problem: entity object is recreated each time - how to preserve
-    # enemy data through turns?
+    for data, enemy in enemies:
+        if enemy.kind != 'enemy':
+            raise output.error("You can't fight that.")
+        scene.add(data.objectLocation, data.key, data.location,
+                  data.description, data.prefix, data.options)
+    battlecommand('battle').data = {
+        'effects': {
+            player: [] # [Effect.healing("healed", -1,
+                    #                 player.attributes.maxVitals['ap'] / 25,
+                    #                 player, 'ap'
+                    #                 )]
+            },
+        'enemies': [x[1] for x in enemies]  # get only the entities
+        }
     battleOutput = ProxyInterface(output.__class__)()
     battleOutput.repl(scene, player, battlecommand)
     output.display('Battle ended.')
@@ -160,22 +124,21 @@ def attack(output, context, player, *target: enemy):
     stats = player.attributes.stats['physical']
     physicalAcumen = player.attributes.acumen['physical']
     for weapon in weapons:
-        apCost = weapon.attributes.apUse(multiplier=stats['drain'])
-        if apCost <= player.attributes.vitals['ap']:
-            player.attributes.damage(apCost, None, 'ap')
-            if weapon.attributes.hits(multiplier=stats['success']):
-                damage = weapon.attributes.damage(multiplier=physicalAcumen)
-                fatigue, fatigueTurns = weapon.attributes.fatigue(
-                    multiplier=stats['fatigue'])
-                realDamage = target.attributes.damage(damage, 'physical')
-                output.display("You hit with {} for {:.1f}".format(
-                        weapon.friendlyName,
-                        realDamage
-                        ))
+        weaponEffect = weapon.attributes.effect.attributes
+        effect = weaponEffect.calculate(physicalAcumen, stats)
+        if effect.drain <= player.attributes.vitals['ap']:
+            player.attributes.damage(effect.drain, 'vital', None, 'ap')
+            if effect.hits():
+                realDamage = target.attributes.damage(
+                    effect.magnitude, **effect.target._asdict())
+                output.display(
+                    weaponEffect.message(
+                        'success',
+                        user='You', target='the enemy',
+                        magnitude=realDamage, item=weapon.friendlyName))
             else:
-                output.display("You missed with {}".format(
-                        weapon.friendlyName
-                        ))
+                output.display(
+                    weaponEffect.message('failure', user='You'))
         else:
             output.display("You don't have enough AP to attack.")
 

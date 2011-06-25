@@ -128,12 +128,13 @@ class PlayerEntityHook(EntityHook):
     def __init__(self, entity, attributes):
         super().__init__(entity, attributes)
 
-    def damage(self, damage, kind, target='health'):
+    def damage(self, magnitude, category, kind, target):
+        # XXX category ignored - how to deal with damaged stats?
         if kind is None:
             absorb = 1
         else:
             absorb = random.uniform(*self.stats[kind]['absorb'])
-        realDamage = absorb * damage
+        realDamage = absorb * magnitude
         self.vitals[target] -= realDamage
         if self.vitals[target] < 0:
             self.vitals[target] = 0
@@ -197,6 +198,7 @@ class Entity(object):
         """
         :param name: The name of the entity (the key in the datastore)
         :param kind: The entity's kind (enemy, door, object, etc.)
+        :param attributes: The attributes for the entity (data).
 
         Change the type of an entity when it needs special
         loading/processing, as with a room, but the kind otherwise.
@@ -210,6 +212,7 @@ class Entity(object):
             self._attributes = attributes
 
     def copy(self):
+        """Shallow-copy the entity: copy the attributes."""
         return Entity(self.name, self.kind, self.attributes.copy())
 
     # no staticmethod() declaration needed! it causes problems anyways...
@@ -245,6 +248,7 @@ class Entity(object):
 
     @property
     def friendlyName(self):
+        """The entity name for display purposes, defaults to name."""
         return self.attributes.friendlyName
 
     @property
@@ -257,6 +261,12 @@ class Entity(object):
 
     @property
     def entityCache(self):
+        """
+        The datastore/cache this entity is located in.
+
+        .. warning:: Do NOT use this directly; use :py:meth:`Room.entityFor`
+                     instead in most cases.
+        """
         return self._entityCache
 
     @entityCache.setter

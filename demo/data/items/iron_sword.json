@@ -7,12 +7,18 @@
             "describe": "A plain iron sword.",
             "take": true,
             "equip": ["left hand", "right hand"],
-            "attack":{
-                "damage": [0, 5],
-                "success": 1.00,
-                "drain": 2,
-                "fatigue": [1, 5],
-                "cooldown": 0
+            "effect":{
+                "template": "data.effects.template_melee",
+                "data": {
+                    "damage":{
+                        "target": "vital:physical:health",
+                        "magnitude": [0, 5],
+                        "success": 1.00,
+                        "drain": 2,
+                        "fatigue": [1, 5],
+                        "cooldown": 0
+                    }
+                }
             }
         }
     }

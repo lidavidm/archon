@@ -56,6 +56,21 @@ def pythonType(contents):
 @dataloader(ENTITY_TYPE)
 def entity(key, data, cache):
     kind = data['kind']
+    attributes = data['attributes']
+    for attr, value in attributes.items():
+        if (isinstance(value, dict) and
+            'template' in value and 'data' in value):  # embedded template
+            try:
+                template = cache.lookup(value['template']).copy()
+                template.attributes.update(value['data'])
+                # XXX this would be more resilient if it recursed into
+                # subvalues so that they could also be used as defaults
+                attributes[attr] = template
+            except KeyError:  # didn't find entity
+                warnings.warn(
+                    "Error templating {}".format(value['template']),
+                    RuntimeWarning, stacklevel=2
+                    )
     entity = archon.objects.Entity(key, kind, data['attributes'])
     return entity
 

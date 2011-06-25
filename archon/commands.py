@@ -61,6 +61,12 @@ def find(output, context, player, *args):
         return [(entity, context.entityFor(matches))]
 
 
+def findMulti(output, context, player, *args):
+    criteria = [x.strip().split() for x in ' '.join(args).split(',')]
+    return sum((find(output, context, player, *crit) for crit in criteria),
+               [])
+
+
 def findInventory(output, context, player, *args):
     '''Lookup an item by friendly name or index.'''
     if not args:

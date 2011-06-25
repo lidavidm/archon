@@ -1,0 +1,21 @@
+{
+    "type": "entity",
+    "data": {
+        "kind": "effect",
+        "attributes":{
+            "friendlyName": "Heal",
+            "describe": "A generic healing effect.",
+            "message": {
+                "success": "{target}'s {attribute} is healed for {magnitude}."
+            },
+            "heal":{
+                "target": "vital:health",
+                "magnitude": [0, 5],
+                "success": 1.00,
+                "drain": 2,
+                "fatigue": [1, 5],
+                "cooldown": 0
+            }
+        }
+    }
+}

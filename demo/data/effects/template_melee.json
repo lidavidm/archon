@@ -1,0 +1,22 @@
+{
+    "type": "entity",
+    "data": {
+        "kind": "effect",
+        "attributes":{
+            "friendlyName": "Melee Attack",
+            "describe": "A generic melee attack.",
+            "message": {
+                "success": "{user} hit {target} for {magnitude:.1f} with {item}.",
+                "failure": "{user} missed."
+            },
+            "damage":{
+                "target": "vital:physical:health",
+                "magnitude": [0, 5],
+                "success": 1.00,
+                "drain": 2,
+                "fatigue": [1, 5],
+                "cooldown": 0
+            }
+        }
+    }
+}
