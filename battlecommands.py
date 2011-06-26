@@ -7,6 +7,8 @@ import archon.commands
 import archon.common
 import archon.interface
 
+import entityhooks
+
 
 class battlecommand(archon.commands.command):
     pass
@@ -48,18 +50,15 @@ def ProxyInterface(parent):
 # XXX some way of hiding this from the player
 @battlecommand('applyBattleEffects')
 def applyBattleEffects(output, context, player):
-    for effect in battlecommand('battle').data['effects'][player]:
-        magnitude = effect.target(effect.amount) or effect.amount
-        effect.turns -= 1
-        output.display(
-            "{targetName} was {participle} for {magnitude}".format(
-                targetName=effect.targetName,
-                participle=effect.participle,
-                magnitude=magnitude
-                )
-            )
-        if effect.turns == 0:  # negative value -> infinite turns
-            battlecommand('battle').data['effects'].remove(effect)
+    effects = battlecommand('battle').data['effects']
+    for target in effects:
+        for effect in effects[target]:
+            if effect.hits():
+                target.attributes.damage(effect.magnitude,
+                                         **effect.target._asdict())
+                output.display(str(effect))
+            if effect.turns == 0:  # negative value -> infinite turns
+                effects[target].remove(effect)
 
 
 @battlecommand('playerTurn')
@@ -98,10 +97,10 @@ def fight(output, context, player, *enemies: archon.commands.findMulti):
                   data.description, data.prefix, data.options)
     battlecommand('battle').data = {
         'effects': {
-            player: [] # [Effect.healing("healed", -1,
-                    #                 player.attributes.maxVitals['ap'] / 25,
-                    #                 player, 'ap'
-                    #                 )]
+            player: [entityhooks.Effect.healing(
+                    entityhooks.EffectTarget('vital', None, 'ap'),
+                    player.attributes.maxVitals['ap'] / 30, -1, 0
+                    )]
             },
         'enemies': [x[1] for x in enemies]  # get only the entities
         }
@@ -126,20 +125,33 @@ def attack(output, context, player, *target: enemy):
     for weapon in weapons:
         weaponEffect = weapon.attributes.effect.attributes
         effect = weaponEffect.calculate(physicalAcumen, stats)
-        if effect.drain <= player.attributes.vitals['ap']:
-            player.attributes.damage(effect.drain, 'vital', None, 'ap')
-            if effect.hits():
-                realDamage = target.attributes.damage(
-                    effect.magnitude, **effect.target._asdict())
-                output.display(
-                    weaponEffect.message(
-                        'success',
-                        user='You', target='the enemy',
-                        magnitude=realDamage, item=weapon.friendlyName))
-            else:
-                output.display(
-                    weaponEffect.message('failure', user='You'))
-        else:
+        try:
+            realDamage = applyEffect(player, target, effect)
+            output.display(weaponEffect.message(
+                    'success',
+                    user='You', target='the enemy',
+                    magnitude=realDamage, item=weapon.friendlyName))
+        except EffectMissed:
+            output.display(weaponEffect.message('failure', user='You'))
+        except NotEnoughAP:
             output.display("You don't have enough AP to attack.")
 
     battlecommand.get('enemyTurn')(output, context, player)
+
+
+def applyEffect(user, target, effect):
+    if effect.drain <= user.attributes.vitals['ap']:
+        user.attributes.damage(effect.drain, 'vital', None, 'ap')
+        if effect.hits():
+            return target.attributes.damage(
+                effect.magnitude, **effect.target._asdict())
+        else:
+            raise EffectMissed
+    else:
+        raise NotEnoughAP
+
+
+class EffectMissed(Exception): pass
+
+
+class NotEnoughAP(Exception): pass

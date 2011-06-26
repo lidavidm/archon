@@ -22,12 +22,16 @@ class WeaponEntityHook(archon.objects.EntityHook):
 
 class Effect(collections.namedtuple(
         'Effect',
-        'hit target magnitude turns drain fatigue')):
+        'hit target magnitude turns drain')):
     def hits(self):
         # needed if a long-lasting effect may not always hit
         if isinstance(self.hit, collections.Callable):  # Python 3.1 issue
             return self.hit()
         return self.hit
+
+    @classmethod
+    def healing(cls, target, magnitude, turns, drain):
+        return cls(True, target, -magnitude, turns, drain)
 
 
 EffectTarget = collections.namedtuple('EffectTarget',
@@ -46,8 +50,7 @@ class EffectEntityHook(archon.objects.EntityHook):
             self.target,
             self.magnitude(acumen),
             self.turns,
-            self.drain(stats['drain']),
-            self.fatigue(stats['fatigue'])
+            self.drain(stats['drain'])
             )
 
     def hits(self, multiplier):
@@ -68,7 +71,7 @@ class EffectEntityHook(archon.objects.EntityHook):
             'vitals:fatigue',
             multiplier * self.stats['fatigue'][0],
             self.stats['fatigue'][1],
-            0, None
+            0
             )
 
     @property

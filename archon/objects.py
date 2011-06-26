@@ -273,6 +273,10 @@ class Entity(object):
     def entityCache(self, cache):
         self._entityCache = cache
 
+    def __repr__(self):
+        return "<Entity {} name={} kind={}>".format(
+            self.friendlyName, self.name, self.kind)
+
 
 EntityData = collections.namedtuple(
     'EntityData',
