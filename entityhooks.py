@@ -9,7 +9,10 @@ class EnemyEntityHook(archon.objects.PlayerEntityHook):
 
     def __init__(self, entity, attributes):
         super().__init__(entity, attributes)
-        self.attributes['friendlyName'] = attributes['character']['name']
+
+    @property
+    def friendlyName(self):
+        return self.attributes['character']['name']
 
 
 class WeaponEntityHook(archon.objects.EntityHook):
@@ -22,35 +25,53 @@ class WeaponEntityHook(archon.objects.EntityHook):
 
 class Effect(collections.namedtuple(
         'Effect',
-        'hit target magnitude turns drain')):
-    def hits(self):
-        # needed if a long-lasting effect may not always hit
-        if isinstance(self.hit, collections.Callable):  # Python 3.1 issue
-            return self.hit()
-        return self.hit
+        'hit target magnitude turns drain messages')):
 
+    def message(self, name):
+        return self.messages.messages[name].format(
+            effect=self, **self.messages.objects)
+
+
+class EffectTarget(collections.namedtuple('EffectTarget',
+                                      'category kind target')):
     @classmethod
-    def healing(cls, target, magnitude, turns, drain):
-        return cls(True, target, -magnitude, turns, drain)
+    def viaString(cls, target):
+        target = target.split(':')
+        if len(target) == 2:  # category-target with no kind
+            return EffectTarget(target[0], None, target[1])
+        elif len(target) == 3:  # category-kind-target
+            return EffectTarget(*target)
+        else:
+            raise ValueError(
+                "Improperly formatted effect target {}".format(target))
 
-
-EffectTarget = collections.namedtuple('EffectTarget',
-                                      'category kind target')
+EffectMessage = collections.namedtuple('EffectMessage',
+                                       'messages objects')
 
 
 class EffectEntityHook(archon.objects.EntityHook):
     KIND = 'effect'
 
-    def message(self, name, **kwargs):
-        return self.attributes['message'][name].format(**kwargs)
+    @classmethod
+    def healing(cls, magnitude, turns, targetAttr=None, **kwargs):
+        """
+        Create a default healing effect from the "heal" template.
+        """
+        template = cls.template['heal']
+        targetAttr = (EffectTarget.viaString(targetAttr) or
+                      template.attributes.target)
+        return Effect(
+            True, targetAttr, -magnitude, turns, 0,
+            EffectMessage(template.attributes['message'], kwargs))
 
-    def calculate(self, acumen, stats):
+    def instance(self, acumen, stats, **kwargs):
         return Effect(
             self.hits(stats['success']),
             self.target,
             self.magnitude(acumen),
             self.turns,
-            self.drain(stats['drain'])
+            self.drain(stats['drain']),
+            EffectMessage(self.attributes['message'], kwargs)
             )
 
     def hits(self, multiplier):
@@ -86,16 +107,8 @@ class EffectEntityHook(archon.objects.EntityHook):
 
     @property
     def target(self):
-        target = self.stats['target'].split(':')
-        if len(target) == 2:  # category-target with no kind
-            return EffectTarget(target[0], None, target[1])
-        elif len(target) == 3:  # category-kind-target
-            return EffectTarget(*target)
-        else:
-            raise ValueError(
-                "Improperly formatted effect target {}".format(target))
+        return EffectTarget.viaString(self.stats['target'])
 
-    @property
     def turns(self):
         # default not in data - templating requires always specifying this
         return self.stats.get('turns', 1)

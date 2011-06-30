@@ -23,6 +23,7 @@ if __name__ == '__main__':
     interface = archon.interface.ConsoleInterface(
         permissions={'debug': True}
         )
+    metadata = data['metadata']  # load the metadata
     archon.objects.PlayerEntityHook.template = template
     entityhooks.EnemyEntityHook.template = data['enemies.test_enemy'].copy()
     while True:

@@ -53,10 +53,10 @@ def applyBattleEffects(output, context, player):
     effects = battlecommand('battle').data['effects']
     for target in effects:
         for effect in effects[target]:
-            if effect.hits():
+            if effect.hit:
                 target.attributes.damage(effect.magnitude,
                                          **effect.target._asdict())
-                output.display(str(effect))
+                output.display(effect.message('success'))
             if effect.turns == 0:  # negative value -> infinite turns
                 effects[target].remove(effect)
 
@@ -97,9 +97,9 @@ def fight(output, context, player, *enemies: archon.commands.findMulti):
                   data.description, data.prefix, data.options)
     battlecommand('battle').data = {
         'effects': {
-            player: [entityhooks.Effect.healing(
-                    entityhooks.EffectTarget('vital', None, 'ap'),
-                    player.attributes.maxVitals['ap'] / 30, -1, 0
+            player: [entityhooks.EffectEntityHook.healing(
+                    player.attributes.vitals['ap'] / 30, -1,
+                    'vital:ap', target=player
                     )]
             },
         'enemies': [x[1] for x in enemies]  # get only the entities
@@ -124,15 +124,13 @@ def attack(output, context, player, *target: enemy):
     physicalAcumen = player.attributes.acumen['physical']
     for weapon in weapons:
         weaponEffect = weapon.attributes.effect.attributes
-        effect = weaponEffect.calculate(physicalAcumen, stats)
+        effect = weaponEffect.instance(physicalAcumen, stats,
+                                       user=player, target=target)
         try:
             realDamage = applyEffect(player, target, effect)
-            output.display(weaponEffect.message(
-                    'success',
-                    user='You', target='the enemy',
-                    magnitude=realDamage, item=weapon.friendlyName))
+            output.display(effect.message('success'))
         except EffectMissed:
-            output.display(weaponEffect.message('failure', user='You'))
+            output.display(effect.message('failure'))
         except NotEnoughAP:
             output.display("You don't have enough AP to attack.")
 
@@ -142,7 +140,7 @@ def attack(output, context, player, *target: enemy):
 def applyEffect(user, target, effect):
     if effect.drain <= user.attributes.vitals['ap']:
         user.attributes.damage(effect.drain, 'vital', None, 'ap')
-        if effect.hits():
+        if effect.hit:
             return target.attributes.damage(
                 effect.magnitude, **effect.target._asdict())
         else:

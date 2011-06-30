@@ -144,7 +144,7 @@ class PlayerEntityHook(EntityHook):
 
     @property
     def friendlyName(self):
-        return self.character['name']
+        return 'You'  # self.character['name']
 
     @property
     def character(self):

@@ -4,15 +4,7 @@ import warnings
 import archon.common
 import archon.objects
 
-ENTITY_TYPE = 'entity'
-ROOM_TYPE = 'room'
-DATA_TYPE = 'data'
-SCRIPT_TYPE = 'script'
-AREA_TYPE = 'area'
-JSON_DIFF_TYPE = 'jsondiff'  # TODO: structural diff of JSON for saves
 # Types dictate loading, kind denotes semantic data ("room" vs "indoors")
-
-
 class dataloader(archon.common.denoter):
     """Denotes a function that takes JSON and creates an object."""
 
@@ -50,10 +42,33 @@ def jsonType(contents):
 
 @dataparser('.py')
 def pythonType(contents):
-    return {"type": SCRIPT_TYPE, "data": contents}
+    return {"type": "script", "data": contents}
 
 
-@dataloader(ENTITY_TYPE)
+@dataloader('metadata')
+def metadata(key, data, cache):
+    for kind, data in data.items():
+        if kind == "entity_templates":
+            for entityKind, templates in data.items():
+                try:
+                    ehook = archon.objects.EntityHook.getHook(entityKind)
+                    for key, template in templates.items():
+                        templates[key] = cache.lookup(template)
+                    print(ehook, templates)
+                    ehook.template = templates
+                    print(ehook.template)
+                except archon.objects.EntityHookNotFoundError:
+                    warnings.warn(entityKind +
+                                  " entity hook not found for templating!")
+        elif kind == "metadata":
+            for path in data:
+                cache.lookup(path)  # side effect is what matters here
+        else:
+            warnings.warn(kind + " metadata kind not recognized!")
+    return data
+
+
+@dataloader('entity')
 def entity(key, data, cache):
     kind = data['kind']
     attributes = data['attributes']
@@ -75,7 +90,7 @@ def entity(key, data, cache):
     return entity
 
 
-@dataloader(AREA_TYPE)
+@dataloader('area')
 def area(key, data, cache):
     name = data['name']
     area = archon.objects.Entity(key, 'area')
@@ -85,7 +100,7 @@ def area(key, data, cache):
     return area
 
 
-@dataloader(ROOM_TYPE)
+@dataloader('room')
 def room(key, data, cache):
     description = data['describe']
     room = archon.objects.Room(key, description, cache)
@@ -140,7 +155,7 @@ def room(key, data, cache):
     return room
 
 
-@dataloader(DATA_TYPE)
+@dataloader('data')
 def data(key, data, cache):
     """
     Loads unstructured JSON data, essentially.
@@ -150,7 +165,7 @@ def data(key, data, cache):
     return data
 
 
-@dataloader(SCRIPT_TYPE)
+@dataloader('script')
 def script(key, data, cache):
     """Loads a Python script."""
     return compile(data, '<string>', 'exec')

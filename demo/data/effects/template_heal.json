@@ -6,14 +6,14 @@
             "friendlyName": "Heal",
             "describe": "A generic healing effect.",
             "message": {
-                "success": "{target}'s {attribute} is healed for {magnitude}."
+                "success": "The {effect.target.target} is healed {effect.magnitude}, for {target.friendlyName}."
             },
             "heal":{
                 "target": "vital:health",
                 "magnitude": [0, 5],
                 "success": 1.00,
-                "drain": 2,
-                "fatigue": [1, 5],
+                "drain": 0,
+                "fatigue": [0, 0],
                 "cooldown": 0
             }
         }
