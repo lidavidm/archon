@@ -18,35 +18,6 @@ enemy = archon.commands.find
 # TODO: also lookup by index (for duplicate enemies)
 
 
-def ProxyInterface(parent):
-    class ProxyInterface(parent):
-        def repl(self, context, player, commands):
-            lastCommand = ''
-            while True:
-                try:
-                    vitals = player.attributes.vitals
-                    self.promptData.update(
-                        turn='Turn {}'.format(context.attributes['turn']),
-                        hp='HP {:.1f}'.format(vitals['health']),
-                        ap='AP {:.1f}'.format(vitals['ap'])
-                        )
-                    cmd = self.prompt(self.replPrompt).split()
-                    lastCommand = cmd[0] if cmd else lastCommand
-                    cmd, args = commands.get(cmd[0]), cmd[1:]
-                    context = cmd(self, context, player, *args)
-                except archon.interface.RestartError:
-                    return
-                except archon.interface.CommandExecutionError as e:
-                    pass
-                except archon.common.DenotedNotFoundError:
-                    self.error('That is not a valid command.')
-                    close = commands.nearest(lastCommand)
-                    if close:
-                        self.display('Did you mean:')
-                        self.display('\n'.join(close))
-    return ProxyInterface
-
-
 # XXX some way of hiding this from the player
 @battlecommand('applyBattleEffects')
 def applyBattleEffects(output, context, player):
@@ -56,7 +27,13 @@ def applyBattleEffects(output, context, player):
             if effect.hit:
                 target.attributes.damage(effect.magnitude,
                                          **effect.target._asdict())
-                output.display(effect.message('success'))
+                output.display(
+                    output.format(
+                        effect.message('success'),
+                        user='second_person',
+                        target='second_person'
+                        )
+                    )
             if effect.turns == 0:  # negative value -> infinite turns
                 effects[target].remove(effect)
 
@@ -71,6 +48,12 @@ def playerTurn(output, context, player, *args):
                     entity.friendlyName,
                     entity.attributes.vitals['health']
                     ))
+    vitals = player.attributes.vitals
+    output.promptData.update(
+        turn='Turn {}'.format(context.attributes['turn']),
+        hp='HP {:.1f}'.format(vitals['health']),
+        ap='AP {:.1f}'.format(vitals['ap'])
+        )
     battlecommand.get('applyBattleEffects')(output, context, player)
 
 
@@ -104,8 +87,10 @@ def fight(output, context, player, *enemies: archon.commands.findMulti):
             },
         'enemies': [x[1] for x in enemies]  # get only the entities
         }
-    battleOutput = ProxyInterface(output.__class__)()
-    battleOutput.repl(scene, player, battlecommand)
+    olddata = output.promptData.copy()
+    output.promptData.clear()
+    output.repl(scene, player, battlecommand)
+    output.promptData.update(olddata)
     output.display('Battle ended.')
 
 

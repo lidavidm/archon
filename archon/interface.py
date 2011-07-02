@@ -21,20 +21,27 @@ class Interface(object):
     """
     def __init__(self,
                  permissions={'debug': False},
+                 messageTemplates=None,
                  questionYes=('y', 'yes'),
                  questionNo=('n', 'no'),
                  replPrompt='{data}> '):
         self.questionYes = questionYes
         self.questionNo = questionNo
         self.permissions = permissions
+        self.messageTemplates = messageTemplates
         self._replPrompt = replPrompt
         self.promptData = collections.OrderedDict()
+
+    def format(self, text, **kwargs):
+        text = text.replace("{{", "{").replace("}}", "}")
+        kwargs = {(key + 'T'): self.messageTemplates.attributes[item]
+                  for key, item in kwargs.items()}
+        return text.format(**kwargs)
 
     def prompt(self, prompt):
         pass
 
     def question(self, question, annotate=True):
-        # TODO display input choices to player
         if annotate:
             separator = ' ' if question.endswith(' ') else ''
             question = separator.join([

@@ -108,6 +108,26 @@ class RoomEntityHook(EntityHook):
             return name
 
 
+class AttributeDict(dict):
+    def __getattr__(self, key):
+        if key in self:
+            item = self[key]
+            if isinstance(item, dict):
+                return AttributeDict(item)
+            return item
+        raise AttributeError(key)
+
+
+class MessageTemplateEntityHook(EntityHook):
+    KIND = "message_template"
+
+    def __getitem__(self, key):
+        item = super().__getitem__(key)
+        if isinstance(item, dict):
+            return AttributeDict(item)
+        return item
+
+
 class PlayerEntityHook(EntityHook):
     KIND = "player"
 
@@ -209,7 +229,7 @@ class Entity(object):
             kindhook = EntityHook.getHook(kind)
             self._attributes = kindhook(self, attributes)
         except EntityHookNotFoundError:
-            self._attributes = attributes
+            self._attributes = EntityHook(self, attributes)
 
     def copy(self):
         """Shallow-copy the entity: copy the attributes."""

@@ -6,7 +6,7 @@
             "friendlyName": "Heal",
             "describe": "A generic healing effect.",
             "message": {
-                "success": "The {effect.target.target} is healed {effect.magnitude}, for {target.friendlyName}."
+                "success": "{{targetT.possessive}} {effect.target.target} is healed for {effect.magnitude}."
             },
             "heal":{
                 "target": "vital:health",

@@ -21,7 +21,8 @@ if __name__ == '__main__':
     template = save['player_template']
     player = template.copy()
     interface = archon.interface.ConsoleInterface(
-        permissions={'debug': True}
+        permissions={'debug': True},
+        messageTemplates=data['messages']
         )
     metadata = data['metadata']  # load the metadata
     archon.objects.PlayerEntityHook.template = template

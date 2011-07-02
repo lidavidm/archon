@@ -14,7 +14,7 @@
                         "target": "vital:physical:health",
                         "magnitude": [0, 5],
                         "success": 1.00,
-                        "drain": 2,
+                        "drain": 3,
                         "fatigue": [1, 5],
                         "cooldown": 0
                     }

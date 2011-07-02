@@ -4,6 +4,7 @@ import warnings
 import archon.common
 import archon.objects
 
+
 # Types dictate loading, kind denotes semantic data ("room" vs "indoors")
 class dataloader(archon.common.denoter):
     """Denotes a function that takes JSON and creates an object."""
@@ -54,9 +55,7 @@ def metadata(key, data, cache):
                     ehook = archon.objects.EntityHook.getHook(entityKind)
                     for key, template in templates.items():
                         templates[key] = cache.lookup(template)
-                    print(ehook, templates)
                     ehook.template = templates
-                    print(ehook.template)
                 except archon.objects.EntityHookNotFoundError:
                     warnings.warn(entityKind +
                                   " entity hook not found for templating!")
