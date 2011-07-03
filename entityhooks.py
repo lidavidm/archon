@@ -23,9 +23,14 @@ class WeaponEntityHook(archon.objects.EntityHook):
         return self.attributes['effect']
 
 
-class Effect(collections.namedtuple(
-        'Effect',
-        'hit target magnitude turns drain messages')):
+class Effect:
+    def __init__(self, hit, target, magnitude, turns, drain, messages):
+        self.hit = hit
+        self.target = target
+        self.magnitude = magnitude
+        self.turns = turns
+        self.drain = drain
+        self.messages = messages
 
     def message(self, name):
         return self.messages.messages[name].format(
@@ -53,7 +58,7 @@ class EffectEntityHook(archon.objects.EntityHook):
     KIND = 'effect'
 
     @classmethod
-    def healing(cls, magnitude, turns, targetAttr=None, **kwargs):
+    def healingT(cls, magnitude, turns, targetAttr=None, **kwargs):
         """
         Create a default healing effect from the "heal" template.
         """
@@ -62,6 +67,13 @@ class EffectEntityHook(archon.objects.EntityHook):
                       template.attributes.target)
         return Effect(
             True, targetAttr, -magnitude, turns, 0,
+            EffectMessage(template.attributes['message'], kwargs))
+
+    @classmethod
+    def fatigueT(cls, magnitude, turns, **kwargs):
+        template = cls.template['fatigue']
+        return Effect(
+            True, template.attributes.target, magnitude, turns, 0,
             EffectMessage(template.attributes['message'], kwargs))
 
     def instance(self, acumen, stats, **kwargs):
@@ -85,14 +97,12 @@ class EffectEntityHook(archon.objects.EntityHook):
         multiplier = random.uniform(*multiplier)
         return multiplier * self.stats['drain']
 
-    def fatigue(self, multiplier):
+    def fatigue(self, multiplier, **kwargs):
         multiplier = random.uniform(*multiplier)
-        return Effect(
-            True,
-            'vitals:fatigue',
+        return EffectEntityHook.fatigueT(
             multiplier * self.stats['fatigue'][0],
             self.stats['fatigue'][1],
-            0
+            **kwargs
             )
 
     @property

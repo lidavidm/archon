@@ -36,7 +36,7 @@ class Interface(object):
         text = text.replace("{{", "{").replace("}}", "}")
         kwargs = {(key + 'T'): self.messageTemplates.attributes[item]
                   for key, item in kwargs.items()}
-        return text.format(**kwargs)
+        return text.format(**kwargs).capitalize()
 
     def prompt(self, prompt):
         pass

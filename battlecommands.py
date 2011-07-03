@@ -34,6 +34,7 @@ def applyBattleEffects(output, context, player):
                         target='second_person'
                         )
                     )
+            effect.turns -= 1
             if effect.turns == 0:  # negative value -> infinite turns
                 effects[target].remove(effect)
 
@@ -80,7 +81,7 @@ def fight(output, context, player, *enemies: archon.commands.findMulti):
                   data.description, data.prefix, data.options)
     battlecommand('battle').data = {
         'effects': {
-            player: [entityhooks.EffectEntityHook.healing(
+            player: [entityhooks.EffectEntityHook.healingT(
                     player.attributes.vitals['ap'] / 30, -1,
                     'vital:ap', target=player
                     )]
@@ -113,6 +114,8 @@ def attack(output, context, player, *target: enemy):
                                        user=player, target=target)
         try:
             realDamage = applyEffect(player, target, effect)
+            battlecommand('battle').data['effects'][player].append(
+                weaponEffect.fatigue(stats['fatigue'], target=player))
             output.display(effect.message('success'))
         except EffectMissed:
             output.display(effect.message('failure'))

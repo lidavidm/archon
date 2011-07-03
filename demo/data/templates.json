@@ -4,7 +4,8 @@
         "entity_templates": {
             "effect": {
                 "melee_damage": "data.effects.template_melee",
-                "heal": "data.effects.template_heal"
+                "heal": "data.effects.template_heal",
+                "fatigue": "data.effects.template_fatigue"
             }
         }
     }
