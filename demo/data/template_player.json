@@ -28,7 +28,7 @@
                 "template":{
                     "success": "increasing",
                     "evade": "increasing",
-                    "absorb": "increasing",
+                    "absorb": ["increasing", -0.4, -0.4],
                     "fatigue": "decreasing",
                     "drain": "decreasing"
                 }

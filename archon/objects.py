@@ -31,10 +31,7 @@ class EntityHook(collections.MutableMapping):
 
     def __getitem__(self, key):
         """Override for custom behavior."""
-        if key in self._dynamicProperties:
-            return self._dynamicProperties[key]()
-        else:
-            return self._attributes.__getitem__(key)
+        return self._attributes.__getitem__(key)
 
     def __setitem__(self, key, value):
         """Override for custom behavior."""
@@ -126,13 +123,13 @@ class PlayerEntityHook(EntityHook):
     equations = {
         "increasing": {
             "equation": lambda x: 1 / (1 + math.exp(-x)),
-            "variance": (-0.1, 0.1),
-            "scale": 0.02
+            "variance": (-0.3, 0.05),
+            "scale": 0.007
             },
         "decreasing": {
             "equation": lambda x: 1 / math.exp(x),
-            "variance": (-0.1, 0.1),
-            "scale": 0.02
+            "variance": (-0.05, 0.3),
+            "scale": 0.007
             }
         }
 
@@ -145,7 +142,7 @@ class PlayerEntityHook(EntityHook):
             absorb = 1
         else:
             absorb = random.uniform(*self.stats[kind]['absorb'])
-        realDamage = absorb * magnitude
+        realDamage = magnitude - (absorb * magnitude)
         self.vitals[target] -= realDamage
         if self.vitals[target] < 0:
             self.vitals[target] = 0
@@ -178,6 +175,10 @@ class PlayerEntityHook(EntityHook):
         return self.attributes['vitals']
 
     @property
+    def level(self):
+        return math.floor(sum(abs(x) for x in self.acumen.values()) / 100)
+
+    @property
     def maxVitals(self):
         res = {}
         for vital, multipliers in self.attributes['maxVitals'].items():
@@ -192,16 +193,19 @@ class PlayerEntityHook(EntityHook):
         template = self.template['default'].attributes['stats']['template']
         for acumenName, acumenSkill in self.acumen.items():
             for statName, statType in template.items():
+                lbC = ubC = 0  # lower bound, upper bound constant terms
+                if isinstance(statType, list):
+                    statType, lbC, ubC = statType
                 eqData = self.__class__.equations[statType]
                 baseStat = eqData['equation'](acumenSkill * eqData['scale'])
-                allStats[acumenName][statName] = [baseStat * (1 + v) for v
-                                                  in eqData['variance']]
+                allStats[acumenName][statName] = [
+                    c + (baseStat * (1 + v)) for v, c
+                    in zip(eqData['variance'], [lbC, ubC])]
         return allStats
 
     def describe(self):
-        return 'You are {name}, a {gender}: {description}'.format(
-            **self.character
-              )
+        desc = 'You are {name}, a {gender} of level {level}: {description}'
+        return (desc.format(level=self.level, **self.character))
 
 
 class Entity(object):

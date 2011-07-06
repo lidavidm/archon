@@ -63,7 +63,7 @@ class Interface(object):
             # is True); similar for no no-answer list
             return bool(self.questionYes)
 
-    def display(self, text):
+    def display(self, text, *kwargs):
         pass
 
     def error(self, error):
@@ -107,8 +107,8 @@ class ConsoleInterface(Interface):
     def prompt(self, prompt):
         return input(prompt)
 
-    def display(self, text):
-        print(text)
+    def display(self, text, **kwargs):
+        print(text.format(**kwargs))
 
     def repl(self, context, player, commands):
         lastCommand = ''

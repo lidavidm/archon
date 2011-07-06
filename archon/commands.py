@@ -99,6 +99,13 @@ def findEquip(output, context, player, *args):
     return []
 
 
+@command('me')
+def me(output, context, player, *args):
+    command.get('describe')(output, context, player, 'me')
+    for cmdName in ('vitals', 'stats', 'inventory', 'equip'):
+        command.get(cmdName)(output, context, player)
+
+
 @command('vitals')
 def vitals(output, context, player, *args):
     values = player.attributes.vitals
@@ -106,6 +113,20 @@ def vitals(output, context, player, *args):
     output.display("Health: {}/{}".format(values['health'],
                                           maxVals['health']))
     output.display("AP    : {}/{}".format(values['ap'], maxVals['ap']))
+
+
+@command('stats')
+def stats(output, context, player, *args):
+    attrs = player.attributes
+    for acumenName in sorted(attrs.acumen):
+        output.display("{name} acumen: {value}", name=acumenName,
+                       value=attrs.acumen[acumenName])
+        stats = attrs.stats[acumenName]
+        for stat in sorted(stats):
+            output.display(
+                "\t{stat}: {value[0]:.2f} to {value[1]:.2f} multiplier",
+                stat=stat, value=stats[stat])
+        output.display("\n")
 
 
 @command('inventory')
