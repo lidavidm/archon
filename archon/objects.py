@@ -4,6 +4,8 @@ import random
 import datetime
 import collections
 
+import archon.common
+
 
 class EntityHookNotFoundError(Exception): pass
 
@@ -131,7 +133,6 @@ class MessageTemplateEntityHook(EntityHook):
 class PlayerEntityHook(EntityHook):
     KIND = "player"
 
-    template = None
     equations = {
         "increasing": {
             "equation": lambda x: 1 / (1 + math.exp(-x)),
@@ -198,7 +199,7 @@ class PlayerEntityHook(EntityHook):
     @property
     def stats(self):
         allStats = collections.defaultdict(dict)
-        template = self.__class__.template.attributes['stats']['template']
+        template = self.template['default'].attributes['stats']['template']
         for acumenName, acumenSkill in self.acumen.items():
             for statName, statType in template.items():
                 eqData = self.__class__.equations[statType]
@@ -311,6 +312,7 @@ class EntityKey(collections.namedtuple('EntityKey', 'key prefix')):
 
 class Room(Entity):
     ROOM_ENTITY_KIND = 'room'
+    onEnter = archon.common.signal('room.enter')
 
     def __init__(self, name, description, cache):
         super().__init__(name, Room.ROOM_ENTITY_KIND, {})
@@ -410,6 +412,7 @@ class Room(Entity):
 
     def enter(self, elapsedTime):
         self.attributes['time'] = elapsedTime
+        self.onEnter.send(self)
 
     def exit(self):
         return self.attributes['time']

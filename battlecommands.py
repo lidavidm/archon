@@ -21,6 +21,7 @@ class BattleEnded(Exception): pass
 
 
 class battlecommand(archon.commands.command):
+    functions = {}
     preExecute = archon.common.signal('battlecommand.preExecute')
     postExecute = archon.common.signal('battlecommand.postExecute')
 
@@ -117,7 +118,8 @@ def fight(output, context, player, *enemies: archon.commands.findMulti):
     battle = Battle(output, scene, player, enemyList)
     battlecommand('battle').data = battle
     battle.run()
-    # TODO delete enemy
+    for data, enemy in enemies:
+        del context.contents[data.key]
     output.display('Battle ended.')
 
 

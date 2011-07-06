@@ -8,11 +8,13 @@ import archon.objects
 # Types dictate loading, kind denotes semantic data ("room" vs "indoors")
 class dataloader(archon.common.denoter):
     """Denotes a function that takes JSON and creates an object."""
+    functions = {}
 
 
 class dataparser(archon.common.denoter):
     """Denotes a function that converts a file to a JSON-like representation
     of the data."""
+    functions = {}
 
 
 class dataserializer(archon.common.denoter):
@@ -22,6 +24,7 @@ class dataserializer(archon.common.denoter):
     public API of the object should expose all the needed information to
     save it to disk.
     """
+    functions = {}
 
 
 @dataparser('.json')

@@ -6,6 +6,12 @@
                 "melee_damage": "data.effects.template_melee",
                 "heal": "data.effects.template_heal",
                 "fatigue": "data.effects.template_fatigue"
+            },
+            "player": {
+                "default": "data.template_player"
+            },
+            "enemy": {
+                "default": "data.enemies.template_enemy"
             }
         }
     }

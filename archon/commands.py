@@ -13,6 +13,7 @@ class command(archon.common.denoter):
     """
     Denote a function as an command.
     """
+    functions = {}
     commandData = collections.defaultdict(None)
     preExecute = archon.common.signal('command.preExecute')
     postExecute = archon.common.signal('command.postExecute')
@@ -78,7 +79,8 @@ def findInventory(output, context, player, *args):
     criterion = ' '.join(args)
     try:
         criterion = int(criterion)
-        return list(sorted(player.attributes.inventory))[criterion]
+        return list(sorted(player.attributes.inventory,
+                           key=lambda k: k.friendlyName))[criterion]
     except IndexError:
         raise output.error("Invalid index.")
     except ValueError:
@@ -218,7 +220,7 @@ def go(output, context, player, *args):
     direction = args[0]  # XXX multiword directions?
     target = context.outputs.get(direction)
     if target:
-        if target.area != context.area:
+        if target.area != context.area and target.area:
             output.display(target.area.describe())
         target.enter(context.exit())
         return command.get('describe')(output, target, player)

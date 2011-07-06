@@ -11,15 +11,13 @@ class DenotedNotFoundError(Exception): pass
 class DenotedInvalidError(Exception): pass
 
 
-class denoter(object):
-    """
-    Denote a function as something.
-    """
+class denoter:
+    """Denote a function as something."""
     functions = {}
 
     def __init__(self, *names):
         for name in names:
-            if name in self.__class__.functions:
+            if name in self.functions:
                 raise ValueError(
                     "Name {} already in use!".format(name)
                     )
@@ -30,7 +28,7 @@ class denoter(object):
         if not (valid is True):
             raise DenotedInvalidError(valid)
         for name in self.names:
-            self.__class__.functions[name] = func
+            self.functions[name] = func
         return func
 
     @classmethod

@@ -25,8 +25,6 @@ if __name__ == '__main__':
         messageTemplates=data['messages']
         )
     metadata = data['metadata']  # load the metadata
-    archon.objects.PlayerEntityHook.template = template
-    entityhooks.EnemyEntityHook.template = data['enemies.test_enemy'].copy()
     while True:
         interface.display('Welcome to the demo.')
         interface.display('Choose an option:')
