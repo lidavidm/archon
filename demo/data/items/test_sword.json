@@ -1,0 +1,25 @@
+{
+    "type": "entity",
+    "data": {
+        "kind": "weapon",
+        "attributes":{
+            "friendlyName": "Test Sword",
+            "describe": "A powerful tester's sword.",
+            "take": true,
+            "equip": ["left hand", "right hand"],
+            "effect":{
+                "template": "data.effects.template_melee",
+                "data": {
+                    "damage":{
+                        "target": "vital:physical:health",
+                        "magnitude": [0, 100],
+                        "success": 100.00,
+                        "drain": 3,
+                        "fatigue": [1, 5],
+                        "cooldown": 0
+                    }
+                }
+            }
+        }
+    }
+}

@@ -14,6 +14,8 @@ class command(archon.common.denoter):
     Denote a function as an command.
     """
     commandData = collections.defaultdict(None)
+    preExecute = archon.common.signal('command.preExecute')
+    postExecute = archon.common.signal('command.postExecute')
 
     def __call__(self, func):
         def closure(output, context, player, *args):
@@ -24,7 +26,9 @@ class command(archon.common.denoter):
                     )
                 if not isinstance(args, collections.Iterable):
                     args = [args]
+            self.__class__.preExecute.send(self)
             res = func(output, context, player, *args)
+            self.__class__.postExecute.send(self)
             if not res:
                 res = context
             return res

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import random
 import collections
 
 import archon
@@ -10,8 +11,18 @@ import archon.interface
 import entityhooks
 
 
+class EffectMissed(Exception): pass
+
+
+class NotEnoughAP(Exception): pass
+
+
+class BattleEnded(Exception): pass
+
+
 class battlecommand(archon.commands.command):
-    pass
+    preExecute = archon.common.signal('battlecommand.preExecute')
+    postExecute = archon.common.signal('battlecommand.postExecute')
 
 
 class Battle:
@@ -29,7 +40,7 @@ class Battle:
             }
 
     def applyEffects(self, target, targetT):
-        for effect in self.effects[target]:
+        for effect in self.effects.get(target, []):
             if effect.hit:
                 target.attributes.damage(effect.magnitude,
                                          **effect.target._asdict())
@@ -43,38 +54,48 @@ class Battle:
 
     def playerTurn(self):
         self.scene.attributes['turn'] += 1
-        for key in self.scene.contents:
-            entity = self.scene.entityFor(key)
-            if entity.kind == 'enemy':
-                self.output.display('{}: {:.1f} HP'.format(
-                        entity.friendlyName,
-                        entity.attributes.vitals['health']
-                        ))
+        for enemy in self.enemies:
+            self.output.display('{}: {:.1f} HP'.format(
+                    enemy.friendlyName,
+                    enemy.attributes.vitals['health']
+                    ))
         vitals = self.player.attributes.vitals
         self.output.promptData.update(
             turn='Turn {}'.format(self.scene.attributes['turn']),
-            hp='HP {:.1f}'.format(vitals['health']),
-            ap='AP {:.1f}'.format(vitals['ap'])
+            hp='HP: {:.1f}'.format(vitals['health']),
+            ap='AP: {:.1f}'.format(vitals['ap'])
             )
         self.applyEffects(self.player, 'second_person')
 
     def enemyTurn(self):
-        for enemy in battlecommand('battle').data['enemies']:
+        for enemy in self.enemies:
             self.applyEffects(enemy, 'third_person')
+            if enemy.attributes.vitals['health'] <= 0:
+                self.enemies.remove(enemy)
+                self.output.display(enemy.friendlyName + ' died.')
+        if not self.enemies:
+            self.output.display("You win!")
+            raise BattleEnded
         self.output.display("The enemy does nothing.")
-        battlecommand.get('playerTurn')(output, context, player)
 
-    def start(self):
+    def run(self):
         olddata = self.output.promptData.copy()
         self.output.promptData.clear()
-        # hook into REPL with events to run my methods
-        self.output.repl(scene, player, battlecommand)
-        self.output.promptData.clear()
-        self.output.promptData.update(olddata)
+        battlecommand.preExecute.connect(lambda cmd: self.playerTurn(),
+                                         weak=False)
+        battlecommand.postExecute.connect(lambda cmd: self.enemyTurn(),
+                                          weak=False)
+        if random.random() > 0.5: self.enemyTurn()  # surprised!
+        try:
+            self.output.repl(self.scene, self.player, battlecommand)
+        except BattleEnded:
+            self.output.promptData.clear()
+            self.output.promptData.update(olddata)
 
 
 enemy = archon.commands.find
 # TODO: also lookup by index (for duplicate enemies)
+
 
 @archon.commands.command('fight')
 def fight(output, context, player, *enemies: archon.commands.findMulti):
@@ -85,14 +106,24 @@ def fight(output, context, player, *enemies: archon.commands.findMulti):
         )
     scene.attributes['turn'] = 0
     scene.entityCache = context.entityCache
+    enemyList = []
     for data, enemy in enemies:
         if enemy.kind != 'enemy':
             raise output.error("You can't fight that.")
+        enemy.attributes.vitals.update(enemy.attributes.maxVitals)
+        enemyList.append(enemy)
         scene.add(data.objectLocation, data.key, data.location,
                   data.description, data.prefix, data.options)
-    battle = Battle()
-    battle.start()
+    battle = Battle(output, scene, player, enemyList)
+    battlecommand('battle').data = battle
+    battle.run()
+    # TODO delete enemy
     output.display('Battle ended.')
+
+
+@battlecommand('wait', 'skip')
+def wait(output, context, player):
+    output.display("You do nothing.")
 
 
 @battlecommand('attack')
@@ -114,15 +145,13 @@ def attack(output, context, player, *target: enemy):
                                        user=player, target=target)
         try:
             realDamage = applyEffect(player, target, effect)
-            battlecommand('battle').data['effects'][player].append(
+            battlecommand('battle').data.effects[player].append(
                 weaponEffect.fatigue(stats['fatigue'], target=player))
             output.display(effect.message('success'))
         except EffectMissed:
             output.display(effect.message('failure'))
         except NotEnoughAP:
             output.display("You don't have enough AP to attack.")
-
-    battlecommand.get('enemyTurn')(output, context, player)
 
 
 def applyEffect(user, target, effect):
@@ -135,9 +164,3 @@ def applyEffect(user, target, effect):
             raise EffectMissed
     else:
         raise NotEnoughAP
-
-
-class EffectMissed(Exception): pass
-
-
-class NotEnoughAP(Exception): pass

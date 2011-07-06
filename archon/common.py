@@ -1,3 +1,10 @@
+import blinker
+
+
+def signal(name):
+    return blinker.signal(name)
+
+
 class DenotedNotFoundError(Exception): pass
 
 
