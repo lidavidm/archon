@@ -14,56 +14,67 @@ class battlecommand(archon.commands.command):
     pass
 
 
-enemy = archon.commands.find
-# TODO: also lookup by index (for duplicate enemies)
+class Battle:
+    def __init__(self, output, scene, player, enemies):
+        self.output = output
+        self.scene = scene
+        self.player = player
+        self.enemies = enemies
+        self.effects = {
+            player: [
+                entityhooks.EffectEntityHook.healingT(
+                    player.attributes.vitals['ap'] / 30, -1,
+                    'vital:ap', target=player
+                    )]
+            }
 
-
-# XXX some way of hiding this from the player
-@battlecommand('applyBattleEffects')
-def applyBattleEffects(output, context, player):
-    effects = battlecommand('battle').data['effects']
-    for target in effects:
-        for effect in effects[target]:
+    def applyEffects(self, target, targetT):
+        for effect in self.effects[target]:
             if effect.hit:
                 target.attributes.damage(effect.magnitude,
                                          **effect.target._asdict())
-                output.display(
-                    output.format(
-                        effect.message('success'),
-                        user='second_person',
-                        target='second_person'
-                        )
+                self.output.display(
+                    self.output.format(effect.message('success'),
+                                       target=targetT)
                     )
             effect.turns -= 1
             if effect.turns == 0:  # negative value -> infinite turns
-                effects[target].remove(effect)
+                self.effects[target].remove(effect)
+
+    def playerTurn(self):
+        self.scene.attributes['turn'] += 1
+        for key in self.scene.contents:
+            entity = self.scene.entityFor(key)
+            if entity.kind == 'enemy':
+                self.output.display('{}: {:.1f} HP'.format(
+                        entity.friendlyName,
+                        entity.attributes.vitals['health']
+                        ))
+        vitals = self.player.attributes.vitals
+        self.output.promptData.update(
+            turn='Turn {}'.format(self.scene.attributes['turn']),
+            hp='HP {:.1f}'.format(vitals['health']),
+            ap='AP {:.1f}'.format(vitals['ap'])
+            )
+        self.applyEffects(self.player, 'second_person')
+
+    def enemyTurn(self):
+        for enemy in battlecommand('battle').data['enemies']:
+            self.applyEffects(enemy, 'third_person')
+        self.output.display("The enemy does nothing.")
+        battlecommand.get('playerTurn')(output, context, player)
+
+    def start(self):
+        olddata = self.output.promptData.copy()
+        self.output.promptData.clear()
+        # hook into REPL with events to run my methods
+        self.output.repl(scene, player, battlecommand)
+        self.output.promptData.clear()
+        self.output.promptData.update(olddata)
 
 
-@battlecommand('playerTurn')
-def playerTurn(output, context, player, *args):
-    context.attributes['turn'] += 1
-    for key in context.contents:
-        entity = context.entityFor(key)
-        if entity.kind == 'enemy':
-            output.display('{}: {:.1f} HP'.format(
-                    entity.friendlyName,
-                    entity.attributes.vitals['health']
-                    ))
-    vitals = player.attributes.vitals
-    output.promptData.update(
-        turn='Turn {}'.format(context.attributes['turn']),
-        hp='HP {:.1f}'.format(vitals['health']),
-        ap='AP {:.1f}'.format(vitals['ap'])
-        )
-    battlecommand.get('applyBattleEffects')(output, context, player)
-
-
-@battlecommand('enemyTurn')
-def enemyTurn(output, context, player, *args):
-    battlecommand.get('applyBattleEffects')(output, context, player)
-    output.display("The enemy does nothing.")
-    battlecommand.get('playerTurn')(output, context, player)
-
+enemy = archon.commands.find
+# TODO: also lookup by index (for duplicate enemies)
 
 @archon.commands.command('fight')
 def fight(output, context, player, *enemies: archon.commands.findMulti):
@@ -79,19 +90,8 @@ def fight(output, context, player, *enemies: archon.commands.findMulti):
             raise output.error("You can't fight that.")
         scene.add(data.objectLocation, data.key, data.location,
                   data.description, data.prefix, data.options)
-    battlecommand('battle').data = {
-        'effects': {
-            player: [entityhooks.EffectEntityHook.healingT(
-                    player.attributes.vitals['ap'] / 30, -1,
-                    'vital:ap', target=player
-                    )]
-            },
-        'enemies': [x[1] for x in enemies]  # get only the entities
-        }
-    olddata = output.promptData.copy()
-    output.promptData.clear()
-    output.repl(scene, player, battlecommand)
-    output.promptData.update(olddata)
+    battle = Battle()
+    battle.start()
     output.display('Battle ended.')
 
 
