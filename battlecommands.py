@@ -92,6 +92,7 @@ class Battle:
         except BattleEnded:
             self.output.promptData.clear()
             self.output.promptData.update(olddata)
+            self.scene.clearContents()
 
 
 enemy = archon.commands.find
@@ -119,7 +120,7 @@ def fight(output, context, player, *enemies: archon.commands.findMulti):
     battlecommand('battle').data = battle
     battle.run()
     for data, enemy in enemies:
-        del context.contents[data.key]
+        context.remove(data.key)
     output.display('Battle ended.')
 
 

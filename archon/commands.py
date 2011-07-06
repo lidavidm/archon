@@ -3,6 +3,7 @@ import sys
 import ast
 import inspect
 import difflib
+import datetime
 import traceback
 import collections
 
@@ -166,7 +167,7 @@ def take(output, context, player, *item: find):
         if not item.attributes.get("take", False):
             raise output.error("You can't take that.")
         player.attributes.inventory.append(item)
-        del context.contents[data.key]
+        context.remove(data.key)
 
 
 useFunctionRe = re.compile(
@@ -222,6 +223,7 @@ def go(output, context, player, *args):
     if target:
         if target.area != context.area and target.area:
             output.display(target.area.describe())
+        context.attributes['time'] += datetime.timedelta(minutes=20)
         target.enter(context.exit())
         return command.get('describe')(output, target, player)
     else:

@@ -376,7 +376,12 @@ class Room(Entity):
         self._outputs[direction] = target
 
     def remove(self, key):
-        del self._contents[key]
+        del self.contents[key]
+        del self._entityCopies[key]
+
+    def clearContents(self):
+        self.contents.clear()
+        self._entityCopies.clear()
 
     def entityFor(self, key):
         if key not in self._entityCopies:
