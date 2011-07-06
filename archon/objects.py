@@ -19,12 +19,6 @@ class EntityHook(collections.MutableMapping):
     def __init__(self, entity, attributes):
         self.entity = entity
         self._attributes = attributes
-        self._dynamicProperties = {}
-        for attr, prop in self.__class__.__dict__.items():
-            if hasattr(prop, '_dynamicProperty') and prop._dynamicProperty:
-                self._dynamicProperties[attr] = types.MethodType(
-                    prop, self
-                    )
 
     def __len__(self):
         return len(self._attributes)
@@ -83,10 +77,6 @@ class EntityHook(collections.MutableMapping):
         else:
             return self.entity.name
 
-    def dynamicproperty(func):
-        func._dynamicProperty = True
-        return func
-
 
 class RoomEntityHook(EntityHook):
     KIND = "room"
@@ -97,7 +87,7 @@ class RoomEntityHook(EntityHook):
             time=datetime.datetime(1000, 1, 1)
             )
 
-    @EntityHook.dynamicproperty
+    @property
     def timeString(self):
         return self.attributes['time'].strftime('%a, %b %d %H:%M')
 

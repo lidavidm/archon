@@ -114,7 +114,7 @@ class ConsoleInterface(Interface):
         lastCommand = ''
         while True:
             try:
-                self.promptData['time'] = context.attributes['timeString']
+                self.promptData['time'] = context.attributes.timeString
                 cmd = self.prompt(self.replPrompt).split()
                 lastCommand = cmd[0] if cmd else lastCommand
                 cmd, args = commands.get(cmd[0]), cmd[1:]
