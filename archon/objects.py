@@ -135,6 +135,17 @@ class PlayerEntityHook(EntityHook):
 
     def __init__(self, entity, attributes):
         super().__init__(entity, attributes)
+        # Load inventory, equip, etc. from data
+        cache = entity.entityCache
+        for slot, location in attributes['equip'].items():
+            # can be None - no item equipped, or an entity, because I might
+            # be a copy of an entity that already loaded the equipped items
+            if isinstance(location, str):
+                attributes['equip'][slot] = cache.lookup(location)
+
+    @classmethod
+    def defaultInstance(cls):
+        return cls.template['default'].copy()
 
     def damage(self, magnitude, category, kind, target):
         # XXX category ignored - how to deal with damaged stats?
@@ -209,7 +220,7 @@ class PlayerEntityHook(EntityHook):
 
 
 class Entity(object):
-    def __init__(self, name, kind, attributes={}):
+    def __init__(self, name, kind, cache, attributes={}):
         """
         :param name: The name of the entity (the key in the datastore)
         :param kind: The entity's kind (enemy, door, object, etc.)
@@ -220,15 +231,19 @@ class Entity(object):
         """
         self.name = name
         self.kind = kind
+        self.entityCache = cache
         try:
             kindhook = EntityHook.getHook(kind)
             self._attributes = kindhook(self, attributes)
         except EntityHookNotFoundError:
             self._attributes = EntityHook(self, attributes)
 
-    def copy(self):
+    def copy(self, newName=None):
         """Shallow-copy the entity: copy the attributes."""
-        return Entity(self.name, self.kind, self.attributes.copy())
+        if newName is None:
+            newName = self.name + '_copy'
+        return Entity(newName, self.kind, self.entityCache,
+                      self.attributes.copy())
 
     # no staticmethod() declaration needed! it causes problems anyways...
     def override(func):
@@ -309,8 +324,7 @@ class Room(Entity):
     onEnter = archon.common.signal('room.enter')
 
     def __init__(self, name, description, cache):
-        super().__init__(name, Room.ROOM_ENTITY_KIND, {})
-        self.entityCache = cache
+        super().__init__(name, Room.ROOM_ENTITY_KIND, cache, {})
         self._entityCopies = {}
         self._description = description
         self._contents = {}
@@ -442,3 +456,14 @@ class UnionDict(dict):
             if key in dictionary:
                 return dictionary[key]
         raise KeyError(key)
+
+
+class Script(collections.Mapping):
+    output = context = player = None
+    # update with a command.postExecute hook, or better, an interface hook
+    # (command hooks differ)
+
+    def __init__(self, script):
+        self._script = script
+        self._namespace = {}
+        exec(script, self._namespace)

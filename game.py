@@ -17,14 +17,14 @@ if __name__ == '__main__':
     ds = archon.datastore.GameDatastore('demo')
     data = ds['data']
     save = ds['save']
+    metadata = data['metadata']  # load the metadata
     room = None
-    template = save['player_template']
-    player = template.copy()
+    player = archon.objects.PlayerEntityHook.defaultInstance()
     interface = archon.interface.ConsoleInterface(
         permissions={'debug': True},
         messageTemplates=data['messages']
         )
-    metadata = data['metadata']  # load the metadata
+
     while True:
         interface.display('Welcome to the demo.')
         interface.display('Choose an option:')

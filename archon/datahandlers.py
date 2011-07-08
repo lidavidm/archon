@@ -88,14 +88,14 @@ def entity(key, data, cache):
                     "Error templating {}".format(value['template']),
                     RuntimeWarning, stacklevel=2
                     )
-    entity = archon.objects.Entity(key, kind, data['attributes'])
+    entity = archon.objects.Entity(key, kind, cache, data['attributes'])
     return entity
 
 
 @dataloader('area')
 def area(key, data, cache):
     name = data['name']
-    area = archon.objects.Entity(key, 'area')
+    area = archon.objects.Entity(key, cache, 'area')
     area.entityCache = cache
     area.attributes['name'] = name
     area.attributes.update(data['attributes'])

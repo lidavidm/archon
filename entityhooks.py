@@ -23,6 +23,12 @@ class WeaponEntityHook(archon.objects.EntityHook):
         return self.attributes['effect']
 
 
+class EffectMissed(Exception): pass
+
+
+class NotEnoughAP(Exception): pass
+
+
 class Effect:
     def __init__(self, hit, target, magnitude, turns, drain, messages):
         self.hit = hit
@@ -35,6 +41,17 @@ class Effect:
     def message(self, name):
         return self.messages.messages[name].format(
             effect=self, **self.messages.objects)
+
+    def apply(self, user, target):
+        if self.drain <= user.attributes.vitals['ap']:
+            user.attributes.damage(self.drain, 'vital', None, 'ap')
+            if self.hit:
+                return target.attributes.damage(
+                    self.magnitude, **self.target._asdict())
+            else:
+                raise EffectMissed
+        else:
+            raise NotEnoughAP
 
 
 class EffectTarget(collections.namedtuple('EffectTarget',

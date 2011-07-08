@@ -108,7 +108,9 @@ class ConsoleInterface(Interface):
         return input(prompt)
 
     def display(self, text, **kwargs):
-        print(text.format(**kwargs))
+        if kwargs:
+            text = text.format(**kwargs)
+        print(text)
 
     def repl(self, context, player, commands):
         lastCommand = ''

@@ -11,12 +11,6 @@ import archon.interface
 import entityhooks
 
 
-class EffectMissed(Exception): pass
-
-
-class NotEnoughAP(Exception): pass
-
-
 class BattleEnded(Exception): pass
 
 
@@ -32,13 +26,12 @@ class Battle:
         self.scene = scene
         self.player = player
         self.enemies = enemies
-        self.effects = {
-            player: [
-                entityhooks.EffectEntityHook.healingT(
-                    player.attributes.vitals['ap'] / 30, -1,
-                    'vital:ap', target=player
-                    )]
-            }
+        self.effects = collections.defaultdict(list)
+        self.effects[player] = [
+            entityhooks.EffectEntityHook.healingT(
+                player.attributes.vitals['ap'] / 30, -1,
+                'vital:ap', target=player
+                )]
 
     def applyEffects(self, target, targetT):
         for effect in self.effects.get(target, []):
@@ -74,18 +67,29 @@ class Battle:
             if enemy.attributes.vitals['health'] <= 0:
                 self.enemies.remove(enemy)
                 self.output.display(enemy.friendlyName + ' died.')
+            weapons = []
+            for slot in ('left hand', 'right hand'):
+                if enemy.attributes.equip.get(slot):
+                    weapons.append(enemy.attributes.equip[slot])
+            if weapons:
+                self.output.display("Attack!")
+                performAttacks(self.output, self.scene, enemy, self.player,
+                               'physical', *weapons)
+            else:
+                self.output.display("The enemy does nothing.")
         if not self.enemies:
             self.output.display("You win!")
             raise BattleEnded
-        self.output.display("The enemy does nothing.")
 
     def run(self):
         olddata = self.output.promptData.copy()
         self.output.promptData.clear()
-        battlecommand.preExecute.connect(lambda cmd: self.playerTurn(),
-                                         weak=False)
-        battlecommand.postExecute.connect(lambda cmd: self.enemyTurn(),
-                                          weak=False)
+        battlecommand.preExecute.connect(
+            lambda cmd, **args: self.playerTurn(),
+            weak=False)
+        battlecommand.postExecute.connect(
+            lambda cmd, **args: self.enemyTurn(),
+            weak=False)
         if random.random() > 0.5: self.enemyTurn()  # surprised!
         try:
             self.output.repl(self.scene, self.player, battlecommand)
@@ -142,28 +146,21 @@ def attack(output, context, player, *target: enemy):
         raise output.error("You need a weapon equipped to attack!")
     stats = player.attributes.stats['physical']
     physicalAcumen = player.attributes.acumen['physical']
+    performAttacks(output, context, player, target, 'physical', *weapons)
+
+
+def performAttacks(output, context, user, target, acumenType, *weapons):
+    stats = user.attributes.stats[acumenType]
+    acumen = user.attributes.acumen[acumenType]
     for weapon in weapons:
-        weaponEffect = weapon.attributes.effect.attributes
-        effect = weaponEffect.instance(physicalAcumen, stats,
-                                       user=player, target=target)
+        wEffect = weapon.attributes.effect.attributes
+        effect = wEffect.instance(acumen, stats, user=user, target=target)
         try:
-            realDamage = applyEffect(player, target, effect)
-            battlecommand('battle').data.effects[player].append(
-                weaponEffect.fatigue(stats['fatigue'], target=player))
+            realDamage = effect.apply(user, target)
+            battlecommand('battle').data.effects[user].append(
+                wEffect.fatigue(stats['fatigue'], target=user))
             output.display(effect.message('success'))
-        except EffectMissed:
+        except entityhooks.EffectMissed:
             output.display(effect.message('failure'))
-        except NotEnoughAP:
+        except entityhooks.NotEnoughAP:
             output.display("You don't have enough AP to attack.")
-
-
-def applyEffect(user, target, effect):
-    if effect.drain <= user.attributes.vitals['ap']:
-        user.attributes.damage(effect.drain, 'vital', None, 'ap')
-        if effect.hit:
-            return target.attributes.damage(
-                effect.magnitude, **effect.target._asdict())
-        else:
-            raise EffectMissed
-    else:
-        raise NotEnoughAP

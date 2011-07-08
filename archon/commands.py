@@ -271,6 +271,7 @@ def enter(output, context, player, *target: find):
                 ):
                 if target.area != context.area:
                     output.display(target.area.describe())
+                context.attributes['time'] += datetime.timedelta(minutes=20)
                 target.enter(context.exit())
                 return command.get('describe')(output, target, player)
     return context  # we failed teleporting
