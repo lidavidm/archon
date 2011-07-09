@@ -6,7 +6,7 @@
             "friendlyName": "Fatigue",
             "describe": "Fatigue from battle.",
             "message": {
-                "success": "{{targetT.noun}} lose {effect.magnitude:.1f} {effect.target.target} due to fatigue."
+                "success": "{target.friendlyName}: -{effect.magnitude:.1f} {effect.target.target} due to fatigue."
             },
             "heal":{
                 "target": "vital:ap",

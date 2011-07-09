@@ -39,8 +39,8 @@ class Effect:
         self.messages = messages
 
     def message(self, name):
-        return self.messages.messages[name].format(
-            effect=self, **self.messages.objects)
+        message = self.messages.messages[name]
+        return message.format(effect=self, **self.messages.objects)
 
     def apply(self, user, target):
         if self.drain <= user.attributes.vitals['ap']:

@@ -6,8 +6,8 @@
             "friendlyName": "Melee Attack",
             "describe": "A generic melee attack.",
             "message": {
-                "success": "{user.friendlyName} hit {target.friendlyName} for about {effect.magnitude:.1f}.",
-                "failure": "{user.friendlyName} missed."
+                "success": "{user.friendlyName}: -> {target.friendlyName} -{effect.magnitude:.1f} {effect.target.target}.",
+                "failure": "{user.friendlyName}: miss"
             },
             "damage":{
                 "target": "vital:physical:health",

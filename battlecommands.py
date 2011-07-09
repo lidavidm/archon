@@ -38,10 +38,7 @@ class Battle:
             if effect.hit:
                 target.attributes.damage(effect.magnitude,
                                          **effect.target._asdict())
-                self.output.display(
-                    self.output.format(effect.message('success'),
-                                       target=targetT)
-                    )
+                self.output.display(effect.message('success'))
             effect.turns -= 1
             if effect.turns == 0:  # negative value -> infinite turns
                 self.effects[target].remove(effect)

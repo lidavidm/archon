@@ -32,12 +32,6 @@ class Interface(object):
         self._replPrompt = replPrompt
         self.promptData = collections.OrderedDict()
 
-    def format(self, text, **kwargs):
-        text = text.replace("{{", "{").replace("}}", "}")
-        kwargs = {(key + 'T'): self.messageTemplates.attributes[item]
-                  for key, item in kwargs.items()}
-        return text.format(**kwargs).capitalize()
-
     def prompt(self, prompt):
         pass
 
@@ -118,9 +112,10 @@ class ConsoleInterface(Interface):
             try:
                 self.promptData['time'] = context.attributes.timeString
                 cmd = self.prompt(self.replPrompt).split()
-                lastCommand = cmd[0] if cmd else lastCommand
-                cmd, args = commands.get(cmd[0]), cmd[1:]
-                context = cmd(self, context, player, *args)
+                if cmd:
+                    lastCommand = cmd[0]
+                    cmd, args = commands.get(cmd[0]), cmd[1:]
+                    context = cmd(self, context, player, *args)
             except (KeyboardInterrupt, RestartError):
                 return
             except CommandExecutionError as e:
