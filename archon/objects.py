@@ -1,4 +1,5 @@
 import math
+import copy
 import types
 import random
 import datetime
@@ -15,6 +16,7 @@ class EntityHook(collections.MutableMapping):
     Defines special behavior for the attributes of certain entity kinds.
     """
     KIND = ''
+    templates = {}
 
     def __init__(self, entity, attributes):
         self.entity = entity
@@ -68,11 +70,31 @@ class EntityHook(collections.MutableMapping):
         return self._attributes
 
     @property
+    def description(self):
+        return 'No description.'
+
+    @property
     def friendlyName(self):
         if 'friendlyName' in self:
             return self['friendlyName']
         else:
             return self.entity.name
+
+    def viaTemplate(self, attributes):
+        result = {}
+
+        def update(result, original, new):
+            for key, data in original.items():
+                if type(data) == dict:
+                    result[key] = {}
+                    update(result[key], data, new[key])
+                else:
+                    result[key] = new.get(key, data)
+                    if isinstance(result[key], Entity):
+                        result[key] = result[key].copy()
+        update(result, self.attributes, attributes)
+        print(result)
+        return result
 
 
 class RoomEntityHook(EntityHook):
@@ -134,6 +156,9 @@ class PlayerEntityHook(EntityHook):
         }
 
     def __init__(self, entity, attributes):
+        if self.templates:
+            attributes = self.templates['default'].attributes.viaTemplate(
+                attributes)
         super().__init__(entity, attributes)
         # Load inventory, equip, etc. from data
         cache = entity.entityCache
@@ -145,7 +170,7 @@ class PlayerEntityHook(EntityHook):
 
     @classmethod
     def defaultInstance(cls):
-        return cls.template['default'].copy()
+        return cls.templates['default'].copy()
 
     def damage(self, magnitude, category, kind, target):
         # XXX category ignored - how to deal with damaged stats?
@@ -201,7 +226,7 @@ class PlayerEntityHook(EntityHook):
     @property
     def stats(self):
         allStats = collections.defaultdict(dict)
-        template = self.template['default'].attributes['stats']['template']
+        template = self.templates['default'].attributes['stats']['template']
         for acumenName, acumenSkill in self.acumen.items():
             for statName, statType in template.items():
                 lbC = ubC = 0  # lower bound, upper bound constant terms
@@ -214,7 +239,8 @@ class PlayerEntityHook(EntityHook):
                     in zip(eqData['variance'], [lbC, ubC])]
         return allStats
 
-    def describe(self):
+    @property
+    def description(self):
         desc = 'You are {name}, a {gender} of level {level}: {description}'
         return (desc.format(level=self.level, **self.character))
 
@@ -245,36 +271,9 @@ class Entity(object):
         return Entity(newName, self.kind, self.entityCache,
                       self.attributes.copy())
 
-    # no staticmethod() declaration needed! it causes problems anyways...
-    def override(func):
-        """
-        Decorator to replace a method with a hook's method upon first call.
-
-        A method decorated with this will be replaced by a function closure
-        containing the original method. When this closure is called, it will
-        check to see if the class has an entity kind hook. If there is one,
-        and the hook has a method with the same name as the decorated
-        method, the hook method will replace the closure and be called.
-        Else, the original method will replace the closure and be called.
-        """
-        funcname = func.__name__
-
-        def _proxy(self, *args, **kwargs):
-            if issubclass(self._attributes.__class__, EntityHook):
-                if hasattr(self._attributes, funcname):
-                    setattr(self, funcname,
-                            getattr(self._attributes, funcname))
-                else:
-                    setattr(self, funcname, types.MethodType(func, self))
-            else:
-                setattr(self, funcname, types.MethodType(func, self))
-            return getattr(self, func.__name__)(*args, **kwargs)
-        _proxy.__name__ = func.__name__
-        return _proxy
-
-    @override
-    def describe(self):
-        return self.attributes.get('describe', 'No description.')
+    @property
+    def description(self):
+        return self.attributes.description
 
     @property
     def friendlyName(self):
@@ -406,7 +405,7 @@ class Room(Entity):
             if key in self.contents:
                 if verbose:
                     entity = self.entityFor(key)
-                    return entity.describe()
+                    return entity.description
                 else:
                     text = 'There is {identity}{location}.'.format(
                         identity=entity[1],

@@ -79,7 +79,7 @@ class EffectEntityHook(archon.objects.EntityHook):
         """
         Create a default healing effect from the "heal" template.
         """
-        template = cls.template['heal']
+        template = cls.templates['heal']
         targetAttr = (EffectTarget.viaString(targetAttr) or
                       template.attributes.target)
         return Effect(
@@ -88,7 +88,7 @@ class EffectEntityHook(archon.objects.EntityHook):
 
     @classmethod
     def fatigueT(cls, magnitude, turns, **kwargs):
-        template = cls.template['fatigue']
+        template = cls.templates['fatigue']
         return Effect(
             True, template.attributes.target, magnitude, turns, 0,
             EffectMessage(template.attributes['message'], kwargs))

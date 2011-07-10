@@ -64,6 +64,13 @@ class Battle:
             if enemy.attributes.vitals['health'] <= 0:
                 self.enemies.remove(enemy)
                 self.output.display(enemy.friendlyName + ' died.')
+            args = archon.commands.parseFunction(
+                enemy.attributes.character['ai'])[1]
+            enemy.entityCache.lookup(args[0]).execute(args[1],
+                                                      self.output,
+                                                      self.scene,
+                                                      enemy,
+                                                      player)
             weapons = []
             for slot in ('left hand', 'right hand'):
                 if enemy.attributes.equip.get(slot):

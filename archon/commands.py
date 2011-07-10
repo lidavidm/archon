@@ -235,7 +235,7 @@ def go(output, context, player, *args):
     target = context.outputs.get(direction)
     if target:
         if target.area != context.area and target.area:
-            output.display(target.area.describe())
+            output.display(target.area.description)
         context.attributes['time'] += datetime.timedelta(minutes=20)
         target.enter(context.exit())
         return command.get('describe')(output, target, player)
@@ -262,7 +262,7 @@ def enter(output, context, player, *target: find):
                 "Go to {}? ".format(target.friendlyName)
                 ):
                 if target.area != context.area:
-                    output.display(target.area.describe())
+                    output.display(target.area.description)
                 context.attributes['time'] += datetime.timedelta(minutes=20)
                 target.enter(context.exit())
                 return command.get('describe')(output, target, player)
@@ -282,7 +282,7 @@ def describe(output, context, player, *args):
     if not args:
         output.display(context.describe())
     elif args[0].lower() in ('me', 'myself'):
-        output.display(player.describe())
+        output.display(player.description)
     else:
         items = find(output, context, player, *args)
         if not items:
@@ -295,7 +295,7 @@ def describe(output, context, player, *args):
                         identity=data[1]
                         ))
         else:
-            output.display(items[0][1].describe())
+            output.display(items[0][1].description)
 
 
 @command('quit', 'test.exit')
