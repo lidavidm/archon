@@ -191,9 +191,19 @@ def take(output, context, player, *item: find):
         context.remove(data.key)
 
 
-useFunctionRe = re.compile(
+functionRe = re.compile(
     r'(?P<function>[a-zA-Z0-9]+)\((?P<arguments>[\S]+)\)'
     )
+
+
+def parseFunction(data):
+    result = functionRe.match(data)
+    if result:
+        result = result.groupdict()
+        function, arguments = result['function'], result['arguments']
+        arguments = [ast.literal_eval(x) for x in arguments.split(',')]
+        return function, arguments
+    return ('', '')
 
 
 @command('use')
@@ -204,36 +214,18 @@ def use(output, context, player, *item: find):
     data, item = item[0]
     if not 'use' in item.attributes:
         raise output.error("You can't use that.")
-    usage = item.attributes['use']
-    result = useFunctionRe.match(usage)
-    if result:
-        result = result.groupdict()
-        function, arguments = result['function'], result['arguments']
-        arguments = [ast.literal_eval(x.strip())
-                     for x in arguments.split(',')]
-        # this is hardcoded since it's the only one supported now
-        # currently, it simply runs the script with some globals
-        # in the future, an entity should specify what functions in the
-        # script should be run, e.g. function(script, functionName)
-        # idea: use function annotations to determine which argument
-        # represents which desired object
-        if function == 'script':
-            script = context.entityCache.lookup(arguments[0])
-            namespace = {'output': output,
-                         'context': context,
-                         'player': player}
-            try:
-                exec(script, namespace)
-                if 'elapsedTime' in namespace:
-                    context.attributes['time'] += namespace['elapsedTime']
-            except:  # yes, everything
-                output.error("It doesn't work.")
-                if output.permissions.get('debug', False):
-                    output.error(traceback.format_exc())
-        else:
+    function, arguments = parseFunction(item.attributes['use'])
+    if function == 'script':
+        script = context.entityCache.lookup(arguments[0])
+        try:
+            elapsedTime = script.execute('main', output, context, player)
+            context.attributes['time'] += elapsedTime
+        except:  # yes, everything
             output.error("It doesn't work.")
+            if output.permissions.get('debug', False):
+                output.error(traceback.format_exc())
     else:
-        output.error("You can't use that.")
+        output.error("You have no idea how to use that.")
 
 
 @command('go')

@@ -3,6 +3,7 @@ import warnings
 
 import archon.common
 import archon.objects
+import archon.scripting
 
 
 # Types dictate loading, kind denotes semantic data ("room" vs "indoors")
@@ -170,4 +171,4 @@ def data(key, data, cache):
 @dataloader('script')
 def script(key, data, cache):
     """Loads a Python script."""
-    return compile(data, '<string>', 'exec')
+    return archon.scripting.Script(compile(data, '<string>', 'exec'))

@@ -116,7 +116,7 @@ class ConsoleInterface(Interface):
                     lastCommand = cmd[0]
                     cmd, args = commands.get(cmd[0]), cmd[1:]
                     context = cmd(self, context, player, *args)
-            except (KeyboardInterrupt, RestartError):
+            except RestartError:
                 return
             except CommandExecutionError as e:
                 pass

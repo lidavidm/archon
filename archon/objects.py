@@ -456,14 +456,3 @@ class UnionDict(dict):
             if key in dictionary:
                 return dictionary[key]
         raise KeyError(key)
-
-
-class Script(collections.Mapping):
-    output = context = player = None
-    # update with a command.postExecute hook, or better, an interface hook
-    # (command hooks differ)
-
-    def __init__(self, script):
-        self._script = script
-        self._namespace = {}
-        exec(script, self._namespace)
