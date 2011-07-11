@@ -1,0 +1,15 @@
+about me
+    Nothing much.
+rumors
+    Nothing's going on, really. I'm <just boring:about me>.
+    @visible empire, rebels
+empire @invisible
+    Yeah, this is part of the Empire now, isn't it? Not much of a change,
+    really. Who was the <emperor> again?
+    @topic empire
+emperor @invisible
+    I hear he's nicknamed "Mad Kyle".
+    @topic Mad Kyle
+rebels @invisible
+    I suppose they're not really happy with our <emperor>.
+    @topic rebels

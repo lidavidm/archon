@@ -1,55 +1,28 @@
-Room: Contains output nodes, input nodes (dynamically looked up from the
-datastore at runtime), description (can be automatic from contents?),
-contents (containers, etc)
-Filename minus extension is the room name
-When describing contents and exits:
-     @ denotes location
-     ! denotes description
-     < denotes prefix (a, an, that, another...); automatically generated if
-       not specified; variable length
-     ? denotes identity (a way to refer to it), should be one-word
-     * denotes comma-delimited configuration options
-     [ denotes this is a room, not an entity
-     An entity can be referred to by prefix-identity or by key. If the
-     identity is provided, then the key is not used; else, the identity
-     defaults to the key.
+Chat:
 
-A battle is a (special, dynamically generated) room
+    chat <npc> or talk
 
-Storing state of rooms: when a player enters a room, copy it to the "save"
-datastore (or perhaps create a diff) (for multiplayer, use a diff)
+    NPC: Hello.
 
-Command: Receives context (usually the room), outputter (network,
-console...), player, and *args passed to command
-Needs to have aliases as well as IDs (so the command typed won't necessarily
-match how it is referred to in code)
+    Topics:
+    1. rumors
+    2. about me (should really be alphabetical)
+    > 1
 
-Some commands should simply work like this: The Open command simply tries to
-call the open() method on the indicated entity; if this fails, say you can't
-open it, else, print the message the entity gives back (for instance, a
-container may print its contents (from the datastore) and add objects that
-can be picked up to the room). Let's call this a "derived" command (since it
-is derived from the methods of an Entity)
+    NPC: Oh, nothing much.
 
-Entity: Anything that can be the content of a room (containers, monsters,
-players (if multiplayer), etc.)
-How an entity behaves is determined by its methods, which are derived from
-the data (some may be hardcoded, others variable; battle() method initiates
-a hardcoded battle, for instance (or perhaps a data-driven teleport to a
-battle room, which is hardcoded), while an open() method should give a
-message and then run a predefined command)
-Template entities: referred to by rooms with parameters; new entity type
-created at runtime based on this ('container_entity(entity01, entity02)')
-but this may become complex...
-Rather than defining methods at runtime, use the action system + give the
-entity a "do" method
-The action system has "reflexive" commands, so the action gets the entity as
-the first parameter, "context-transitive" commands, so the action receives
-the context (room), and "player-transitive" commands, so the action receives
-the player. Additionally, all actions receive the player's output.
+    Topics:
+    2. about me
+    3. empire
+    (1)rumors
+    > 3
 
-So classes needed: Room, Command, Entity, Interface (outputter), some sort
-of datastore (JSON or SQLite)
+    NPC: Yeah, we're part of the empire now. Who's the <emperor> again?
 
-Datastore can specify actions to run, like "add item", which are predefined
-functions in archon
+    Topics:
+    2. about me
+    3. emperor
+    4. rebels (topic)
+    >
+
+Use alphabetical topic entries for other functions (s for shop, etc.)
