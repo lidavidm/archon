@@ -14,7 +14,7 @@ import battlecommands
 import entityhooks
 
 if __name__ == '__main__':
-    ds = archon.datastore.GameDatastore('.')
+    ds = archon.datastore.GameDatastore('resources')
     data = ds['data']
     save = ds['save']
     metadata = data['metadata']  # load the metadata

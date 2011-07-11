@@ -80,7 +80,9 @@ def entity(key, data, cache):
             'template' in value and 'data' in value):  # embedded template
             try:
                 template = cache.lookup(value['template']).copy()
-                template.attributes.update(value['data'])
+                # deal with mutables, use templating mechanism
+                template.attributes.attributes.update(
+                    template.attributes.viaTemplate(value['data']))
                 # XXX this would be more resilient if it recursed into
                 # subvalues so that they could also be used as defaults
                 attributes[attr] = template
@@ -96,10 +98,10 @@ def entity(key, data, cache):
 @dataloader('area')
 def area(key, data, cache):
     name = data['name']
-    area = archon.objects.Entity(key, cache, 'area')
+    attributes = {'name': name}
+    attributes.update(data['attributes'])
+    area = archon.objects.Entity(key, cache, 'area', attributes)
     area.entityCache = cache
-    area.attributes['name'] = name
-    area.attributes.update(data['attributes'])
     return area
 
 

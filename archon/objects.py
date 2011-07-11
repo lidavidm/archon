@@ -11,7 +11,7 @@ import archon.common
 class EntityHookNotFoundError(Exception): pass
 
 
-class EntityHook(collections.MutableMapping):
+class EntityHook(collections.Mapping):
     """
     Defines special behavior for the attributes of certain entity kinds.
     """
@@ -51,7 +51,7 @@ class EntityHook(collections.MutableMapping):
             )
 
     def copy(self):
-        return self._attributes.copy()
+        return self
 
     @classmethod
     def getHook(cls, kind):
@@ -81,23 +81,25 @@ class EntityHook(collections.MutableMapping):
             return self.entity.name
 
     def viaTemplate(self, attributes):
-        result = {}
-
-        def update(result, original, new):
-            for key, data in original.items():
-                if type(data) == dict:
-                    result[key] = {}
-                    update(result[key], data, new[key])
+        result = copy.deepcopy(self.attributes)
+        stack = [(result, attributes)]
+        while stack:
+            dst, src = stack.pop()
+            for key, data in src.items():
+                if isinstance(data, dict):
+                    dst[key] = {}
+                    stack.append((dst[key], data))
                 else:
-                    result[key] = new.get(key, data)
-                    if isinstance(result[key], Entity):
-                        result[key] = result[key].copy()
-        update(result, self.attributes, attributes)
-        print(result)
+                    dst[key] = data
         return result
 
 
-class RoomEntityHook(EntityHook):
+class MutableEntityHook(EntityHook, collections.MutableMapping):
+    def copy(self):
+        return self.attributes.copy()
+
+
+class RoomEntityHook(MutableEntityHook):
     KIND = "room"
 
     def __init__(self, entity, attributes):
@@ -139,7 +141,7 @@ class MessageTemplateEntityHook(EntityHook):
         return item
 
 
-class PlayerEntityHook(EntityHook):
+class PlayerEntityHook(MutableEntityHook):
     KIND = "player"
 
     equations = {
@@ -157,6 +159,7 @@ class PlayerEntityHook(EntityHook):
 
     def __init__(self, entity, attributes):
         if self.templates:
+            print('Templating ', entity.kind, entity.name, self.templates)
             attributes = self.templates['default'].attributes.viaTemplate(
                 attributes)
         super().__init__(entity, attributes)
@@ -258,11 +261,14 @@ class Entity(object):
         self.name = name
         self.kind = kind
         self.entityCache = cache
-        try:
-            kindhook = EntityHook.getHook(kind)
-            self._attributes = kindhook(self, attributes)
-        except EntityHookNotFoundError:
-            self._attributes = EntityHook(self, attributes)
+        if issubclass(attributes.__class__, EntityHook):
+            self._attributes = attributes
+        else:
+            try:
+                kindhook = EntityHook.getHook(kind)
+                self._attributes = kindhook(self, attributes)
+            except EntityHookNotFoundError:
+                self._attributes = EntityHook(self, attributes)
 
     def copy(self, newName=None):
         """Shallow-copy the entity: copy the attributes."""
@@ -270,6 +276,9 @@ class Entity(object):
             newName = self.name + '_copy'
         return Entity(newName, self.kind, self.entityCache,
                       self.attributes.copy())
+
+    def __deepcopy__(self, memo):
+        return self.copy()
 
     @property
     def description(self):
@@ -428,6 +437,9 @@ class Room(Entity):
 
     def exit(self):
         return self.attributes['time']
+
+    def copy(self):
+        return self  # Rooms are mutable singletons
 
     @property
     def contents(self):

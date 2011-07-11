@@ -67,8 +67,7 @@ class GameDatastore(Datastore):
                                 self.load(key, data))
             elif os.path.isdir(fullpath):
                 child = self.__class__(fullpath, self)
-                self.add(child.name,
-                         lambda child=child: child)
+                self.add(child.name, child)
 
     def load(self, key, data):
         """
