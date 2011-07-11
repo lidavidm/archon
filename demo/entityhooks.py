@@ -14,6 +14,10 @@ class EnemyEntityHook(archon.objects.PlayerEntityHook):
     def friendlyName(self):
         return self.attributes['character']['name']
 
+    @property
+    def description(self):
+        return self.attributes['character']['description']
+
 
 class WeaponEntityHook(archon.objects.EntityHook):
     KIND = 'weapon'

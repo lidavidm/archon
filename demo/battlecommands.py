@@ -70,7 +70,7 @@ class Battle:
                                                       self.output,
                                                       self.scene,
                                                       enemy,
-                                                      player)
+                                                      self.player)
             weapons = []
             for slot in ('left hand', 'right hand'):
                 if enemy.attributes.equip.get(slot):

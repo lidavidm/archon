@@ -15,7 +15,10 @@
                 "entity": "data.items.door",
                 "location": "to the north",
                 "options": "one-way,to:room2"
-                }
+            },
+            "imp, an": {
+                "entity": "data.enemies.test_enemy"
+            }
         },
         "outputs":{
             "south": "room2"

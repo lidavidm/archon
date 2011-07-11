@@ -192,7 +192,7 @@ def take(output, context, player, *item: find):
 
 
 functionRe = re.compile(
-    r'(?P<function>[a-zA-Z0-9]+)\((?P<arguments>[\S]+)\)'
+    r'(?P<function>[a-zA-Z0-9]+)\((?P<arguments>[\S ]+)\)'
     )
 
 
@@ -201,8 +201,8 @@ def parseFunction(data):
     if result:
         result = result.groupdict()
         function, arguments = result['function'], result['arguments']
-        arguments = [ast.literal_eval(x) for x in arguments.split(',')]
-        return function, arguments
+        args = [ast.literal_eval(x.strip()) for x in arguments.split(',')]
+        return function, args
     return ('', '')
 
 

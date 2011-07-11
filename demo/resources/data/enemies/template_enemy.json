@@ -6,7 +6,7 @@
             "character": {
                 "name": "",
                 "description": "",
-                "ai": "script(.data.scripts.combat_ai, basic_ai)"
+                "ai": "script('.data.scripts.combat_ai', 'basic_ai')"
             },
             "inventory": [],
             "equip": {

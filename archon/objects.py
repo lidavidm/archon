@@ -87,7 +87,8 @@ class EntityHook(collections.Mapping):
             dst, src = stack.pop()
             for key, data in src.items():
                 if isinstance(data, dict):
-                    dst[key] = {}
+                    if key not in dst:
+                        dst[key] = {}
                     stack.append((dst[key], data))
                 else:
                     dst[key] = data
@@ -312,7 +313,7 @@ class Entity(object):
         self._entityCache = cache
 
     def __repr__(self):
-        return "<Entity {} name={} kind={}>".format(
+        return "<Entity '{}' name={} kind={}>".format(
             self.friendlyName, self.name, self.kind)
 
 
