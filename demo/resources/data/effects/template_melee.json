@@ -7,7 +7,8 @@
             "describe": "A generic melee attack.",
             "message": {
                 "success": "{user.friendlyName}: -> {target.friendlyName} -{effect.magnitude:.1f} {effect.target.target}.",
-                "failure": "{user.friendlyName}: miss"
+                "failure": "{user.friendlyName}: miss",
+                "insufficient_ap": "{user.friendlyName}: not enough ap"
             },
             "damage":{
                 "target": "vital:physical:health",

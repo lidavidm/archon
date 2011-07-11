@@ -160,7 +160,6 @@ class PlayerEntityHook(MutableEntityHook):
 
     def __init__(self, entity, attributes):
         if self.templates:
-            print('Templating ', entity.kind, entity.name, self.templates)
             attributes = self.templates['default'].attributes.viaTemplate(
                 attributes)
         super().__init__(entity, attributes)
@@ -179,7 +178,7 @@ class PlayerEntityHook(MutableEntityHook):
     def damage(self, magnitude, category, kind, target):
         # XXX category ignored - how to deal with damaged stats?
         if kind is None:
-            absorb = 1
+            absorb = 0
         else:
             absorb = random.uniform(*self.stats[kind]['absorb'])
         realDamage = magnitude - (absorb * magnitude)

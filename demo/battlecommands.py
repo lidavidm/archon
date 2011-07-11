@@ -66,21 +66,13 @@ class Battle:
                 self.output.display(enemy.friendlyName + ' died.')
             args = archon.commands.parseFunction(
                 enemy.attributes.character['ai'])[1]
-            enemy.entityCache.lookup(args[0]).execute(args[1],
-                                                      self.output,
-                                                      self.scene,
-                                                      enemy,
-                                                      self.player)
-            weapons = []
-            for slot in ('left hand', 'right hand'):
-                if enemy.attributes.equip.get(slot):
-                    weapons.append(enemy.attributes.equip[slot])
-            if weapons:
-                self.output.display("Attack!")
-                performAttacks(self.output, self.scene, enemy, self.player,
-                               'physical', *weapons)
-            else:
-                self.output.display("The enemy does nothing.")
+            script = enemy.entityCache.lookup(args[0])
+            script.execute(args[1],
+                           self.output,
+                           self.scene,
+                           performAttacks,
+                           enemy,
+                           self.player)
         if not self.enemies:
             self.output.display("You win!")
             raise BattleEnded
@@ -88,11 +80,9 @@ class Battle:
     def run(self):
         olddata = self.output.promptData.copy()
         self.output.promptData.clear()
-        battlecommand.preExecute.connect(
-            lambda cmd, **args: self.playerTurn(),
-            weak=False)
+        # postExecute is not run in case of error
         battlecommand.postExecute.connect(
-            lambda cmd, **args: self.enemyTurn(),
+            lambda cmd, **args: (self.enemyTurn(), self.playerTurn()),
             weak=False)
         if random.random() > 0.5: self.enemyTurn()  # surprised!
         try:
@@ -167,4 +157,4 @@ def performAttacks(output, context, user, target, acumenType, *weapons):
         except entityhooks.EffectMissed:
             output.display(effect.message('failure'))
         except entityhooks.NotEnoughAP:
-            output.display("You don't have enough AP to attack.")
+            output.display(effect.message('insufficient_ap'))

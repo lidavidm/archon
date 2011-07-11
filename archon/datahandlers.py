@@ -60,7 +60,6 @@ def metadata(key, data, cache):
                     for key, template in templates.items():
                         templates[key] = cache.lookup(template)
                     ehook.templates = templates
-                    print(ehook, ehook.templates)
                 except archon.objects.EntityHookNotFoundError:
                     warnings.warn(entityKind +
                                   " entity hook not found for templating!")
