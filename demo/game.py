@@ -10,6 +10,7 @@ import archon.objects
 import archon.interface
 import archon.commands
 
+import data
 import battlecommands
 import entityhooks
 

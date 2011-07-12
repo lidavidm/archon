@@ -143,3 +143,6 @@ class EffectEntityHook(archon.objects.EntityHook):
     def turns(self):
         # default not in data - templating requires always specifying this
         return self.stats.get('turns', 1)
+
+
+ChatTopic = collections.namedtuple('ChatTopic', 'content actions')
