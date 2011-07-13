@@ -145,4 +145,4 @@ class EffectEntityHook(archon.objects.EntityHook):
         return self.stats.get('turns', 1)
 
 
-ChatTopic = collections.namedtuple('ChatTopic', 'content actions')
+ChatTopic = collections.namedtuple('ChatTopic', 'contents actions')

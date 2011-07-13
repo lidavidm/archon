@@ -10,7 +10,8 @@ import archon.objects
 import archon.interface
 import archon.commands
 
-import data
+import datahandlers
+import gamecommands
 import battlecommands
 import entityhooks
 
@@ -29,16 +30,15 @@ if __name__ == '__main__':
     while True:
         interface.display('Welcome to the demo.')
         interface.display('Choose an option:')
-        choice = interface.menu('[{option}]: {description}', '> ',
-                                **{'0': 'New Game',
-                                '1': 'Load Game',
-                                '2': 'Exit'})
-        if choice == '0':
+        choice = interface.menu('[{key}]: {description}', '> ',
+                                'Invalid choice.',
+                                'New Game', 'View Data', 'Quit')
+        if choice == 0:
             room = data['areas.newGame.newGame']
-        elif choice == '1':
+        elif choice == 1:
             print('That is not supported at this time.')
             sys.exit()
-        elif choice == '2':
+        elif choice == 2:
             sys.exit()
         room.enter(datetime.datetime(1000, 1, 1, 12, 0))
         interface.repl(room, player, archon.commands.command)

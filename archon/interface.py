@@ -74,17 +74,22 @@ class Interface(object):
             self.display(message)
         sys.exit()
 
-    def menu(self, choiceFormat, prompt, **choices):
-        # XXX needs use-cases so that features can be added/removed
-        for option, description in sorted(
-            iter(choices.items()),
-            key=lambda x: x[0]):
-            self.display(choiceFormat.format(option=option,
-                                             description=description))
+    def menu(self, format, prompt, error, *choices, **keyChoices):
         while True:
+            for index, choice in enumerate(choices):
+                self.display(format.format(key=index, description=choice))
+            for index, choice in sorted(keyChoices.items()):
+                self.display(format.format(key=index, description=choice))
             choice = self.prompt(prompt).strip()
-            if choice in choices:
+            if (choices and choice.isnumeric() and
+                0 <= int(choice) <= len(choices)):
+                return int(choice)
+            elif choice in choices:
+                return list(choices).index(choice)
+            elif choice in keyChoices:
                 return choice
+            else:
+                self.error(error)
 
     def repl(self, commands):
         pass
