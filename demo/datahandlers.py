@@ -1,4 +1,5 @@
 import re
+import textwrap
 import archon.datahandlers
 
 import entityhooks
@@ -15,6 +16,7 @@ def parse(item):
 
 @archon.datahandlers.dataparser('.chat')
 def chatType(contents):
+    wrapper = textwrap.TextWrapper()
     actionRegex = re.compile('@([\w]+) *([\w ,]*)')
     topics = {"invisible": {}, "visible": {}}
     topic, text, actions = '', [], []
@@ -31,13 +33,13 @@ def chatType(contents):
                 if '@invisible' in topic:
                     category = 'invisible'
                     topic = topic[:-10].strip()
-                text = ' '.join(text)
+                text = wrapper.fill(' '.join(text))
                 parsedActions = []
                 for action in actions:
                     groups = actionRegex.match(action).groups()
                     parsedActions.append(
                         (groups[0],
-                         [x.strip() for x in groups[1].split(',')]))
+                         [parse(x.strip()) for x in groups[1].split(',')]))
                 topics[category][topic] = entityhooks.ChatTopic(
                     text, parsedActions)
             topic, text, actions = line.strip(), [], []

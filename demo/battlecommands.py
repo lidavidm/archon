@@ -113,7 +113,7 @@ def fight(output, context, player, *enemies: archon.commands.findMulti):
         enemy.attributes.vitals.update(enemy.attributes.maxVitals)
         enemyList.append(enemy)
         scene.add(data.objectLocation, data.key, data.location,
-                  data.description, data.prefix, data.options)
+                  data.description, data.prefix, data.options, enemy)
     battle = Battle(output, scene, player, enemyList)
     battlecommand('battle').data = battle
     battle.run()

@@ -7,9 +7,6 @@ import archon.objects
 class EnemyEntityHook(archon.objects.PlayerEntityHook):
     KIND = 'enemy'
 
-    def __init__(self, entity, attributes):
-        super().__init__(entity, attributes)
-
     @property
     def friendlyName(self):
         return self.attributes['character']['name']
@@ -56,6 +53,10 @@ class Effect:
                 raise EffectMissed
         else:
             raise NotEnoughAP
+
+    def __repr__(self):
+        a = "<Effect {hit} {target} {magnitude} {turns} {drain} {messages}>"
+        return a.format(**self.__dict__)
 
 
 class EffectTarget(collections.namedtuple('EffectTarget',
@@ -146,3 +147,8 @@ class EffectEntityHook(archon.objects.EntityHook):
 
 
 ChatTopic = collections.namedtuple('ChatTopic', 'contents actions')
+
+
+class NPCEntityHook(archon.objects.EntityHook):
+    def __init__(self, entity, attributes):
+        super().__init__(entity, attributes)

@@ -44,11 +44,9 @@ class EntityHook(collections.Mapping):
         return self._attributes.__delitem__(key)
 
     def __repr__(self):
-        return '{clsname}: Hook for kind {kind}, attributes {attrs}'.format(
+        return '{clsname}: Hook for {kind}'.format(
             clsname=self.__class__.__name__,
-            kind=self.__class__.KIND,
-            attrs=self.attributes
-            )
+            kind=self.__class__.KIND)
 
     def copy(self):
         return self
@@ -371,8 +369,8 @@ class Room(Entity):
         else:
             return matches
 
-    def add(self, entityLocation, key,
-            location='', description='', prefix='', options=None):
+    def add(self, entityLocation, key, location='', description='',
+            prefix='', options=None, instance=None):
         """
         Add an entity or output to the room.
 
@@ -387,6 +385,8 @@ class Room(Entity):
         self._contents[key] = EntityData(
             entityLocation, key, location,
             description, prefix, options)
+        if instance:
+            self._entityCopies[key] = instance
 
     def addRoom(self, direction, target):
         self._outputs[direction] = target
