@@ -149,6 +149,44 @@ class EffectEntityHook(archon.objects.EntityHook):
 ChatTopic = collections.namedtuple('ChatTopic', 'contents actions')
 
 
+class Conversation:
+    def __init__(self, cache, *dialouge):
+        self.cache = cache
+        self.dialouges = [self.cache.lookup(d).attributes for d in dialouge]
+        topics = {}
+        self._hidden = {}
+        for dialouge in self.dialouges:
+            topics.update(dialouge['visible'])
+            self._hidden.update(dialouge['invisible'])
+        self.topicIndex = collections.OrderedDict(
+            enumerate(topics.items()))
+        self.topicIndex[len(self.topicIndex)] = ("bye", None)
+        self.actions = {'visible': self.visible}
+
+    def isEnd(self, choice):
+        return choice == len(self.topicIndex) - 1
+
+    def visible(self, *topics):
+        self.topicIndex.popitem()  # remove "bye"
+        base = len(self.topicIndex)
+        currentTopics = [topic[0] for topic in self.topicIndex.values()]
+        topics = enumerate(
+            t for t in topics if t in self._hidden and
+            t not in currentTopics)
+        for offset, topic in topics:
+            self.topicIndex[base + offset] = (topic, self._hidden[topic])
+            del self._hidden[topic]
+        self.topicIndex[len(self.topicIndex)] = ("bye", None)
+
+    @property
+    def topics(self):
+        return (topic[0] for topic in self.topicIndex.values())
+
+
 class NPCEntityHook(archon.objects.EntityHook):
+    KIND = 'npc'
+
     def __init__(self, entity, attributes):
         super().__init__(entity, attributes)
+        self.conversation = Conversation(self.entity.entityCache,
+                                         *self.attributes['dialouge'])
