@@ -303,6 +303,11 @@ def quit(output, context, player, *args):
     output.quit()
 
 
+@command('save')
+def save(output, context, player, *args):
+    output.display(player.save())
+
+
 @command('help')
 def help(output, context, player, *args):
     '''Provides help to the player.'''

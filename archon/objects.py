@@ -51,6 +51,9 @@ class EntityHook(collections.Mapping):
     def copy(self):
         return self
 
+    def save(self):
+        return self.attributes
+
     @classmethod
     def getHook(cls, kind):
         if cls.KIND == kind:
@@ -187,6 +190,14 @@ class PlayerEntityHook(MutableEntityHook):
             self.vitals[target] = self.maxVitals[target]
         return realDamage
 
+    def save(self):
+        data = super().save()
+        for slot, entity in self.attributes['equip'].items():
+            if entity:
+                data['equip'] = '.'.join([entity.entityCache.fullName,
+                                          entity.name])
+        return data
+
     @property
     def friendlyName(self):
         return 'You'  # self.character['name']
@@ -277,6 +288,16 @@ class Entity(object):
 
     def __deepcopy__(self, memo):
         return self.copy()
+
+    def save(self):
+        """Return a dictionary containing all data to serialize."""
+        return {
+            "type": "entity",
+            "data": {
+                "kind": self.attributes.KIND,
+                "attributes": self.attributes.save()
+            }
+        }
 
     @property
     def description(self):

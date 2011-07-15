@@ -108,6 +108,15 @@ class GameDatastore(Datastore):
         return self._name
 
     @property
+    def fullName(self):
+        names = [self.name]
+        current = self
+        while current.parent:
+            names.append(current.parent.name)
+            current = current.parent
+        return '.'.join(reversed(names))
+
+    @property
     def root(self):
         if self.parent:
             return self.parent.root

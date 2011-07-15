@@ -18,16 +18,6 @@ class dataparser(archon.common.denoter):
     functions = {}
 
 
-class dataserializer(archon.common.denoter):
-    """Denotes a function that takes an object and creates JSON.
-
-    Private properties should not be needed by this function; ideally, the
-    public API of the object should expose all the needed information to
-    save it to disk.
-    """
-    functions = {}
-
-
 @dataparser('.json')
 def jsonType(contents):
     try:
