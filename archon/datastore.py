@@ -50,6 +50,7 @@ class GameDatastore(Datastore):
         self.parent = parent
         self._cache = {}
         self._didLoad = collections.defaultdict(lambda: False)
+        self._shouldSave = set()
         # don't add myself - my parent takes care of it
         for fname in os.listdir(self._path):
             fullpath = os.path.join(self._path, fname)
@@ -94,6 +95,13 @@ class GameDatastore(Datastore):
         lifetime. This method can also add a new object to the database at
         runtime.
         """
+        self._shouldSave.add(key)
+        if data:
+            self.add(key, data)
+        if immediately:
+            json.dump(data,
+                      open(os.path.join(self._path, key + '.json'), 'w'),
+                      cls=EntityJSONEncoder)
 
     def add(self, key, item):
         if not type(item) in (types.FunctionType, types.MethodType):
@@ -102,6 +110,9 @@ class GameDatastore(Datastore):
 
     def remove(self, key):
         del self._cache[key]
+
+    def keys(self):
+        return self._cache.keys()
 
     @property
     def name(self):
@@ -123,6 +134,10 @@ class GameDatastore(Datastore):
         else:
             return self
 
+    @property
+    def isRoot(self):
+        return not self.parent
+
     def lookup(self, key):
         """Convenience function: try relative, then absolute."""
         if key in self:
@@ -135,6 +150,8 @@ class GameDatastore(Datastore):
             return self.root[key[1:]]
         elif '.' in key:
             key, subkey = key.split('.', 1)
+            if self.isRoot and key == self.name:
+                return self[subkey]
             return self[key][subkey]
         else:
             if key not in self._cache:
@@ -150,3 +167,12 @@ class GameDatastore(Datastore):
             return key in self._cache and subkey in self[key]
         else:
             return key in self._cache
+
+
+class EntityJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, archon.objects.Entity):
+            # TODO check for mutable entities
+            return o.location
+        else:
+            return super().default(o)

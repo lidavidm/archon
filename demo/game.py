@@ -22,6 +22,7 @@ if __name__ == '__main__':
     metadata = data['metadata']  # load the metadata
     room = None
     player = archon.objects.PlayerEntityHook.defaultInstance()
+    player.entityCache = save
     interface = archon.interface.ConsoleInterface(
         permissions={'debug': True},
         messageTemplates=data['messages']
@@ -32,12 +33,15 @@ if __name__ == '__main__':
         interface.display('Choose an option:')
         choice = interface.menu('[{key}]: {description}', '> ',
                                 'Invalid choice.',
-                                'New Game', 'View Data', 'Quit')
+                                'New Game', 'Load', 'Quit')
         if choice == 0:
             room = data['areas.newGame.newGame']
         elif choice == 1:
-            print('That is not supported at this time.')
-            sys.exit()
+            room = data['areas.room']
+            choice = interface.menu('[{key}]: {description}', '> ',
+                                    'Invalid save file.',
+                                    *save.keys())
+            player = save[list(save.keys())[choice]]
         elif choice == 2:
             sys.exit()
         room.enter(datetime.datetime(1000, 1, 1, 12, 0))

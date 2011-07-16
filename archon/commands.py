@@ -305,7 +305,10 @@ def quit(output, context, player, *args):
 
 @command('save')
 def save(output, context, player, *args):
-    output.display(player.save())
+    data = player.save()
+    output.display(player.location)
+    output.display(data)
+    player.entityCache.save(player.name, data, immediately=True)
 
 
 @command('help')

@@ -52,7 +52,7 @@ class EntityHook(collections.Mapping):
         return self
 
     def save(self):
-        return self.attributes
+        return self.attributes.copy()
 
     @classmethod
     def getHook(cls, kind):
@@ -171,6 +171,13 @@ class PlayerEntityHook(MutableEntityHook):
             # be a copy of an entity that already loaded the equipped items
             if isinstance(location, str):
                 attributes['equip'][slot] = cache.lookup(location)
+        inventory = attributes['inventory']
+        attributes['inventory'] = []
+        for location in inventory:
+            if isinstance(location, str):
+                attributes['inventory'].append(cache.lookup(location))
+            else:
+                attributes['inventory'].append(location)
 
     @classmethod
     def defaultInstance(cls):
@@ -194,8 +201,7 @@ class PlayerEntityHook(MutableEntityHook):
         data = super().save()
         for slot, entity in self.attributes['equip'].items():
             if entity:
-                data['equip'] = '.'.join([entity.entityCache.fullName,
-                                          entity.name])
+                data['equip'][slot] = entity.location
         return data
 
     @property
@@ -280,11 +286,15 @@ class Entity(object):
                 self._attributes = EntityHook(self, attributes)
 
     def copy(self, newName=None):
-        """Shallow-copy the entity: copy the attributes."""
-        if newName is None:
-            newName = self.name + '_copy'
-        return Entity(newName, self.kind, self.entityCache,
-                      self.attributes.copy())
+        """Perform a shallow copy if mutable, else return self."""
+        attributes = self.attributes.copy()
+        if attributes is self.attributes:
+            return self
+        else:
+            if newName is None:
+                newName = self.name + '_copy'
+                return Entity(newName, self.kind, self.entityCache,
+                              attributes)
 
     def __deepcopy__(self, memo):
         return self.copy()
@@ -329,6 +339,10 @@ class Entity(object):
     @entityCache.setter
     def entityCache(self, cache):
         self._entityCache = cache
+
+    @property
+    def location(self):
+        return '.'.join([self.entityCache.fullName, self.name])
 
     def __repr__(self):
         return "<Entity '{}' name={} kind={}>".format(

@@ -16,7 +16,7 @@ def main(output, context, player):
         )
     player.name = base64.urlsafe_b64encode(
         player.attributes.character['name'].encode('utf-8')
-        )
+        ).decode('utf-8')
 
     output.display('''Your acumen in the three traits, Physical, Mental, and
     Spiritual, is determined randomly at the beginning. The values will be
