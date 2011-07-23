@@ -1,3 +1,4 @@
+import copy
 import blinker
 
 
@@ -50,3 +51,57 @@ class denoter:
             return cls.functions[name]
         except KeyError:
             raise DenotedNotFoundError
+
+
+class Merge:
+    """
+    Merge two dictionaries together using a patch dictionary.
+
+    This does not support dictionaries nested within lists, or patching
+    lists (they are treated as atomic values as strings and numbers are).
+    """
+    def __init__(self, source, dest=None, patch=None, unsafe=False):
+        self.source = source
+        self.dest = self.patch = None
+        if dest:
+            if unsafe:
+                self.dest = dest
+            else:
+                self.dest = copy.deepcopy(dest)
+        if patch:
+            self.patch = patch
+
+    def result(self, redo=False):
+        """Apply the patch to a deepcopy of the source object."""
+        if not redo and self.dest:
+            return self.dest
+        self.dest = copy.deepcopy(self.source)
+        stack = [Merge(self.source[key], self.dest[key],
+                       patch=patch, unsafe=True)
+                 for key, patch in self.patch.items()]
+        while stack:
+            merge = stack.pop()
+            for key, value in merge.created.items():
+                merge.dest[key] = value
+            for key in merge.deleted:
+                del merge.dest[key]
+            for key, patch in merge.updated.items():
+                stack.append(
+                    Merge(merge.source[key], merge.dest[key], patch=patch,
+                          unsafe=True))
+        return self.dest
+
+    def patch(self):
+        """Create a patch from a source and destination."""
+
+    @property
+    def created(self):
+        return self.patch.get("create", {})
+
+    @property
+    def deleted(self):
+        return self.patch.get("delete", [])
+
+    @property
+    def updated(self):
+        return self.patch.get("update", {})

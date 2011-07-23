@@ -18,6 +18,11 @@ class dataparser(archon.common.denoter):
     functions = {}
 
 
+class JSONDiff:
+    def __init__(self):
+        pass
+
+
 @dataparser('.json')
 def jsonType(contents):
     try:
@@ -56,6 +61,9 @@ def metadata(key, data, cache):
         elif kind == "metadata":
             for path in data:
                 cache.lookup(path)  # side effect is what matters here
+        elif kind == "savegame":
+            for contentPath, patchPath in data.items():
+                pass
         else:
             warnings.warn(kind + " metadata kind not recognized!")
     return data
@@ -164,3 +172,8 @@ def data(key, data, cache):
 def script(key, data, cache):
     """Loads a Python script."""
     return archon.scripting.Script(compile(data, '<string>', 'exec'))
+
+
+@dataloader('diff')
+def diff(key, data, cache):
+    """Creates a diff object that patches entities."""
