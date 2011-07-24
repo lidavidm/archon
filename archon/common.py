@@ -71,7 +71,7 @@ class Merge:
         if patch:
             self.patch = patch
 
-    def result(self, redo=False):
+    def patched(self, redo=False):
         """Apply the patch to a deepcopy of the source object."""
         if not redo and self.dest:
             return self.dest
@@ -91,8 +91,43 @@ class Merge:
                           unsafe=True))
         return self.dest
 
-    def patch(self):
+    def compared(self, redo=False):
         """Create a patch from a source and destination."""
+        if not redo and self.patch:
+            return self.patch
+        self.patch = {}
+        stack = [self]
+        while stack:
+            merge = stack.pop()
+            for key, data in merge.dest.items():
+                if key not in merge.source:
+                    merge.create(key, data)
+                elif data != merge.source[key]:
+                    if type(data) == dict:
+                        merge.patch.update(key, {})
+                        stack.append(
+                            Merge(merge.source[key], data,
+                                  patch=merge.patch[key]))
+                    else:
+                        merge.create(key, data)
+            for key in merge.source:
+                if key not in merge.dest:
+                    merge.delete(key)
+
+    def create(self, key, data):
+        if "create" not in self.patch:
+            self.patch["create"] = {}
+        self.patch["create"][key] = data
+
+    def delete(self, key):
+        if "delete" not in self.patch:
+            self.patch["delete"] = []
+        self.patch["delete"].append(key)
+
+    def update(self, key, data):
+        if "update" not in self.patch:
+            self.patch["update"] = {}
+        self.patch["update"][key] = data
 
     @property
     def created(self):
