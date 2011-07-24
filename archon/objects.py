@@ -17,6 +17,7 @@ class EntityHook(collections.Mapping):
     """
     KIND = ''
     templates = {}
+    mutable = False
 
     def __init__(self, entity, attributes):
         self.entity = entity
@@ -97,6 +98,8 @@ class EntityHook(collections.Mapping):
 
 
 class MutableEntityHook(EntityHook, collections.MutableMapping):
+    mutable = True
+
     def copy(self):
         return self.attributes.copy()
 
@@ -181,7 +184,7 @@ class PlayerEntityHook(MutableEntityHook):
 
     @classmethod
     def defaultInstance(cls):
-        return cls.templates['default'].copy()
+        return cls.templates['default'].copy(instanced=False)
 
     def damage(self, magnitude, category, kind, target):
         # XXX category ignored - how to deal with damaged stats?
@@ -264,6 +267,8 @@ class PlayerEntityHook(MutableEntityHook):
 
 
 class Entity(object):
+    instances = None
+
     def __init__(self, name, kind, cache, attributes={}):
         """
         :param name: The name of the entity (the key in the datastore)
@@ -285,16 +290,27 @@ class Entity(object):
             except EntityHookNotFoundError:
                 self._attributes = EntityHook(self, attributes)
 
-    def copy(self, newName=None):
-        """Perform a shallow copy if mutable, else return self."""
-        attributes = self.attributes.copy()
-        if attributes is self.attributes:
-            return self
+    def copy(self, instanced=True):
+        """Perform a shallow copy if mutable, else return self.
+
+        If instanced is `True`, then the copy will be placed in
+        Entity.instances under the datastore with the same name as the
+        entity kind."""
+        if self.mutable:
+            attributes = self.attributes.copy()
+            if instanced:
+                if self.kind not in Entity.instances:
+                    Entity.instances.create(self.kind)
+                keys = Entity.instances[self.kind].keys()
+                if keys:
+                    newName = max(int(key) for key in
+                                  Entity.instances[self.kind].keys()) + 1
+                else:
+                    newName = 0
+            return Entity(str(newName), self.kind, self.entityCache,
+                          attributes)
         else:
-            if newName is None:
-                newName = self.name + '_copy'
-                return Entity(newName, self.kind, self.entityCache,
-                              attributes)
+            return self
 
     def __deepcopy__(self, memo):
         return self.copy()
@@ -343,6 +359,10 @@ class Entity(object):
     @property
     def location(self):
         return '.'.join([self.entityCache.fullName, self.name])
+
+    @property
+    def mutable(self):
+        return self.attributes.mutable
 
     def __repr__(self):
         return "<Entity '{}' name={} kind={}>".format(

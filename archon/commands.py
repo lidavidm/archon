@@ -309,6 +309,18 @@ def save(output, context, player, *args):
     output.display(player.location)
     output.display(data)
     player.entityCache.save(player.name, data, immediately=True)
+    stack = [context.entityCache.root]
+    save = {}
+    while stack:
+        ds = stack.pop()
+        for key, thunk in ds.thunks.items():
+            if not callable(thunk):  # it's been loaded
+                if hasattr(thunk, "thunks"):  # datastore
+                    pass
+                elif thunk.mutable:
+                    pass
+                    # merge = archon.common.Merge(, thunk.save())
+                    # save[thunk.location] =
 
 
 @command('help')

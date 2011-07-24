@@ -114,6 +114,26 @@ class GameDatastore(Datastore):
     def keys(self):
         return self._cache.keys()
 
+    def ondisk(self, key):
+        fullpath = os.path.join(self._path, key + '.json')
+        if os.path.isfile(fullpath):
+            entityID, ext = os.path.splitext(fname)
+            if archon.datahandlers.dataparser.contains(ext):
+                loader = archon.datahandlers.dataparser.get(ext)
+                data = loader(open(fullpath).read())
+                if data and archon.datahandlers.dataloader.contains(
+                    data['type']
+                    ):
+                    return self.load(entityID, data)
+
+    def create(self, key):
+        assert key not in self
+        fullpath = os.path.join(self._path, key)
+        os.mkdir(fullpath)
+        child = self.__class__(fullpath, self)
+        self.add(child.name, child)
+        return child
+
     @property
     def name(self):
         return self._name
@@ -137,6 +157,10 @@ class GameDatastore(Datastore):
     @property
     def isRoot(self):
         return not self.parent
+
+    @property
+    def thunks(self):
+        return self._cache
 
     def lookup(self, key):
         """Convenience function: try relative, then absolute."""

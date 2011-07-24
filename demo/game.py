@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+import uuid
 import datetime
 
 import archon
@@ -22,7 +23,10 @@ if __name__ == '__main__':
     metadata = data['metadata']  # load the metadata
     room = None
     player = archon.objects.PlayerEntityHook.defaultInstance()
-    player.entityCache = save
+    player.name = uuid.uuid4().hex
+    player.entityCache = save.create(player.name)
+    player.entityCache.create("instances")
+    archon.objects.Entity.instances = player.entityCache['instances']
     interface = archon.interface.ConsoleInterface(
         permissions={'debug': True},
         messageTemplates=data['messages']
