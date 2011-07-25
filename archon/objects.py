@@ -269,7 +269,7 @@ class PlayerEntityHook(MutableEntityHook):
 class Entity(object):
     instances = None
 
-    def __init__(self, name, kind, cache, attributes={}):
+    def __init__(self, name, kind, cache, attributes={}, prototype=None):
         """
         :param name: The name of the entity (the key in the datastore)
         :param kind: The entity's kind (enemy, door, object, etc.)
@@ -281,6 +281,7 @@ class Entity(object):
         self.name = name
         self.kind = kind
         self.entityCache = cache
+        self.prototype = prototype
         if issubclass(attributes.__class__, EntityHook):
             self._attributes = attributes
         else:
@@ -301,14 +302,20 @@ class Entity(object):
             if instanced:
                 if self.kind not in Entity.instances:
                     Entity.instances.create(self.kind)
-                keys = Entity.instances[self.kind].keys()
-                if keys:
-                    newName = max(int(key) for key in
-                                  Entity.instances[self.kind].keys()) + 1
+                instances = Entity.instances[self.kind]
+                if instances:
+                    newName = max(int(key) for key in instances.keys()) + 1
                 else:
                     newName = 0
-            return Entity(str(newName), self.kind, self.entityCache,
-                          attributes)
+                entity = Entity(
+                    str(newName), self.kind, self.entityCache,
+                    attributes, prototype=self)
+                instances.add(entity.name, entity)
+                print("Created instance of", self.name)
+                return instances[str(newName)]
+            else:
+                return Entity(self.name + '_copy', self.kind,
+                              self.entityCache, attributes, prototype=self)
         else:
             return self
 
@@ -362,7 +369,7 @@ class Entity(object):
 
     @property
     def mutable(self):
-        return self.attributes.mutable
+        return self.attributes.mutable and not self.prototype
 
     def __repr__(self):
         return "<Entity '{}' name={} kind={}>".format(

@@ -8,6 +8,7 @@ import traceback
 import collections
 
 import archon.common
+import archon.objects
 
 
 class command(archon.common.denoter):
@@ -309,18 +310,28 @@ def save(output, context, player, *args):
     output.display(player.location)
     output.display(data)
     player.entityCache.save(player.name, data, immediately=True)
+    patches = {}
+    for kind in player.entityCache['instances']:
+        ds = player.entityCache['instances'][kind]
+        for key in ds:
+            entity = ds[key]
+            proto = entity.prototype
+            merge = archon.common.Merge(proto.attributes.save(),
+                                        entity.attributes.save())
+            if merge.compared():
+                patches[proto.location] = merge.compared()
+    player.entityCache.save("patches", patches, immediately=True)
     stack = [context.entityCache.root]
-    save = {}
     while stack:
         ds = stack.pop()
         for key, thunk in ds.thunks.items():
-            if not callable(thunk):  # it's been loaded
-                if hasattr(thunk, "thunks"):  # datastore
-                    pass
-                elif thunk.mutable:
-                    pass
-                    # merge = archon.common.Merge(, thunk.save())
-                    # save[thunk.location] =
+            if isinstance(thunk, archon.objects.Room):
+                print("Found room", thunk)
+                originalData = ds.raw(key, format='.json')
+            elif isinstance(thunk, ds.__class__):
+                stack.append(thunk)
+    output.display(
+        "Save game created: {} objects saved".format(len(patches) + 1))
 
 
 @command('help')

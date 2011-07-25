@@ -55,17 +55,13 @@ class GameDatastore(Datastore):
         for fname in os.listdir(self._path):
             fullpath = os.path.join(self._path, fname)
             if os.path.isfile(fullpath):
-                entityID, ext = os.path.splitext(fname)
-                if archon.datahandlers.dataparser.contains(ext):
-                    loader = archon.datahandlers.dataparser.get(ext)
-                    data = loader(open(fullpath).read())
-                    if data and archon.datahandlers.dataloader.contains(
-                        data['type']
-                        ):
-                        self.add(
-                            entityID,
-                            lambda key=entityID, data=data:
-                                self.load(key, data))
+                key, data = self.raw(fname)
+                if data and archon.datahandlers.dataloader.contains(
+                    data['type']
+                    ):
+                    self.add(
+                        key,
+                        lambda key=key, data=data: self.load(key, data))
             elif os.path.isdir(fullpath):
                 child = self.__class__(fullpath, self)
                 self.add(child.name, child)
@@ -114,18 +110,6 @@ class GameDatastore(Datastore):
     def keys(self):
         return self._cache.keys()
 
-    def ondisk(self, key):
-        fullpath = os.path.join(self._path, key + '.json')
-        if os.path.isfile(fullpath):
-            entityID, ext = os.path.splitext(fname)
-            if archon.datahandlers.dataparser.contains(ext):
-                loader = archon.datahandlers.dataparser.get(ext)
-                data = loader(open(fullpath).read())
-                if data and archon.datahandlers.dataloader.contains(
-                    data['type']
-                    ):
-                    return self.load(entityID, data)
-
     def create(self, key):
         assert key not in self
         fullpath = os.path.join(self._path, key)
@@ -133,6 +117,19 @@ class GameDatastore(Datastore):
         child = self.__class__(fullpath, self)
         self.add(child.name, child)
         return child
+
+    def raw(self, key, format=None):
+        """Returns the raw dict object loaded by the datastore.
+
+        If `key` is a filename, pass in a format of `None`. Else, `format`
+        should be a file extension (with period)."""
+        if not format:
+            key, format = os.path.splitext(key)
+        fullpath = os.path.join(self._path, key + format)
+        if os.path.isfile(fullpath):
+            if archon.datahandlers.dataparser.contains(format):
+                loader = archon.datahandlers.dataparser.get(format)
+                return (key, loader(open(fullpath).read()))
 
     @property
     def name(self):
@@ -169,6 +166,10 @@ class GameDatastore(Datastore):
         else:
             return self.root[key]
 
+    def __iter__(self):
+        for key in self._cache:
+            yield key
+
     def __getitem__(self, key):
         if key.startswith('.'):  # absolute lookup
             return self.root[key[1:]]
@@ -191,6 +192,9 @@ class GameDatastore(Datastore):
             return key in self._cache and subkey in self[key]
         else:
             return key in self._cache
+
+    def __bool__(self):
+        return bool(self._cache)
 
 
 class EntityJSONEncoder(json.JSONEncoder):

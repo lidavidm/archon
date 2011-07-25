@@ -183,7 +183,7 @@ class Conversation:
         return (topic[0] for topic in self.topicIndex.values())
 
 
-class NPCEntityHook(archon.objects.EntityHook):
+class NPCEntityHook(archon.objects.MutableEntityHook):
     KIND = 'npc'
 
     def __init__(self, entity, attributes):

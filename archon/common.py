@@ -113,6 +113,7 @@ class Merge:
             for key in merge.source:
                 if key not in merge.dest:
                     merge.delete(key)
+        return self.patch
 
     def create(self, key, data):
         if "create" not in self.patch:
