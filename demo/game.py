@@ -43,11 +43,13 @@ if __name__ == '__main__':
         if choice == 0:
             room = data['areas.newGame.newGame']
         elif choice == 1:
-            room = data['areas.room']
             choice = interface.menu('[{key}]: {description}', '> ',
                                     'Invalid save file.',
                                     *save.keys())
-            player = save[list(save.keys())[choice]]
+            savegame = save[list(save.keys())[choice]]
+            player = savegame['player']
+            patches = savegame['patches']
+
         elif choice == 2:
             sys.exit()
         room.enter(datetime.datetime(1000, 1, 1, 12, 0))

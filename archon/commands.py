@@ -308,20 +308,27 @@ def quit(output, context, player, *args):
 def save(output, context, player, *args):
     data = player.save()
     output.display(player.location)
-    player.entityCache.save(player.name, data, immediately=True)
-    patches = {}
+    player.entityCache.save('player', data, immediately=True)
+    instances = collections.defaultdict(dict)
     for kind in player.entityCache['instances']:
         ds = player.entityCache['instances'][kind]
         for key in ds:
             entity = ds[key]
             proto = entity.prototype
-            merge = archon.common.Merge(proto.attributes.save(),
-                                        entity.attributes.save())
-            if merge.compared():
+            patch = archon.common.Merge(proto.attributes.save(),
+                                        entity.attributes.save()).compared()
+            if patch:
                 output.display("Saving entity " + entity.location)
-                patches[proto.location] = merge.compared()
+                instances[proto.location][entity.location] = patch
+    instances = {
+        "type": "metadata",
+        "data": {
+            "savegame_instances": instances
+            }
+        }
 
     stack = [context.entityCache.root]
+    patches = {}
     while stack:
         ds = stack.pop()
         for key, thunk in ds.thunks.items():
@@ -333,6 +340,12 @@ def save(output, context, player, *args):
                     patches[thunk.location] = merge.compared()
             elif isinstance(thunk, ds.__class__):
                 stack.append(thunk)
+    patches = {
+        "type": "metadata",
+        "data": {
+            "savegame": patches
+            }
+        }
     player.entityCache.save("patches", patches, immediately=True)
     output.display(
         "Save game created: {} objects saved".format(len(patches) + 1))

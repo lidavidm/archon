@@ -274,11 +274,15 @@ class PlayerEntityHook(MutableEntityHook):
 class Entity(object):
     instances = None
 
-    def __init__(self, name, kind, cache, attributes={}, prototype=None):
+    def __init__(self, name, kind, cache, attributes={}, prototype=None,
+                 location=None):
         """
         :param name: The name of the entity (the key in the datastore)
         :param kind: The entity's kind (enemy, door, object, etc.)
         :param attributes: The attributes for the entity (data).
+        :param prototype: The prototype of this entity.
+        :param location: If given, an alternate location in the datastore
+                         for the entity (used for instances).
 
         Change the type of an entity when it needs special
         loading/processing, as with a room, but the kind otherwise.
@@ -287,6 +291,7 @@ class Entity(object):
         self.kind = kind
         self.entityCache = cache
         self.prototype = prototype
+        self._location = location if location else cache
         if issubclass(attributes.__class__, EntityHook):
             self._attributes = attributes
         else:
@@ -314,7 +319,8 @@ class Entity(object):
                     newName = 0
                 entity = Entity(
                     str(newName), self.kind, self.entityCache,
-                    attributes, prototype=self)
+                    attributes, prototype=self,
+                    location=instances[self.kind])
                 instances.add(entity.name, entity)
                 print("Created instance of", self.name)
                 return instances[str(newName)]
@@ -370,7 +376,7 @@ class Entity(object):
 
     @property
     def location(self):
-        return '.'.join([self.entityCache.fullName, self.name])
+        return '.'.join([self._location.fullName, self.name])
 
     @property
     def mutable(self):

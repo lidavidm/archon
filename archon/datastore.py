@@ -7,12 +7,28 @@ import archon.objects
 import archon.datahandlers
 
 
+class DataThunk:
+    def __init__(self, ds, key, data):
+        self.ds = ds
+        self.key = key
+        self.data = data
+
+    def __call__(self):
+        # for code that checks with callable()
+        item = self.ds.load(self.key, self.data)
+        self.ds._didLoad[self.key] = True
+        self.ds._cache[self.key] = item
+        return item
+
+    evaluate = __call__
+
+
 # TODO possibly use super() as described
 # http://rhettinger.wordpress.com/2011/05/26/super-considered-super/ to
 # implement mixin classes for datastore storage and type (e.g. a file-based
 # storage mechanism and a JSON type, or a DB and binary) Probably not
 # needed, though
-class Datastore(object):
+class Datastore:
 
     def __init__(self, parent=None):
         pass
@@ -59,9 +75,7 @@ class GameDatastore(Datastore):
                 if data and archon.datahandlers.dataloader.contains(
                     data['type']
                     ):
-                    self.add(
-                        key,
-                        lambda key=key, data=data: self.load(key, data))
+                    self.add(key, DataThunk(self, key, data))
             elif os.path.isdir(fullpath):
                 child = self.__class__(fullpath, self)
                 self.add(child.name, child)
@@ -101,9 +115,9 @@ class GameDatastore(Datastore):
                       cls=EntityJSONEncoder)
 
     def add(self, key, item):
-        if not type(item) in (types.FunctionType, types.MethodType):
-            self._didLoad[key] = True  # Strict add
         self._cache[key] = item
+        if not isinstance(item, DataThunk):
+            self._didLoad[key] = True  # Strict add
 
     def remove(self, key):
         del self._cache[key]
@@ -171,21 +185,30 @@ class GameDatastore(Datastore):
         for key in self._cache:
             yield key
 
-    def __getitem__(self, key):
+    def datastoreFor(self, key):
         if key.startswith('.'):  # absolute lookup
-            return self.root[key[1:]]
+            return self.root.datastoreFor(key[1:])
         elif '.' in key:
             key, subkey = key.split('.', 1)
             if self.isRoot and key == self.name:
-                return self[subkey]
-            return self[key][subkey]
+                return self.datastoreFor(subkey)
+            # get the parent datastore, then the datastore itself
+            return self.datastoreFor(key)[1][key].datastoreFor(subkey)
         else:
-            if key not in self._cache:
-                raise KeyError(key)
-            if not self._didLoad[key]:
-                self._cache[key] = self._cache[key]()
-                self._didLoad[key] = True
-            return self._cache[key]
+            return key, self
+
+    def thunkFor(self, key):
+        """Get the thunk if possible, else the object/datastore."""
+        key, ds = self.datastoreFor(key)
+        if key not in ds._cache:
+            raise KeyError(key)
+        return ds._cache[key]
+
+    def __getitem__(self, key):
+        thunk = self.thunkFor(key)
+        if isinstance(thunk, DataThunk):
+            thunk = thunk.evaluate()
+        return thunk
 
     def __contains__(self, key):
         if '.' in key:
