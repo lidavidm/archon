@@ -125,6 +125,11 @@ class RoomEntityHook(MutableEntityHook):
         else:
             return name
 
+    def save(self):
+        data = self.attributes.copy()
+        del data['time']
+        return data
+
 
 class AttributeDict(dict):
     def __getattr__(self, key):
@@ -376,15 +381,27 @@ class Entity(object):
             self.friendlyName, self.name, self.kind)
 
 
-EntityData = collections.namedtuple(
+class EntityData(collections.namedtuple(
     'EntityData',
     'objectLocation key location description prefix options'
-    )
+    )):
+    def save(self):
+        data = {key: val for key, val in self._asdict().items() if val}
+        data['entity'] = data['objectLocation']
+        del data['objectLocation']
+        if 'prefix' in data:
+            del data['prefix']
+        if 'options' in data:
+            data['options'] = ','.join(data['options'])
+        return data
 
 
 class EntityKey(collections.namedtuple('EntityKey', 'key prefix')):
     def __str__(self):
         return ' '.join([self.prefix, self.key])
+
+    def save(self):
+        return ', '.join([self.key, self.prefix])
 
 
 class Room(Entity):
@@ -502,6 +519,16 @@ class Room(Entity):
 
     def copy(self):
         return self  # Rooms are mutable singletons
+
+    def save(self):
+        res = {"contents": {}, "outputs": {},
+               "describe": self._description,
+               "attributes": self.attributes.save()}
+        for key, data in self.contents.items():
+            res["contents"][key.save()] = data.save()
+        for direction, target in self.outputs.items():
+            res["outputs"][direction] = target.location
+        return {"type": "room", "data": res}
 
     @property
     def contents(self):

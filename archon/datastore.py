@@ -97,6 +97,7 @@ class GameDatastore(Datastore):
         if immediately:
             json.dump(data,
                       open(os.path.join(self._path, key + '.json'), 'w'),
+                      indent=1,
                       cls=EntityJSONEncoder)
 
     def add(self, key, item):

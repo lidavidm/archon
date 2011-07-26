@@ -62,7 +62,8 @@ class Merge:
     """
     def __init__(self, source, dest=None, patch=None, unsafe=False):
         self.source = source
-        self.dest = self.patch = None
+        self.dest = {}
+        self.patch = patch
         if dest:
             if unsafe:
                 self.dest = dest
@@ -104,10 +105,10 @@ class Merge:
                     merge.create(key, data)
                 elif data != merge.source[key]:
                     if type(data) == dict:
-                        merge.patch.update(key, {})
+                        merge.update(key, {})
                         stack.append(
                             Merge(merge.source[key], data,
-                                  patch=merge.patch[key]))
+                                  patch=merge.patch['update'][key]))
                     else:
                         merge.create(key, data)
             for key in merge.source:

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import uuid
+import base64
 import datetime
 
 import archon
@@ -23,7 +24,8 @@ if __name__ == '__main__':
     metadata = data['metadata']  # load the metadata
     room = None
     player = archon.objects.PlayerEntityHook.defaultInstance()
-    player.name = uuid.uuid4().hex
+    player.name = base64.urlsafe_b64encode(
+        uuid.uuid4().bytes).decode('utf-8')
     player.entityCache = save.create(player.name)
     player.entityCache.create("instances")
     archon.objects.Entity.instances = player.entityCache['instances']

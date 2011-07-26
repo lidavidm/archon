@@ -36,7 +36,7 @@ def jsonType(contents):
         return None
     except AssertionError:
         warnings.warn('JSON data is not well-formed!',
-                      RuntineWarning, stacklevel=2)
+                      RuntimeWarning, stacklevel=2)
         return None
 
 

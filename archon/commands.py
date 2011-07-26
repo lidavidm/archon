@@ -308,7 +308,6 @@ def quit(output, context, player, *args):
 def save(output, context, player, *args):
     data = player.save()
     output.display(player.location)
-    output.display(data)
     player.entityCache.save(player.name, data, immediately=True)
     patches = {}
     for kind in player.entityCache['instances']:
@@ -319,17 +318,22 @@ def save(output, context, player, *args):
             merge = archon.common.Merge(proto.attributes.save(),
                                         entity.attributes.save())
             if merge.compared():
+                output.display("Saving entity " + entity.location)
                 patches[proto.location] = merge.compared()
-    player.entityCache.save("patches", patches, immediately=True)
+
     stack = [context.entityCache.root]
     while stack:
         ds = stack.pop()
         for key, thunk in ds.thunks.items():
             if isinstance(thunk, archon.objects.Room):
-                print("Found room", thunk)
-                originalData = ds.raw(key, format='.json')
+                _, originalData = ds.raw(key, format='.json')
+                merge = archon.common.Merge(originalData, thunk.save())
+                if merge.compared():
+                    output.display("Saving room " + thunk.location)
+                    patches[thunk.location] = merge.compared()
             elif isinstance(thunk, ds.__class__):
                 stack.append(thunk)
+    player.entityCache.save("patches", patches, immediately=True)
     output.display(
         "Save game created: {} objects saved".format(len(patches) + 1))
 
