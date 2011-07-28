@@ -77,9 +77,10 @@ class Merge:
         if not redo and self.dest:
             return self.dest
         self.dest = copy.deepcopy(self.source)
-        stack = [Merge(self.source[key], self.dest[key],
-                       patch=patch, unsafe=True)
-                 for key, patch in self.patch.items()]
+        # stack = [Merge(self.source[key], self.dest[key],
+        #                patch=patch, unsafe=True)
+        #          for key, patch in self.patch.items()]
+        stack = [self]
         while stack:
             merge = stack.pop()
             for key, value in merge.created.items():

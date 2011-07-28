@@ -347,6 +347,13 @@ def save(output, context, player, *args):
             }
         }
     player.entityCache.save("patches", patches, immediately=True)
+    gameVars = {
+        "type": "data",
+        "data": {
+            "lastRoom": context.location
+            }
+        }
+    player.entityCache.save("gameVars", gameVars, immediately=True)
     output.display(
         "Save game created: {} objects saved".format(len(patches) + 1))
 

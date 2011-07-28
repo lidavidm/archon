@@ -186,12 +186,12 @@ class GameDatastore(Datastore):
             yield key
 
     def datastoreFor(self, key):
-        if key.startswith('.'):  # absolute lookup
+        if self.isRoot and key.split('.', 1)[0] == self.name:
+            return self.datastoreFor(key.split('.', 1)[1])
+        elif key.startswith('.'):  # absolute lookup
             return self.root.datastoreFor(key[1:])
         elif '.' in key:
             key, subkey = key.split('.', 1)
-            if self.isRoot and key == self.name:
-                return self.datastoreFor(subkey)
             # get the parent datastore, then the datastore itself
             return self.datastoreFor(key)[1][key].datastoreFor(subkey)
         else:

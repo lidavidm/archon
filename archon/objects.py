@@ -301,19 +301,25 @@ class Entity(object):
             except EntityHookNotFoundError:
                 self._attributes = EntityHook(self, attributes)
 
-    def copy(self, instanced=True):
+    def copy(self, instanced=True, name=None, attributes=None):
         """Perform a shallow copy if mutable, else return self.
 
-        If instanced is `True`, then the copy will be placed in
-        Entity.instances under the datastore with the same name as the
-        entity kind."""
+        :param instanced: If `True`, place the copy in Entity.intstances
+                          under the datastore named after the entity kind.
+        :param name: (Implementation parameter.) Specify the name of the
+                     entity copy.
+        :param attributes: (Implementation parameter.) Specify the
+                           attribute dictionary of the copy.
+        """
         if self.mutable:
-            attributes = self.attributes.copy()
+            attributes = attributes if attributes else self.attributes.copy()
             if instanced:
                 if self.kind not in Entity.instances:
                     Entity.instances.create(self.kind)
                 instances = Entity.instances[self.kind]
-                if instances:
+                if name:  # datahandlers - loading an instance
+                    newName = name
+                elif instances:
                     newName = max(int(key) for key in instances.keys()) + 1
                 else:
                     newName = 0
@@ -394,7 +400,7 @@ class EntityData(collections.namedtuple(
     def save(self):
         data = {key: val for key, val in self._asdict().items() if val}
         data['entity'] = data['objectLocation']
-        del data['objectLocation']
+        del data['objectLocation'], data['key']
         if 'prefix' in data:
             del data['prefix']
         if 'options' in data:

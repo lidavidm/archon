@@ -63,14 +63,18 @@ def metadata(key, data, cache):
                 cache.lookup(path)  # side effect is what matters here
         elif kind == "savegame":
             for contentPath, patch in data.items():
-                thunk = cache.thunkFor(contentPath)
+                thunk = cache.root.thunkFor(contentPath)
                 data = archon.common.Merge(thunk.data, patch=patch)
                 thunk.data = data.patched()
         elif kind == "savegame_instances":
             for proto, instances in data.items():
+                if instances:
+                    proto = cache.lookup(proto)
                 for iname, patch in instances.items():
-                    # create a thunk...
-                    pass
+                    attributes = proto.attributes.copy()
+                    merge = archon.common.Merge(attributes, patch=patch)
+                    attributes = merge.patched()
+                    instance = proto.copy(name=iname, attributes=attributes)
         else:
             warnings.warn(kind + " metadata kind not recognized!")
     return data
