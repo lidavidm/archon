@@ -326,7 +326,7 @@ class Entity(object):
                 entity = Entity(
                     str(newName), self.kind, self.entityCache,
                     attributes, prototype=self,
-                    location=instances[self.kind])
+                    location=instances)
                 instances.add(entity.name, entity)
                 print("Created instance of", self.name)
                 return instances[str(newName)]
