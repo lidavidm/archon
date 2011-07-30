@@ -1,0 +1,246 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>3. datastore – Game database &mdash; archon 0.1a documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1a',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="archon 0.1a documentation" href="../index.html" />
+    <link rel="up" title="Modules" href="index.html" />
+    <link rel="next" title="4. objects – Core objects" href="objects.html" />
+    <link rel="prev" title="2. common – Utility functionality" href="common.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="objects.html" title="4. objects – Core objects"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="common.html" title="2. common – Utility functionality"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">archon 0.1a documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Modules</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-archon.datastore">
+<span id="datastore-game-database"></span><h1>3. <tt class="xref py py-mod docutils literal"><span class="pre">datastore</span></tt> &#8211; Game database<a class="headerlink" href="#module-archon.datastore" title="Permalink to this headline">¶</a></h1>
+<p>Defines the game database, a mapping from JSON to game objects.</p>
+<dl class="class">
+<dt id="archon.datastore.Datastore">
+<em class="property">class </em><tt class="descclassname">archon.datastore.</tt><tt class="descname">Datastore</tt><big>(</big><em>parent=None</em><big>)</big><a class="reference internal" href="../_modules/archon/datastore.html#Datastore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.Datastore" title="Permalink to this definition">¶</a></dt>
+<dd><p>The basic Datastore class.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="archon.datastore.GameDatastore">
+<em class="property">class </em><tt class="descclassname">archon.datastore.</tt><tt class="descname">GameDatastore</tt><big>(</big><em>path</em>, <em>parent=None</em><big>)</big><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lazy, mostly-read datastore.</p>
+<p>This datastore, when created, will scan its directory for possible game
+files (any that have a file extension specified by
+archon.datahandlers.dataparser), but will not load them until an object
+requests them. After loaded, the datastore will continue to hold on to
+the object. No changes made will be saved unless the save() method is
+called.</p>
+<dl class="method">
+<dt id="archon.datastore.GameDatastore.add">
+<tt class="descname">add</tt><big>(</big><em>key</em>, <em>item</em><big>)</big><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an item into the datastore.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.datastore.GameDatastore.create">
+<tt class="descname">create</tt><big>(</big><em>key</em><big>)</big><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a sub-datastore with the given name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.datastore.GameDatastore.datastoreFor">
+<tt class="descname">datastoreFor</tt><big>(</big><em>key</em><big>)</big><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.datastoreFor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.datastoreFor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the containing datastore of the given key.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.datastore.GameDatastore.fullName">
+<tt class="descname">fullName</tt><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.fullName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.fullName" title="Permalink to this definition">¶</a></dt>
+<dd><p>The full name: the name of the parent with my name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.datastore.GameDatastore.isRoot">
+<tt class="descname">isRoot</tt><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.isRoot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.isRoot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="archon.datastore.GameDatastore.keys">
+<tt class="descname">keys</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="archon.datastore.GameDatastore.load">
+<tt class="descname">load</tt><big>(</big><em>key</em>, <em>data</em><big>)</big><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the given data. This is an internal method!</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.datastore.GameDatastore.lookup">
+<tt class="descname">lookup</tt><big>(</big><em>key</em><big>)</big><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.lookup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.lookup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience function: try relative, then absolute.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.datastore.GameDatastore.name">
+<tt class="descname">name</tt><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of this datastore (the folder name).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.datastore.GameDatastore.raw">
+<tt class="descname">raw</tt><big>(</big><em>key</em>, <em>format=None</em><big>)</big><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the raw dict object loaded by the datastore.</p>
+<p>If <cite>key</cite> is a filename, pass in a format of <cite>None</cite>. Else, <cite>format</cite>
+should be a file extension (with period).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.datastore.GameDatastore.remove">
+<tt class="descname">remove</tt><big>(</big><em>key</em><big>)</big><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove an item from the datastore.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.datastore.GameDatastore.root">
+<tt class="descname">root</tt><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.root" title="Permalink to this definition">¶</a></dt>
+<dd><p>The root, which contains all other datastores.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.datastore.GameDatastore.save">
+<tt class="descname">save</tt><big>(</big><em>key</em>, <em>data=None</em>, <em>immediately=False</em><big>)</big><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the data to disk, or if the key exists, mark it for saving.</p>
+<p>By default, GameDatastore will not save any changes to disk. If
+changes should be saved, then call this method to mark it for
+saving. The data will not be immediately saved unless otherwise
+specified; instead, it will be saved at the end of the datastore&#8217;s
+lifetime. This method can also add a new object to the database at
+runtime.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.datastore.GameDatastore.thunkFor">
+<tt class="descname">thunkFor</tt><big>(</big><em>key</em><big>)</big><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.thunkFor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.thunkFor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the thunk if possible, else the object/datastore.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.datastore.GameDatastore.thunks">
+<tt class="descname">thunks</tt><a class="reference internal" href="../_modules/archon/datastore.html#GameDatastore.thunks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.GameDatastore.thunks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="archon.datastore.DataThunk">
+<em class="property">class </em><tt class="descclassname">archon.datastore.</tt><tt class="descname">DataThunk</tt><big>(</big><em>ds</em>, <em>key</em>, <em>data</em><big>)</big><a class="reference internal" href="../_modules/archon/datastore.html#DataThunk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.datastore.DataThunk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents an unloaded object.</p>
+<dl class="method">
+<dt id="archon.datastore.DataThunk.evaluate">
+<tt class="descname">evaluate</tt><big>(</big><big>)</big><a class="headerlink" href="#archon.datastore.DataThunk.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="common.html"
+                        title="previous chapter">2. <tt class="docutils literal docutils literal docutils literal"><span class="pre">common</span></tt> &#8211; Utility functionality</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="objects.html"
+                        title="next chapter">4. <tt class="docutils literal"><span class="pre">objects</span></tt> &#8211; Core objects</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/datastore.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="objects.html" title="4. objects – Core objects"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="common.html" title="2. common – Utility functionality"
+             >previous</a> |</li>
+        <li><a href="../index.html">archon 0.1a documentation</a> &raquo;</li>
+          <li><a href="index.html" >Modules</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, David Li.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

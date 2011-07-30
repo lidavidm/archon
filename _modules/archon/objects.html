@@ -1,0 +1,744 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>archon.objects &mdash; archon 0.1a documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1a',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="archon 0.1a documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">archon 0.1a documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for archon.objects</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="kn">import</span> <span class="nn">archon.common</span>
+
+
+<span class="k">class</span> <span class="nc">EntityHookNotFoundError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span> <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">EntityHook</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="EntityHook"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.EntityHook">[docs]</a><span class="sd">    Defines special behavior for the attributes of certain entity kinds.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="sd">&quot;&quot;&quot;The `kind` of the entity.&quot;&quot;&quot;</span>
+    <span class="n">KIND</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+
+    <span class="sd">&quot;&quot;&quot;The templates for this entity kind.&quot;&quot;&quot;</span>
+    <span class="n">templates</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">mutable</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">attributes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entity</span> <span class="o">=</span> <span class="n">entity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="n">attributes</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span><span class="o">.</span><span class="n">__iter__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Override for custom behavior.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span><span class="o">.</span><span class="n">__getitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Override for custom behavior.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span><span class="o">.</span><span class="n">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Override for custom behavior.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span><span class="o">.</span><span class="n">__delitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;{clsname}: Hook for {kind}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">clsname</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+            <span class="n">kind</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">KIND</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="EntityHook.copy"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.EntityHook.copy">[docs]</a><span class="sd">        Create a copy of the attributes in the entity hook.</span>
+
+<span class="sd">        By default, hooks are immutable, and so this method simply returns</span>
+<span class="sd">        self.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="EntityHook.save"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.EntityHook.save">[docs]</a><span class="sd">        Create a saveable copy of the attributes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">getHook</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">kind</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="EntityHook.getHook"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.EntityHook.getHook">[docs]</a><span class="sd">        Find an entity hook based on class kind.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">cls</span><span class="o">.</span><span class="n">KIND</span> <span class="o">==</span> <span class="n">kind</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">subcls</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">__subclasses__</span><span class="p">():</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">subcls</span><span class="o">.</span><span class="n">getHook</span><span class="p">(</span><span class="n">kind</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">EntityHookNotFoundError</span><span class="p">:</span>
+                    <span class="k">continue</span>
+        <span class="k">raise</span> <span class="n">EntityHookNotFoundError</span><span class="p">(</span><span class="n">kind</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return the description of this entity. &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="EntityHook.description"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.EntityHook.description">[docs]</a>        <span class="k">return</span> <span class="s">&#39;No description.&#39;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">friendlyName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;Return a user-friendly name for this entity.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="EntityHook.friendlyName"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.EntityHook.friendlyName">[docs]</a>        <span class="k">if</span> <span class="s">&#39;friendlyName&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;friendlyName&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">viaTemplate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attributes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Format attributes using this entity as a template.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="EntityHook.viaTemplate"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.EntityHook.viaTemplate">[docs]</a>        <span class="c"># TODO use archon.common.Merge</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">)</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="p">[(</span><span class="n">result</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)]</span>
+        <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+            <span class="n">dst</span><span class="p">,</span> <span class="n">src</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dst</span><span class="p">:</span>
+                        <span class="n">dst</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dst</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">data</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">dst</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">class</span> <span class="nc">MutableEntityHook</span><span class="p">(</span><span class="n">EntityHook</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">MutableMapping</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span></div></div>
+<div class="viewcode-block" id="MutableEntityHook"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.MutableEntityHook">[docs]</a><span class="sd">    A mutable entity hook.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mutable</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MutableEntityHook.copy"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.MutableEntityHook.copy">[docs]</a><span class="sd">        Returns a shallow-copy of the attributes dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">RoomEntityHook</span><span class="p">(</span><span class="n">MutableEntityHook</span><span class="p">):</span>
+    <span class="n">KIND</span> <span class="o">=</span> <span class="s">&quot;room&quot;</span></div></div>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">attributes</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RoomEntityHook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">time</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">timeString</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;%a, %b </span><span class="si">%d</span><span class="s"> %H:%M&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">friendlyName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s">&#39;friendlyName&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity</span><span class="o">.</span><span class="n">area</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;: &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">entity</span><span class="o">.</span><span class="n">area</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="n">name</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">del</span> <span class="n">data</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+
+<span class="k">class</span> <span class="nc">AttributeDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">AttributeDict</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">item</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">MessageTemplateEntityHook</span><span class="p">(</span><span class="n">EntityHook</span><span class="p">):</span>
+    <span class="n">KIND</span> <span class="o">=</span> <span class="s">&quot;message_template&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__getitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">AttributeDict</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">item</span>
+
+
+<span class="k">class</span> <span class="nc">PlayerEntityHook</span><span class="p">(</span><span class="n">MutableEntityHook</span><span class="p">):</span>
+    <span class="n">KIND</span> <span class="o">=</span> <span class="s">&quot;player&quot;</span>
+<div class="viewcode-block" id="PlayerEntityHook"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.PlayerEntityHook">[docs]</a>
+    <span class="sd">&quot;&quot;&quot;The equations used to calculate stats based on acumen.&quot;&quot;&quot;</span>
+    <span class="n">equations</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&quot;increasing&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&quot;equation&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)),</span>
+            <span class="s">&quot;variance&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>
+            <span class="s">&quot;scale&quot;</span><span class="p">:</span> <span class="mf">0.007</span>
+            <span class="p">},</span>
+        <span class="s">&quot;decreasing&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&quot;equation&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+            <span class="s">&quot;variance&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span>
+            <span class="s">&quot;scale&quot;</span><span class="p">:</span> <span class="mf">0.007</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">attributes</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">templates</span><span class="p">:</span>
+            <span class="n">attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">templates</span><span class="p">[</span><span class="s">&#39;default&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">viaTemplate</span><span class="p">(</span>
+                <span class="n">attributes</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)</span>
+        <span class="c"># Load inventory, equip, etc. from data</span>
+        <span class="n">cache</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">entityCache</span>
+        <span class="k">for</span> <span class="n">slot</span><span class="p">,</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;equip&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c"># can be None - no item equipped, or an entity, because I might</span>
+            <span class="c"># be a copy of an entity that already loaded the equipped items</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;equip&#39;</span><span class="p">][</span><span class="n">slot</span><span class="p">]</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+        <span class="n">inventory</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;inventory&#39;</span><span class="p">]</span>
+        <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;inventory&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">inventory</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;inventory&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cache</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">location</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">attributes</span><span class="p">[</span><span class="s">&#39;inventory&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">defaultInstance</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the default instance of the player.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PlayerEntityHook.defaultInstance"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.PlayerEntityHook.defaultInstance">[docs]</a>        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">templates</span><span class="p">[</span><span class="s">&#39;default&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">instanced</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">damage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Damage a vital or stat of this player.</span></div>
+<div class="viewcode-block" id="PlayerEntityHook.damage"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.PlayerEntityHook.damage">[docs]</a>
+<span class="sd">        :param magnitude: Amount of damage (use negative to heal).</span>
+<span class="sd">        :param category: Either `&#39;vital&#39;` or `&#39;stat&#39;`.</span>
+<span class="sd">        :param kind: Either an acumen type, or None, used to determine</span>
+<span class="sd">                     absorption amount.</span>
+<span class="sd">        :param target: Either a vital or stat name.&quot;&quot;&quot;</span>
+        <span class="c"># XXX category ignored - how to deal with damaged stats?</span>
+        <span class="k">if</span> <span class="n">kind</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">absorb</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">absorb</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="n">kind</span><span class="p">][</span><span class="s">&#39;absorb&#39;</span><span class="p">])</span>
+        <span class="n">realDamage</span> <span class="o">=</span> <span class="n">magnitude</span> <span class="o">-</span> <span class="p">(</span><span class="n">absorb</span> <span class="o">*</span> <span class="n">magnitude</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vitals</span><span class="p">[</span><span class="n">target</span><span class="p">]</span> <span class="o">-=</span> <span class="n">realDamage</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vitals</span><span class="p">[</span><span class="n">target</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vitals</span><span class="p">[</span><span class="n">target</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">vitals</span><span class="p">[</span><span class="n">target</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxVitals</span><span class="p">[</span><span class="n">target</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vitals</span><span class="p">[</span><span class="n">target</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxVitals</span><span class="p">[</span><span class="n">target</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">realDamage</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div>
+        <span class="k">for</span> <span class="n">slot</span><span class="p">,</span> <span class="n">entity</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s">&#39;equip&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">entity</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s">&#39;equip&#39;</span><span class="p">][</span><span class="n">slot</span><span class="p">]</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">location</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">friendlyName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;You&#39;</span>  <span class="c"># self.character[&#39;name&#39;]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">character</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the character information dictionary.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PlayerEntityHook.character"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.PlayerEntityHook.character">[docs]</a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s">&#39;character&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inventory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;Return the inventory list.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PlayerEntityHook.inventory"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.PlayerEntityHook.inventory">[docs]</a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s">&#39;inventory&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">equip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;The equip dictionary.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PlayerEntityHook.equip"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.PlayerEntityHook.equip">[docs]</a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s">&#39;equip&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">acumen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;The acumen dictionary.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PlayerEntityHook.acumen"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.PlayerEntityHook.acumen">[docs]</a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s">&#39;acumen&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">vitals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;The vitals dictionary.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PlayerEntityHook.vitals"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.PlayerEntityHook.vitals">[docs]</a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s">&#39;vitals&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;The level of the character.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PlayerEntityHook.level"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.PlayerEntityHook.level">[docs]</a>        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">acumen</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">maxVitals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;The maximum vital amount.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PlayerEntityHook.maxVitals"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.PlayerEntityHook.maxVitals">[docs]</a>        <span class="n">res</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">vital</span><span class="p">,</span> <span class="n">multipliers</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s">&#39;maxVitals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">vital</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span>
+                    <span class="n">multiplier</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">acumen</span><span class="p">)</span> <span class="k">for</span> <span class="n">multiplier</span><span class="p">,</span> <span class="n">acumen</span> <span class="ow">in</span>
+                    <span class="nb">zip</span><span class="p">(</span><span class="n">multipliers</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acumen</span><span class="o">.</span><span class="n">values</span><span class="p">()))))</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;The stats dictionary.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PlayerEntityHook.stats"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.PlayerEntityHook.stats">[docs]</a>        <span class="n">allStats</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">templates</span><span class="p">[</span><span class="s">&#39;default&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s">&#39;stats&#39;</span><span class="p">][</span><span class="s">&#39;template&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">acumenName</span><span class="p">,</span> <span class="n">acumenSkill</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">acumen</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">statName</span><span class="p">,</span> <span class="n">statType</span> <span class="ow">in</span> <span class="n">template</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">lbC</span> <span class="o">=</span> <span class="n">ubC</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c"># lower bound, upper bound constant terms</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">statType</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">statType</span><span class="p">,</span> <span class="n">lbC</span><span class="p">,</span> <span class="n">ubC</span> <span class="o">=</span> <span class="n">statType</span>
+                <span class="n">eqData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">equations</span><span class="p">[</span><span class="n">statType</span><span class="p">]</span>
+                <span class="n">baseStat</span> <span class="o">=</span> <span class="n">eqData</span><span class="p">[</span><span class="s">&#39;equation&#39;</span><span class="p">](</span><span class="n">acumenSkill</span> <span class="o">*</span> <span class="n">eqData</span><span class="p">[</span><span class="s">&#39;scale&#39;</span><span class="p">])</span>
+                <span class="n">allStats</span><span class="p">[</span><span class="n">acumenName</span><span class="p">][</span><span class="n">statName</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">c</span> <span class="o">+</span> <span class="p">(</span><span class="n">baseStat</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">c</span>
+                    <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">eqData</span><span class="p">[</span><span class="s">&#39;variance&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">lbC</span><span class="p">,</span> <span class="n">ubC</span><span class="p">])]</span>
+        <span class="k">return</span> <span class="n">allStats</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="n">desc</span> <span class="o">=</span> <span class="s">&#39;You are {name}, a {gender} of level {level}: {description}&#39;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">desc</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">character</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">Entity</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Entity"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Entity">[docs]</a><span class="sd">    The basic game object.</span>
+
+<span class="sd">    Entities are usually not directly modified unless they have been copied</span>
+<span class="sd">    first. When an entity is used in a room, a copy is created for that</span>
+<span class="sd">    particular area. This copy is stored in a different location in the</span>
+<span class="sd">    datastore: it is stored in the same datastore as the player under a</span>
+<span class="sd">    sub-datastore named &quot;instances&quot;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="sd">&quot;&quot;&quot;The instances datastore in the player&#39;s datastore.&quot;&quot;&quot;</span>
+    <span class="n">instances</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="p">{},</span> <span class="n">prototype</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">location</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param name: The name of the entity (the key in the datastore)</span>
+<span class="sd">        :param kind: The entity&#39;s kind (enemy, door, object, etc.)</span>
+<span class="sd">        :param attributes: The attributes for the entity (data).</span>
+<span class="sd">        :param prototype: The prototype of this entity.</span>
+<span class="sd">        :param location: If given, an alternate location in the datastore</span>
+<span class="sd">                         for the entity (used for instances).</span>
+
+<span class="sd">        Change the type of an entity when it needs special</span>
+<span class="sd">        loading/processing, as with a room, but the kind otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">kind</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entityCache</span> <span class="o">=</span> <span class="n">cache</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prototype</span> <span class="o">=</span> <span class="n">prototype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_location</span> <span class="o">=</span> <span class="n">location</span> <span class="k">if</span> <span class="n">location</span> <span class="k">else</span> <span class="n">cache</span>
+        <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">attributes</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="n">EntityHook</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="n">attributes</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">kindhook</span> <span class="o">=</span> <span class="n">EntityHook</span><span class="o">.</span><span class="n">getHook</span><span class="p">(</span><span class="n">kind</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="n">kindhook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">EntityHookNotFoundError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="n">EntityHook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instanced</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform a shallow copy if mutable, else return self.</span>
+<div class="viewcode-block" id="Entity.copy"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Entity.copy">[docs]</a>
+<span class="sd">        :param instanced: If `True`, place the copy in Entity.intstances</span>
+<span class="sd">                          under the datastore named after the entity kind.</span>
+<span class="sd">        :param name: (Implementation parameter.) Specify the name of the</span>
+<span class="sd">                     entity copy.</span>
+<span class="sd">        :param attributes: (Implementation parameter.) Specify the</span>
+<span class="sd">                           attribute dictionary of the copy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mutable</span><span class="p">:</span>
+            <span class="n">attributes</span> <span class="o">=</span> <span class="n">attributes</span> <span class="k">if</span> <span class="n">attributes</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">instanced</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">Entity</span><span class="o">.</span><span class="n">instances</span><span class="p">:</span>
+                    <span class="n">Entity</span><span class="o">.</span><span class="n">instances</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">)</span>
+                <span class="n">instances</span> <span class="o">=</span> <span class="n">Entity</span><span class="o">.</span><span class="n">instances</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">name</span><span class="p">:</span>  <span class="c"># datahandlers - loading an instance</span>
+                    <span class="n">newName</span> <span class="o">=</span> <span class="n">name</span>
+                <span class="k">elif</span> <span class="n">instances</span><span class="p">:</span>
+                    <span class="n">newName</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">instances</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">newName</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">entity</span> <span class="o">=</span> <span class="n">Entity</span><span class="p">(</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">newName</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">entityCache</span><span class="p">,</span>
+                    <span class="n">attributes</span><span class="p">,</span> <span class="n">prototype</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                    <span class="n">location</span><span class="o">=</span><span class="n">instances</span><span class="p">)</span>
+                <span class="n">instances</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">entity</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">entity</span><span class="p">)</span>
+                <span class="k">print</span><span class="p">(</span><span class="s">&quot;Created instance of&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">instances</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">newName</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Entity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_copy&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">entityCache</span><span class="p">,</span> <span class="n">attributes</span><span class="p">,</span> <span class="n">prototype</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a dictionary containing all data to serialize.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Entity.save"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Entity.save">[docs]</a>        <span class="k">return</span> <span class="p">{</span>
+            <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;entity&quot;</span><span class="p">,</span>
+            <span class="s">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s">&quot;kind&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">KIND</span><span class="p">,</span>
+                <span class="s">&quot;attributes&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;The description for the entity.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Entity.description"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Entity.description">[docs]</a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">description</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">friendlyName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;The entity name for display purposes; defaults to name.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Entity.friendlyName"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Entity.friendlyName">[docs]</a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">friendlyName</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;The attributes dictionary or entity hook.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span>
+
+    <span class="nd">@attributes.setter</span>
+    <span class="k">def</span> <span class="nf">attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+<div class="viewcode-block" id="Entity.attributes"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Entity.attributes">[docs]</a>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">entityCache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The datastore/cache this entity is located in.</span>
+
+<span class="sd">        .. warning:: Do NOT use this directly; use :meth:`Room.entityFor`</span>
+<span class="sd">                     instead in most cases.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entityCache</span>
+
+    <span class="nd">@entityCache.setter</span>
+    <span class="k">def</span> <span class="nf">entityCache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_entityCache</span> <span class="o">=</span> <span class="n">cache</span>
+<div class="viewcode-block" id="Entity.entityCache"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Entity.entityCache">[docs]</a>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">location</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;The location of this entity in the datastore.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Entity.location"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Entity.location">[docs]</a>        <span class="k">return</span> <span class="s">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_location</span><span class="o">.</span><span class="n">fullName</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mutable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;Returns whether this entity is mutable or not.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Entity.mutable"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Entity.mutable">[docs]</a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">mutable</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">prototype</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;&lt;Entity &#39;{}&#39; name={} kind={}&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">friendlyName</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">EntityData</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span>
+    <span class="s">&#39;EntityData&#39;</span><span class="p">,</span></div>
+<div class="viewcode-block" id="EntityData"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.EntityData">[docs]</a>    <span class="s">&#39;objectLocation key location description prefix options&#39;</span>
+    <span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Contains the metadata used by a room to describe an entity.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Saves the metadata.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">val</span><span class="p">}</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">&#39;entity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s">&#39;objectLocation&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">data</span><span class="p">[</span><span class="s">&#39;objectLocation&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s">&#39;key&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s">&#39;prefix&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">data</span><span class="p">[</span><span class="s">&#39;prefix&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s">&#39;options&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s">&#39;options&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">&#39;options&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+
+<span class="k">class</span> <span class="nc">EntityKey</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s">&#39;EntityKey&#39;</span><span class="p">,</span> <span class="s">&#39;key prefix&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;Contains the entity&#39;s name and its &quot;prefix&quot; (a, an, another, etc.)&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="EntityKey"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.EntityKey">[docs]</a>    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">])</span>
+
+
+<span class="k">class</span> <span class="nc">Room</span><span class="p">(</span><span class="n">Entity</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Room"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room">[docs]</a><span class="sd">    The basic room type, a special-cased :class:`Entity`.</span>
+
+<span class="sd">    Rooms contain other entities. All player movement and interaction occurs</span>
+<span class="sd">    within rooms; however, rooms do not contain the actual entity objects,</span>
+<span class="sd">    simply metadata to describe them. When an interaction occurs, a copy is</span>
+<span class="sd">    created of the object and is stored in a room-specific cache.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ROOM_ENTITY_KIND</span> <span class="o">=</span> <span class="s">&#39;room&#39;</span>
+    <span class="n">onEnter</span> <span class="o">=</span> <span class="n">archon</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="s">&#39;room.enter&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">Room</span><span class="o">.</span><span class="n">ROOM_ENTITY_KIND</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_entityCopies</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_contents</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">area</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">naturalFind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Room.naturalFind"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room.naturalFind">[docs]</a><span class="sd">        Attempt to find an entity key based on a variety of criteria.</span>
+
+<span class="sd">        If there is no unique entity matched, return a set of all possible</span>
+<span class="sd">        matches. Else, return the only match. Returns None if there is no</span>
+<span class="sd">        match.</span>
+
+<span class="sd">        This method is case-insensitive.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">criteria</span> <span class="o">=</span> <span class="p">[</span><span class="n">word</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">eKey</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents</span><span class="p">:</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="p">[</span><span class="n">word</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">eKey</span><span class="o">.</span><span class="n">prefix</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="p">[</span><span class="n">word</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">eKey</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+            <span class="n">prefixLength</span><span class="p">,</span> <span class="n">keyLength</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="c"># 2 cases: only identity, or prefix-identity</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">criteria</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">prefixLength</span> <span class="o">+</span> <span class="n">keyLength</span><span class="p">:</span>
+                <span class="c"># in this case, only identity</span>
+                <span class="k">if</span> <span class="n">criteria</span> <span class="o">==</span> <span class="n">key</span><span class="p">:</span>
+                    <span class="n">matches</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">eKey</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">criteria</span><span class="p">[:</span><span class="n">prefixLength</span><span class="p">]</span> <span class="o">==</span> <span class="n">prefix</span> <span class="ow">and</span>
+                    <span class="n">criteria</span><span class="p">[</span><span class="n">prefixLength</span><span class="p">:]</span> <span class="o">==</span> <span class="n">key</span><span class="p">):</span>
+                    <span class="n">matches</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">eKey</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">matches</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">matches</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">matches</span>
+
+    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entityLocation</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prefix</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Room.add"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room.add">[docs]</a>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add an entity or output to the room.</span>
+
+<span class="sd">        :param entityLocation: The entity object&#39;s location</span>
+<span class="sd">                               (e.g. data.items.entity_name).</span>
+<span class="sd">        :param key: The key for the entity.</span>
+<span class="sd">        :param location: The location description for the entity.</span>
+<span class="sd">        :param description: A description of the entity.</span>
+<span class="sd">        :param options: Options for the entity.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">options</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_contents</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">EntityData</span><span class="p">(</span>
+            <span class="n">entityLocation</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span>
+            <span class="n">description</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">instance</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_entityCopies</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span>
+
+    <span class="k">def</span> <span class="nf">addRoom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add an exit to this room.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Room.addRoom"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room.addRoom">[docs]</a>        <span class="bp">self</span><span class="o">.</span><span class="n">_outputs</span><span class="p">[</span><span class="n">direction</span><span class="p">]</span> <span class="o">=</span> <span class="n">target</span>
+
+    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove an entity from this room.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Room.remove"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room.remove">[docs]</a>        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entityCopies</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">clearContents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clear the contents of this room.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Room.clearContents"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room.clearContents">[docs]</a>        <span class="bp">self</span><span class="o">.</span><span class="n">contents</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_entityCopies</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">entityFor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrieve or create a copy of an entity in this room.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Room.entityFor"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room.entityFor">[docs]</a>        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entityCopies</span><span class="p">:</span>
+            <span class="n">loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">objectLocation</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_entityCopies</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entityCache</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entityCopies</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Room.describe"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room.describe">[docs]</a><span class="sd">        Describe the specified object, or if not given, the room.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span><span class="p">:</span>
+            <span class="n">entity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">allContents</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="n">entity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entityFor</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">entity</span><span class="o">.</span><span class="n">description</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;There is {identity}{location}.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">identity</span><span class="o">=</span><span class="n">entity</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="n">location</span><span class="o">=</span><span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">entity</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="n">entity</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+                        <span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">entity</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+                        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">text</span><span class="p">,</span> <span class="s">&#39;It is&#39;</span><span class="p">,</span> <span class="n">entity</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span><span class="p">])</span>
+                    <span class="k">return</span> <span class="n">text</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s">&#39;You can go {}.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">[</span><span class="s">&#39;You are in &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_description</span><span class="p">]</span> <span class="o">+</span>
+                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contents</span><span class="p">)]</span> <span class="o">+</span>
+                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">)])</span>
+
+    <span class="k">def</span> <span class="nf">enter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elapsedTime</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Enter the room at the given time.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Room.enter"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room.enter">[docs]</a>        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elapsedTime</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">onEnter</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">exit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Exit the room.</span></div>
+<div class="viewcode-block" id="Room.exit"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room.exit">[docs]</a>
+<span class="sd">        :returns: datetime -- The current time</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Copy the room - this will return the room itself.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Room.copy"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room.copy">[docs]</a>        <span class="k">return</span> <span class="bp">self</span>  <span class="c"># Rooms are mutable singletons</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a saveable representation of the room.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Room.save"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room.save">[docs]</a>        <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;contents&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s">&quot;outputs&quot;</span><span class="p">:</span> <span class="p">{},</span>
+               <span class="s">&quot;describe&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_description</span><span class="p">,</span>
+               <span class="s">&quot;attributes&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">save</span><span class="p">()}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">res</span><span class="p">[</span><span class="s">&quot;contents&quot;</span><span class="p">][</span><span class="n">key</span><span class="o">.</span><span class="n">save</span><span class="p">()]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">direction</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">res</span><span class="p">[</span><span class="s">&quot;outputs&quot;</span><span class="p">][</span><span class="n">direction</span><span class="p">]</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">location</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;room&quot;</span><span class="p">,</span> <span class="s">&quot;data&quot;</span><span class="p">:</span> <span class="n">res</span><span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">contents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contents</span>
+<div class="viewcode-block" id="Room.contents"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room.contents">[docs]</a>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outputs</span>
+<div class="viewcode-block" id="Room.outputs"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room.outputs">[docs]</a>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">allContents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="k">return</span> <span class="n">UnionDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contents</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">)</span>
+<div class="viewcode-block" id="Room.allContents"><a class="viewcode-back" href="../../modules/objects.html#archon.objects.Room.allContents">[docs]</a>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">UnionDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">dicts</span><span class="p">):</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dicts</span> <span class="o">=</span> <span class="n">dicts</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">dictionary</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dicts</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dictionary</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">dictionary</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">archon 0.1a documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, David Li.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

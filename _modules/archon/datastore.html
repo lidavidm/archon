@@ -1,0 +1,339 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>archon.datastore &mdash; archon 0.1a documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1a',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="archon 0.1a documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">archon 0.1a documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for archon.datastore</h1><pre>
+"""
+
+import os
+import json
+import types
+import collections
+
+import archon.objects
+import archon.datahandlers
+
+
+class DataThunk:
+    """
+<div class="viewcode-block" id="DataThunk"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.DataThunk">[docs]</a>    Represents an unloaded object.
+    """
+    def __init__(self, ds, key, data):
+        self.ds = ds
+        self.key = key
+        self.data = data
+
+    def __call__(self):
+        # for code that checks with callable()
+        item = self.ds.load(self.key, self.data)
+        self.ds._didLoad[self.key] = True
+        self.ds._cache[self.key] = item
+        return item
+
+    evaluate = __call__
+
+
+# TODO possibly use super() as described
+# http://rhettinger.wordpress.com/2011/05/26/super-considered-super/ to
+# implement mixin classes for datastore storage and type (e.g. a file-based
+# storage mechanism and a JSON type, or a DB and binary) Probably not
+# needed, though
+class Datastore:
+    """</div>
+<div class="viewcode-block" id="Datastore"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.Datastore">[docs]</a>    The basic Datastore class.
+    """
+
+    def __init__(self, parent=None):
+        pass
+
+    def add(self, key, item):
+        pass
+
+    def remove(self, key):
+        pass
+
+    def __getitem__(self, key):
+        pass
+
+    @property
+    def root(self):
+        pass
+
+
+class GameDatastore(Datastore):
+    """</div>
+<div class="viewcode-block" id="GameDatastore"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore">[docs]</a>    A lazy, mostly-read datastore.
+
+    This datastore, when created, will scan its directory for possible game
+    files (any that have a file extension specified by
+    archon.datahandlers.dataparser), but will not load them until an object
+    requests them. After loaded, the datastore will continue to hold on to
+    the object. No changes made will be saved unless the save() method is
+    called.
+    """
+
+    def __init__(self, path, parent=None):
+        self._path = os.path.abspath(path)
+        self._name = os.path.basename(os.path.normpath(path))
+        # normpath deals with trailing slash, basename gets directory name
+        self.parent = parent
+        self._cache = {}
+        self._didLoad = collections.defaultdict(lambda: False)
+        self._shouldSave = set()
+        # don't add myself - my parent takes care of it
+        for fname in os.listdir(self._path):
+            fullpath = os.path.join(self._path, fname)
+            if os.path.isfile(fullpath):
+                key, data = self.raw(fname)
+                if data and archon.datahandlers.dataloader.contains(
+                    data['type']
+                    ):
+                    self.add(key, DataThunk(self, key, data))
+            elif os.path.isdir(fullpath):
+                child = self.__class__(fullpath, self)
+                self.add(child.name, child)
+
+    def load(self, key, data):
+        """
+<div class="viewcode-block" id="GameDatastore.load"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.load">[docs]</a>        Load the given data. This is an internal method!
+        """
+        objtype = data['type']
+        objdata = data['data']
+        if archon.datahandlers.dataloader.contains(objtype):
+            obj = archon.datahandlers.dataloader.get(objtype)(
+                key,
+                objdata,
+                self
+                )
+            return obj
+
+    def save(self, key, data=None, immediately=False):
+        """</div>
+<div class="viewcode-block" id="GameDatastore.save"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.save">[docs]</a>        Save the data to disk, or if the key exists, mark it for saving.
+
+        By default, GameDatastore will not save any changes to disk. If
+        changes should be saved, then call this method to mark it for
+        saving. The data will not be immediately saved unless otherwise
+        specified; instead, it will be saved at the end of the datastore's
+        lifetime. This method can also add a new object to the database at
+        runtime.
+        """
+        self._shouldSave.add(key)
+        if data:
+            self.add(key, data)
+        if immediately:
+            json.dump(data,
+                      open(os.path.join(self._path, key + '.json'), 'w'),
+                      indent=1,
+                      cls=EntityJSONEncoder)
+
+    def add(self, key, item):
+        """Add an item into the datastore."""</div>
+<div class="viewcode-block" id="GameDatastore.add"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.add">[docs]</a>        self._cache[key] = item
+        if not isinstance(item, DataThunk):
+            self._didLoad[key] = True  # Strict add
+
+    def remove(self, key):
+        """Remove an item from the datastore."""</div>
+<div class="viewcode-block" id="GameDatastore.remove"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.remove">[docs]</a>        del self._cache[key]
+
+    def keys(self):
+        return self._cache.keys()</div>
+<div class="viewcode-block" id="GameDatastore.keys"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.keys">[docs]</a>
+    def create(self, key):
+        """Create a sub-datastore with the given name."""</div>
+<div class="viewcode-block" id="GameDatastore.create"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.create">[docs]</a>        assert key not in self
+        fullpath = os.path.join(self._path, key)
+        os.mkdir(fullpath)
+        child = self.__class__(fullpath, self)
+        self.add(child.name, child)
+        return child
+
+    def raw(self, key, format=None):
+        """Returns the raw dict object loaded by the datastore.</div>
+<div class="viewcode-block" id="GameDatastore.raw"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.raw">[docs]</a>
+        If `key` is a filename, pass in a format of `None`. Else, `format`
+        should be a file extension (with period)."""
+        if not format:
+            key, format = os.path.splitext(key)
+        fullpath = os.path.join(self._path, key + format)
+        if os.path.isfile(fullpath):
+            if archon.datahandlers.dataparser.contains(format):
+                loader = archon.datahandlers.dataparser.get(format)
+                return (key, loader(open(fullpath).read()))
+
+    @property
+    def name(self):</div>
+        """The name of this datastore (the folder name)."""
+<div class="viewcode-block" id="GameDatastore.name"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.name">[docs]</a>        return self._name
+
+    @property
+    def fullName(self):</div>
+        """The full name: the name of the parent with my name."""
+<div class="viewcode-block" id="GameDatastore.fullName"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.fullName">[docs]</a>        names = [self.name]
+        current = self
+        while current.parent:
+            names.append(current.parent.name)
+            current = current.parent
+        return '.'.join(reversed(names))
+
+    @property
+    def root(self):</div>
+        """The root, which contains all other datastores."""
+<div class="viewcode-block" id="GameDatastore.root"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.root">[docs]</a>        if self.parent:
+            return self.parent.root
+        else:
+            return self
+
+    @property
+    def isRoot(self):</div>
+        return not self.parent
+<div class="viewcode-block" id="GameDatastore.isRoot"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.isRoot">[docs]</a>
+    @property
+    def thunks(self):</div>
+        return self._cache
+<div class="viewcode-block" id="GameDatastore.thunks"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.thunks">[docs]</a>
+    def lookup(self, key):
+        """Convenience function: try relative, then absolute."""</div>
+<div class="viewcode-block" id="GameDatastore.lookup"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.lookup">[docs]</a>        if key in self:
+            return self[key]
+        else:
+            return self.root[key]
+
+    def __iter__(self):
+        for key in self._cache:</div>
+            yield key
+
+    def datastoreFor(self, key):
+        """Find the containing datastore of the given key."""
+<div class="viewcode-block" id="GameDatastore.datastoreFor"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.datastoreFor">[docs]</a>        if self.isRoot and key.split('.', 1)[0] == self.name:
+            return self.datastoreFor(key.split('.', 1)[1])
+        elif key.startswith('.'):  # absolute lookup
+            return self.root.datastoreFor(key[1:])
+        elif '.' in key:
+            key, subkey = key.split('.', 1)
+            # get the parent datastore, then the datastore itself
+            return self.datastoreFor(key)[1][key].datastoreFor(subkey)
+        else:
+            return key, self
+
+    def thunkFor(self, key):
+        """Get the thunk if possible, else the object/datastore."""</div>
+<div class="viewcode-block" id="GameDatastore.thunkFor"><a class="viewcode-back" href="../../modules/datastore.html#archon.datastore.GameDatastore.thunkFor">[docs]</a>        key, ds = self.datastoreFor(key)
+        if key not in ds._cache:
+            raise KeyError(key)
+        return ds._cache[key]
+
+    def __getitem__(self, key):
+        thunk = self.thunkFor(key)</div>
+        if isinstance(thunk, DataThunk):
+            thunk = thunk.evaluate()
+        return thunk
+
+    def __contains__(self, key):
+        if '.' in key:
+            key, subkey = key.split('.', 1)
+            return key in self._cache and subkey in self[key]
+        else:
+            return key in self._cache
+
+    def __bool__(self):
+        return bool(self._cache)
+
+
+class EntityJSONEncoder(json.JSONEncoder):
+    def default(self, o):</div>
+        if isinstance(o, archon.objects.Entity):
+            # TODO check for mutable entities
+            return o.location
+        else:
+            return super().default(o)
+</pre>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">archon 0.1a documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, David Li.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,514 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>4. objects – Core objects &mdash; archon 0.1a documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1a',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="archon 0.1a documentation" href="../index.html" />
+    <link rel="up" title="Modules" href="index.html" />
+    <link rel="prev" title="3. datastore – Game database" href="datastore.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="datastore.html" title="3. datastore – Game database"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">archon 0.1a documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Modules</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-archon.objects">
+<span id="objects-core-objects"></span><h1>4. <tt class="xref py py-mod docutils literal"><span class="pre">objects</span></tt> &#8211; Core objects<a class="headerlink" href="#module-archon.objects" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="entity-types">
+<h2>4.1. Entity Types<a class="headerlink" href="#entity-types" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="entity-instantiation">
+<h3>4.1.1. Entity Instantiation<a class="headerlink" href="#entity-instantiation" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>When created, the datastore looks for JSON files in its directory and
+inspects them. If they have the appropriate structure, the data is stored
+in a thunk for later loading.</li>
+<li>When code requests something from the datastore, that object is
+loaded. (See <a class="reference internal" href="datastore.html"><em>datastore &#8211; Game database</em></a> for more details.) If that object is an
+entity, it is assumed to be a <em>prototype</em> and should not be modified.</li>
+<li>Any code that needs to use an entity should call <a class="reference internal" href="#archon.objects.Entity.copy" title="archon.objects.Entity.copy"><tt class="xref py py-meth docutils literal"><span class="pre">Entity.copy()</span></tt></a>. If
+the entity is mutable, this will create a shallow copy; else, the
+prototype itself will be returned.</li>
+<li>Mutable entities will be located in a special location: the <cite>instances</cite>
+datastore in the same datastore as the player entity. They will be saved or
+loaded to this location, so that changes are preserved.</li>
+</ol>
+<dl class="class">
+<dt id="archon.objects.Entity">
+<em class="property">class </em><tt class="descclassname">archon.objects.</tt><tt class="descname">Entity</tt><big>(</big><em>name</em>, <em>kind</em>, <em>cache</em>, <em>attributes={}</em>, <em>prototype=None</em>, <em>location=None</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Entity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Entity" title="Permalink to this definition">¶</a></dt>
+<dd><p>The basic game object.</p>
+<p>Entities are usually not directly modified unless they have been copied
+first. When an entity is used in a room, a copy is created for that
+particular area. This copy is stored in a different location in the
+datastore: it is stored in the same datastore as the player under a
+sub-datastore named &#8220;instances&#8221;.</p>
+<dl class="attribute">
+<dt id="archon.objects.Entity.prototype">
+<tt class="descname">prototype</tt><a class="headerlink" href="#archon.objects.Entity.prototype" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.Entity.attributes">
+<tt class="descname">attributes</tt><a class="reference internal" href="../_modules/archon/objects.html#Entity.attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Entity.attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>The attributes dictionary or entity hook.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.Entity.copy">
+<tt class="descname">copy</tt><big>(</big><em>instanced=True</em>, <em>name=None</em>, <em>attributes=None</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Entity.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Entity.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a shallow copy if mutable, else return self.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>instanced</strong> &#8211; If <cite>True</cite>, place the copy in Entity.intstances
+under the datastore named after the entity kind.</li>
+<li><strong>name</strong> &#8211; (Implementation parameter.) Specify the name of the
+entity copy.</li>
+<li><strong>attributes</strong> &#8211; (Implementation parameter.) Specify the
+attribute dictionary of the copy.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.Entity.description">
+<tt class="descname">description</tt><a class="reference internal" href="../_modules/archon/objects.html#Entity.description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Entity.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>The description for the entity.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.Entity.entityCache">
+<tt class="descname">entityCache</tt><a class="reference internal" href="../_modules/archon/objects.html#Entity.entityCache"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Entity.entityCache" title="Permalink to this definition">¶</a></dt>
+<dd><p>The datastore/cache this entity is located in.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Do NOT use this directly; use <a class="reference internal" href="#archon.objects.Room.entityFor" title="archon.objects.Room.entityFor"><tt class="xref py py-meth docutils literal"><span class="pre">Room.entityFor()</span></tt></a>
+instead in most cases.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.Entity.friendlyName">
+<tt class="descname">friendlyName</tt><a class="reference internal" href="../_modules/archon/objects.html#Entity.friendlyName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Entity.friendlyName" title="Permalink to this definition">¶</a></dt>
+<dd><p>The entity name for display purposes; defaults to name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.Entity.location">
+<tt class="descname">location</tt><a class="reference internal" href="../_modules/archon/objects.html#Entity.location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Entity.location" title="Permalink to this definition">¶</a></dt>
+<dd><p>The location of this entity in the datastore.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.Entity.mutable">
+<tt class="descname">mutable</tt><a class="reference internal" href="../_modules/archon/objects.html#Entity.mutable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Entity.mutable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether this entity is mutable or not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.Entity.save">
+<tt class="descname">save</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Entity.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Entity.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary containing all data to serialize.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="archon.objects.Room">
+<em class="property">class </em><tt class="descclassname">archon.objects.</tt><tt class="descname">Room</tt><big>(</big><em>name</em>, <em>description</em>, <em>cache</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Room"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room" title="Permalink to this definition">¶</a></dt>
+<dd><p>The basic room type, a special-cased <a class="reference internal" href="#archon.objects.Entity" title="archon.objects.Entity"><tt class="xref py py-class docutils literal"><span class="pre">Entity</span></tt></a>.</p>
+<p>Rooms contain other entities. All player movement and interaction occurs
+within rooms; however, rooms do not contain the actual entity objects,
+simply metadata to describe them. When an interaction occurs, a copy is
+created of the object and is stored in a room-specific cache.</p>
+<dl class="attribute">
+<dt id="archon.objects.Room.contents">
+<tt class="descname">contents</tt><a class="reference internal" href="../_modules/archon/objects.html#Room.contents"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room.contents" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.Room.outputs">
+<tt class="descname">outputs</tt><a class="reference internal" href="../_modules/archon/objects.html#Room.outputs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room.outputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.Room.allContents">
+<tt class="descname">allContents</tt><a class="reference internal" href="../_modules/archon/objects.html#Room.allContents"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room.allContents" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.Room.add">
+<tt class="descname">add</tt><big>(</big><em>entityLocation</em>, <em>key</em>, <em>location=''</em>, <em>description=''</em>, <em>prefix=''</em>, <em>options=None</em>, <em>instance=None</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Room.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an entity or output to the room.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>entityLocation</strong> &#8211; The entity object&#8217;s location
+(e.g. data.items.entity_name).</li>
+<li><strong>key</strong> &#8211; The key for the entity.</li>
+<li><strong>location</strong> &#8211; The location description for the entity.</li>
+<li><strong>description</strong> &#8211; A description of the entity.</li>
+<li><strong>options</strong> &#8211; Options for the entity.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.Room.addRoom">
+<tt class="descname">addRoom</tt><big>(</big><em>direction</em>, <em>target</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Room.addRoom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room.addRoom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an exit to this room.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.Room.clearContents">
+<tt class="descname">clearContents</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Room.clearContents"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room.clearContents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear the contents of this room.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.Room.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Room.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy the room - this will return the room itself.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.Room.describe">
+<tt class="descname">describe</tt><big>(</big><em>key=None</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Room.describe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room.describe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Describe the specified object, or if not given, the room.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.Room.enter">
+<tt class="descname">enter</tt><big>(</big><em>elapsedTime</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Room.enter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room.enter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enter the room at the given time.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.Room.entityFor">
+<tt class="descname">entityFor</tt><big>(</big><em>key</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Room.entityFor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room.entityFor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve or create a copy of an entity in this room.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.Room.exit">
+<tt class="descname">exit</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Room.exit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room.exit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exit the room.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">datetime &#8211; The current time</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.Room.naturalFind">
+<tt class="descname">naturalFind</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Room.naturalFind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room.naturalFind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to find an entity key based on a variety of criteria.</p>
+<p>If there is no unique entity matched, return a set of all possible
+matches. Else, return the only match. Returns None if there is no
+match.</p>
+<p>This method is case-insensitive.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.Room.remove">
+<tt class="descname">remove</tt><big>(</big><em>key</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Room.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove an entity from this room.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.Room.save">
+<tt class="descname">save</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#Room.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.Room.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a saveable representation of the room.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="archon.objects.EntityKey">
+<em class="property">class </em><tt class="descclassname">archon.objects.</tt><tt class="descname">EntityKey</tt><a class="reference internal" href="../_modules/archon/objects.html#EntityKey"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.EntityKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains the entity&#8217;s name and its &#8220;prefix&#8221; (a, an, another, etc.)</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="archon.objects.EntityData">
+<em class="property">class </em><tt class="descclassname">archon.objects.</tt><tt class="descname">EntityData</tt><a class="reference internal" href="../_modules/archon/objects.html#EntityData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.EntityData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains the metadata used by a room to describe an entity.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="entity-hooks">
+<h2>4.2. Entity Hooks<a class="headerlink" href="#entity-hooks" title="Permalink to this headline">¶</a></h2>
+<p>When an entity is created, it searches for an entity hook with the same
+&#8220;kind&#8221; as the entity. Applications use these hooks to define special
+behavior for different kinds of entities, such as characters, weapons, and
+consumables.</p>
+<dl class="class">
+<dt id="archon.objects.EntityHook">
+<em class="property">class </em><tt class="descclassname">archon.objects.</tt><tt class="descname">EntityHook</tt><big>(</big><em>entity</em>, <em>attributes</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#EntityHook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.EntityHook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines special behavior for the attributes of certain entity kinds.</p>
+<dl class="attribute">
+<dt id="archon.objects.EntityHook.KIND">
+<tt class="descname">KIND</tt><em class="property"> = ''</em><a class="headerlink" href="#archon.objects.EntityHook.KIND" title="Permalink to this definition">¶</a></dt>
+<dd><p>The templates for this entity kind.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.EntityHook.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#EntityHook.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.EntityHook.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a copy of the attributes in the entity hook.</p>
+<p>By default, hooks are immutable, and so this method simply returns
+self.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.EntityHook.description">
+<tt class="descname">description</tt><a class="reference internal" href="../_modules/archon/objects.html#EntityHook.description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.EntityHook.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the description of this entity.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.EntityHook.friendlyName">
+<tt class="descname">friendlyName</tt><a class="reference internal" href="../_modules/archon/objects.html#EntityHook.friendlyName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.EntityHook.friendlyName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a user-friendly name for this entity.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="archon.objects.EntityHook.getHook">
+<em class="property">classmethod </em><tt class="descname">getHook</tt><big>(</big><em>kind</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#EntityHook.getHook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.EntityHook.getHook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find an entity hook based on class kind.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.EntityHook.save">
+<tt class="descname">save</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#EntityHook.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.EntityHook.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a saveable copy of the attributes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.EntityHook.viaTemplate">
+<tt class="descname">viaTemplate</tt><big>(</big><em>attributes</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#EntityHook.viaTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.EntityHook.viaTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format attributes using this entity as a template.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="archon.objects.MutableEntityHook">
+<em class="property">class </em><tt class="descclassname">archon.objects.</tt><tt class="descname">MutableEntityHook</tt><big>(</big><em>entity</em>, <em>attributes</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#MutableEntityHook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.MutableEntityHook" title="Permalink to this definition">¶</a></dt>
+<dd><p>A mutable entity hook.</p>
+<dl class="method">
+<dt id="archon.objects.MutableEntityHook.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#MutableEntityHook.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.MutableEntityHook.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a shallow-copy of the attributes dictionary.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="archon.objects.PlayerEntityHook">
+<em class="property">class </em><tt class="descclassname">archon.objects.</tt><tt class="descname">PlayerEntityHook</tt><big>(</big><em>entity</em>, <em>attributes</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#PlayerEntityHook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.PlayerEntityHook" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="archon.objects.PlayerEntityHook.KIND">
+<tt class="descname">KIND</tt><em class="property"> = 'player'</em><a class="headerlink" href="#archon.objects.PlayerEntityHook.KIND" title="Permalink to this definition">¶</a></dt>
+<dd><p>The equations used to calculate stats based on acumen.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.PlayerEntityHook.acumen">
+<tt class="descname">acumen</tt><a class="reference internal" href="../_modules/archon/objects.html#PlayerEntityHook.acumen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.PlayerEntityHook.acumen" title="Permalink to this definition">¶</a></dt>
+<dd><p>The acumen dictionary.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.PlayerEntityHook.character">
+<tt class="descname">character</tt><a class="reference internal" href="../_modules/archon/objects.html#PlayerEntityHook.character"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.PlayerEntityHook.character" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the character information dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.objects.PlayerEntityHook.damage">
+<tt class="descname">damage</tt><big>(</big><em>magnitude</em>, <em>category</em>, <em>kind</em>, <em>target</em><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#PlayerEntityHook.damage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.PlayerEntityHook.damage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Damage a vital or stat of this player.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>magnitude</strong> &#8211; Amount of damage (use negative to heal).</li>
+<li><strong>category</strong> &#8211; Either <cite>&#8216;vital&#8217;</cite> or <cite>&#8216;stat&#8217;</cite>.</li>
+<li><strong>kind</strong> &#8211; Either an acumen type, or None, used to determine
+absorption amount.</li>
+<li><strong>target</strong> &#8211; Either a vital or stat name.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="archon.objects.PlayerEntityHook.defaultInstance">
+<em class="property">classmethod </em><tt class="descname">defaultInstance</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/archon/objects.html#PlayerEntityHook.defaultInstance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.PlayerEntityHook.defaultInstance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the default instance of the player.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.PlayerEntityHook.equip">
+<tt class="descname">equip</tt><a class="reference internal" href="../_modules/archon/objects.html#PlayerEntityHook.equip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.PlayerEntityHook.equip" title="Permalink to this definition">¶</a></dt>
+<dd><p>The equip dictionary.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.PlayerEntityHook.inventory">
+<tt class="descname">inventory</tt><a class="reference internal" href="../_modules/archon/objects.html#PlayerEntityHook.inventory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.PlayerEntityHook.inventory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the inventory list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.PlayerEntityHook.level">
+<tt class="descname">level</tt><a class="reference internal" href="../_modules/archon/objects.html#PlayerEntityHook.level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.PlayerEntityHook.level" title="Permalink to this definition">¶</a></dt>
+<dd><p>The level of the character.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.PlayerEntityHook.maxVitals">
+<tt class="descname">maxVitals</tt><a class="reference internal" href="../_modules/archon/objects.html#PlayerEntityHook.maxVitals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.PlayerEntityHook.maxVitals" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum vital amount.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.PlayerEntityHook.stats">
+<tt class="descname">stats</tt><a class="reference internal" href="../_modules/archon/objects.html#PlayerEntityHook.stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.PlayerEntityHook.stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>The stats dictionary.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="archon.objects.PlayerEntityHook.vitals">
+<tt class="descname">vitals</tt><a class="reference internal" href="../_modules/archon/objects.html#PlayerEntityHook.vitals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.objects.PlayerEntityHook.vitals" title="Permalink to this definition">¶</a></dt>
+<dd><p>The vitals dictionary.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">4. <tt class="docutils literal"><span class="pre">objects</span></tt> &#8211; Core objects</a><ul>
+<li><a class="reference internal" href="#entity-types">4.1. Entity Types</a><ul>
+<li><a class="reference internal" href="#entity-instantiation">4.1.1. Entity Instantiation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#entity-hooks">4.2. Entity Hooks</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="datastore.html"
+                        title="previous chapter">3. <tt class="docutils literal docutils literal docutils literal"><span class="pre">datastore</span></tt> &#8211; Game database</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/objects.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="datastore.html" title="3. datastore – Game database"
+             >previous</a> |</li>
+        <li><a href="../index.html">archon 0.1a documentation</a> &raquo;</li>
+          <li><a href="index.html" >Modules</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, David Li.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

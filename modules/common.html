@@ -1,0 +1,253 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>2. common – Utility functionality &mdash; archon 0.1a documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1a',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="archon 0.1a documentation" href="../index.html" />
+    <link rel="up" title="Modules" href="index.html" />
+    <link rel="next" title="3. datastore – Game database" href="datastore.html" />
+    <link rel="prev" title="1. commands – Game commands" href="commands.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="datastore.html" title="3. datastore – Game database"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="commands.html" title="1. commands – Game commands"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">archon 0.1a documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Modules</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-archon.common">
+<span id="common-utility-functionality"></span><h1>2. <tt class="xref py py-mod docutils literal"><span class="pre">common</span></tt> &#8211; Utility functionality<a class="headerlink" href="#module-archon.common" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="the-denoter-utility">
+<h2>2.1. The <cite>denoter</cite> utility<a class="headerlink" href="#the-denoter-utility" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="archon.common.denoter">
+<em class="property">class </em><tt class="descclassname">archon.common.</tt><tt class="descname">denoter</tt><big>(</big><em>*names</em><big>)</big><a class="reference internal" href="../_modules/archon/common.html#denoter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.common.denoter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to denote a function as having some purpose.</p>
+<p>This class is used as a decorator to associate a list of names with a
+function, which, for example, can be used to denote certain functions as
+commands and provide their command names. Subclass this to provide
+semantic usage information; when doing so, make sure to create a
+<cite>functions</cite> class attribute (or else the attribute of the superclass
+will be used).</p>
+<dl class="classmethod">
+<dt id="archon.common.denoter.contains">
+<em class="property">classmethod </em><tt class="descname">contains</tt><big>(</big><em>func</em><big>)</big><a class="reference internal" href="../_modules/archon/common.html#denoter.contains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.common.denoter.contains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if this denoter class has a particular function.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="archon.common.denoter.get">
+<em class="property">classmethod </em><tt class="descname">get</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="../_modules/archon/common.html#denoter.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.common.denoter.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a particular function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.common.denoter.verify">
+<tt class="descname">verify</tt><big>(</big><em>func</em><big>)</big><a class="reference internal" href="../_modules/archon/common.html#denoter.verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.common.denoter.verify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Override to check whether a function meets certain criteria.</p>
+<p>This method must return True. Anything else is treated as the error
+message to raise.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="archon.common.DenotedNotFoundError">
+<em class="property">class </em><tt class="descclassname">archon.common.</tt><tt class="descname">DenotedNotFoundError</tt><a class="reference internal" href="../_modules/archon/common.html#DenotedNotFoundError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.common.DenotedNotFoundError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="archon.common.DenotedInvalidError">
+<em class="property">class </em><tt class="descclassname">archon.common.</tt><tt class="descname">DenotedInvalidError</tt><a class="reference internal" href="../_modules/archon/common.html#DenotedInvalidError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.common.DenotedInvalidError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Some function failed <a class="reference internal" href="#archon.common.denoter.verify" title="archon.common.denoter.verify"><tt class="xref py py-meth docutils literal"><span class="pre">denoter.verify()</span></tt></a>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="the-merge-utility">
+<h2>2.2. The <cite>Merge</cite> utility<a class="headerlink" href="#the-merge-utility" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="patch-format">
+<h3>2.2.1. Patch Format<a class="headerlink" href="#patch-format" title="Permalink to this headline">¶</a></h3>
+<p>A patch is simply a dictionary containing up to three keys: create, update,
+and delete. They define operations to perform on the root of the dictionary
+to patch.</p>
+<p>Example Source:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;key_to_remove&quot;</span><span class="p">:</span> <span class="s">&quot;value&quot;</span><span class="p">,</span>
+    <span class="s">&quot;update_this&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&quot;subkey_to_remove&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s">&quot;subkey_to_change&quot;</span><span class="p">:</span> <span class="s">&quot;this was changed&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Example patch:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
+    <span class="s">&quot;delete&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;key_to_remove&quot;</span><span class="p">],</span>
+    <span class="s">&quot;create&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s">&quot;i&quot;</span><span class="p">:</span> <span class="s">&quot;was created&quot;</span><span class="p">},</span>
+    <span class="s">&quot;update&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&quot;update_this&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&quot;delete&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;subkey_to_remove&quot;</span><span class="p">],</span>
+            <span class="s">&quot;create&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s">&quot;subkey_to_change&quot;</span><span class="p">:</span> <span class="s">&quot;I changed!&quot;</span><span class="p">,</span>
+                <span class="s">&quot;subkey_created&quot;</span><span class="p">:</span> <span class="s">&quot;I&#39;m new!&quot;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Result:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">archon.common</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">merge</span> <span class="o">=</span> <span class="n">archon</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">Merge</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">patch</span><span class="o">=</span><span class="n">patch</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">merge</span><span class="o">.</span><span class="n">patched</span><span class="p">()</span>
+<span class="go">{&#39;i&#39;: &#39;was created&#39;, &#39;update_this&#39;: {&#39;subkey_to_change&#39;: &#39;I changed!&#39;, &#39;subkey_created&#39;: &quot;I&#39;m new!&quot;}}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">create:</th><td class="field-body">A dictionary of keys and values to create.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">update:</th><td class="field-body">A dictionary of keys and patches to apply.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">delete:</th><td class="field-body">A list of keys to delete.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="archon.common.Merge">
+<em class="property">class </em><tt class="descclassname">archon.common.</tt><tt class="descname">Merge</tt><big>(</big><em>source</em>, <em>dest=None</em>, <em>patch=None</em>, <em>unsafe=False</em><big>)</big><a class="reference internal" href="../_modules/archon/common.html#Merge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.common.Merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge two dictionaries together using a patch dictionary.</p>
+<p>This does not support dictionaries nested within lists, or patching
+lists (they are treated as atomic values as strings and numbers are).</p>
+<dl class="method">
+<dt id="archon.common.Merge.compared">
+<tt class="descname">compared</tt><big>(</big><em>redo=False</em><big>)</big><a class="reference internal" href="../_modules/archon/common.html#Merge.compared"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.common.Merge.compared" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a patch from a source and destination.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="archon.common.Merge.patched">
+<tt class="descname">patched</tt><big>(</big><em>redo=False</em><big>)</big><a class="reference internal" href="../_modules/archon/common.html#Merge.patched"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#archon.common.Merge.patched" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the patch to a deepcopy of the source object.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">2. <tt class="docutils literal"><span class="pre">common</span></tt> &#8211; Utility functionality</a><ul>
+<li><a class="reference internal" href="#the-denoter-utility">2.1. The <cite>denoter</cite> utility</a></li>
+<li><a class="reference internal" href="#the-merge-utility">2.2. The <cite>Merge</cite> utility</a><ul>
+<li><a class="reference internal" href="#patch-format">2.2.1. Patch Format</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="commands.html"
+                        title="previous chapter">1. <tt class="docutils literal docutils literal"><span class="pre">commands</span></tt> &#8211; Game commands</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="datastore.html"
+                        title="next chapter">3. <tt class="docutils literal"><span class="pre">datastore</span></tt> &#8211; Game database</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/common.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="datastore.html" title="3. datastore – Game database"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="commands.html" title="1. commands – Game commands"
+             >previous</a> |</li>
+        <li><a href="../index.html">archon 0.1a documentation</a> &raquo;</li>
+          <li><a href="index.html" >Modules</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, David Li.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

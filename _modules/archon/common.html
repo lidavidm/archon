@@ -1,0 +1,248 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>archon.common &mdash; archon 0.1a documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1a',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="archon 0.1a documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">archon 0.1a documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for archon.common</h1><div class="highlight"><pre>
+<span class="k">def</span> <span class="nf">signal</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates an event signal; based on blinker&#39;s signal.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">blinker</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">DenotedNotFoundError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span> <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">DenotedInvalidError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<div class="viewcode-block" id="DenotedNotFoundError"><a class="viewcode-back" href="../../modules/common.html#archon.common.DenotedNotFoundError">[docs]</a>    <span class="sd">&quot;&quot;&quot;Some function failed :meth:`denoter.verify`.&quot;&quot;&quot;</span>
+
+</div>
+<div class="viewcode-block" id="DenotedInvalidError"><a class="viewcode-back" href="../../modules/common.html#archon.common.DenotedInvalidError">[docs]</a><span class="k">class</span> <span class="nc">denoter</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decorator to denote a function as having some purpose.</span>
+</div>
+<div class="viewcode-block" id="denoter"><a class="viewcode-back" href="../../modules/common.html#archon.common.denoter">[docs]</a><span class="sd">    This class is used as a decorator to associate a list of names with a</span>
+<span class="sd">    function, which, for example, can be used to denote certain functions as</span>
+<span class="sd">    commands and provide their command names. Subclass this to provide</span>
+<span class="sd">    semantic usage information; when doing so, make sure to create a</span>
+<span class="sd">    `functions` class attribute (or else the attribute of the superclass</span>
+<span class="sd">    will be used).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">functions</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">names</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s">&quot;Name {} already in use!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                    <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="n">names</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">valid</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">DenotedInvalidError</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span>
+        <span class="k">return</span> <span class="n">func</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">contains</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks if this denoter class has a particular function.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">functions</span>
+
+<div class="viewcode-block" id="denoter.contains"><a class="viewcode-back" href="../../modules/common.html#archon.common.denoter.contains">[docs]</a>    <span class="k">def</span> <span class="nf">verify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Override to check whether a function meets certain criteria.</span>
+</div>
+<div class="viewcode-block" id="denoter.verify"><a class="viewcode-back" href="../../modules/common.html#archon.common.denoter.verify">[docs]</a><span class="sd">        This method must return True. Anything else is treated as the error</span>
+<span class="sd">        message to raise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a particular function.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span></div>
+            <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">functions</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+<div class="viewcode-block" id="denoter.get"><a class="viewcode-back" href="../../modules/common.html#archon.common.denoter.get">[docs]</a>        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DenotedNotFoundError</span>
+
+
+<span class="k">class</span> <span class="nc">Merge</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Merge two dictionaries together using a patch dictionary.</span>
+</div></div>
+<div class="viewcode-block" id="Merge"><a class="viewcode-back" href="../../modules/common.html#archon.common.Merge">[docs]</a><span class="sd">    This does not support dictionaries nested within lists, or patching</span>
+<span class="sd">    lists (they are treated as atomic values as strings and numbers are).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">patch</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">unsafe</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dest</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patch</span> <span class="o">=</span> <span class="n">patch</span>
+        <span class="k">if</span> <span class="n">dest</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">unsafe</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dest</span> <span class="o">=</span> <span class="n">dest</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dest</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">patch</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">patch</span> <span class="o">=</span> <span class="n">patch</span>
+
+    <span class="k">def</span> <span class="nf">patched</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redo</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Apply the patch to a deepcopy of the source object.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">redo</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span>
+<div class="viewcode-block" id="Merge.patched"><a class="viewcode-back" href="../../modules/common.html#archon.common.Merge.patched">[docs]</a>        <span class="bp">self</span><span class="o">.</span><span class="n">dest</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+        <span class="c"># stack = [Merge(self.source[key], self.dest[key],</span>
+        <span class="c">#                patch=patch, unsafe=True)</span>
+        <span class="c">#          for key, patch in self.patch.items()]</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="p">]</span>
+        <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+            <span class="n">merge</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">merge</span><span class="o">.</span><span class="n">created</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">merge</span><span class="o">.</span><span class="n">dest</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">merge</span><span class="o">.</span><span class="n">deleted</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">merge</span><span class="o">.</span><span class="n">dest</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">patch</span> <span class="ow">in</span> <span class="n">merge</span><span class="o">.</span><span class="n">updated</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">Merge</span><span class="p">(</span><span class="n">merge</span><span class="o">.</span><span class="n">source</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">merge</span><span class="o">.</span><span class="n">dest</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">patch</span><span class="o">=</span><span class="n">patch</span><span class="p">,</span>
+                          <span class="n">unsafe</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span>
+
+    <span class="k">def</span> <span class="nf">compared</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redo</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a patch from a source and destination.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">redo</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span></div>
+<div class="viewcode-block" id="Merge.compared"><a class="viewcode-back" href="../../modules/common.html#archon.common.Merge.compared">[docs]</a>        <span class="bp">self</span><span class="o">.</span><span class="n">patch</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="p">]</span>
+        <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+            <span class="n">merge</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">merge</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">merge</span><span class="o">.</span><span class="n">source</span><span class="p">:</span>
+                    <span class="n">merge</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">data</span> <span class="o">!=</span> <span class="n">merge</span><span class="o">.</span><span class="n">source</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
+                        <span class="n">merge</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">{})</span>
+                        <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="n">Merge</span><span class="p">(</span><span class="n">merge</span><span class="o">.</span><span class="n">source</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">data</span><span class="p">,</span>
+                                  <span class="n">patch</span><span class="o">=</span><span class="n">merge</span><span class="o">.</span><span class="n">patch</span><span class="p">[</span><span class="s">&#39;update&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">merge</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">merge</span><span class="o">.</span><span class="n">source</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">merge</span><span class="o">.</span><span class="n">dest</span><span class="p">:</span>
+                    <span class="n">merge</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span>
+
+    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s">&quot;create&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">[</span><span class="s">&quot;create&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">[</span><span class="s">&quot;create&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span></div>
+
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s">&quot;delete&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">[</span><span class="s">&quot;delete&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">[</span><span class="s">&quot;delete&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s">&quot;update&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">[</span><span class="s">&quot;update&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="p">[</span><span class="s">&quot;update&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">created</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;create&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">deleted</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;delete&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">updated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;update&quot;</span><span class="p">,</span> <span class="p">{})</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">archon 0.1a documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, David Li.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>
