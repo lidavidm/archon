@@ -15,7 +15,11 @@ class EntityHook(collections.Mapping):
     """
     Defines special behavior for the attributes of certain entity kinds.
     """
+
+    """The `kind` of the entity."""
     KIND = ''
+
+    """The templates for this entity kind."""
     templates = {}
     mutable = False
 
@@ -50,13 +54,25 @@ class EntityHook(collections.Mapping):
             kind=self.__class__.KIND)
 
     def copy(self):
+        """
+        Create a copy of the attributes in the entity hook.
+
+        By default, hooks are immutable, and so this method simply returns
+        self.
+        """
         return self
 
     def save(self):
+        """
+        Create a saveable copy of the attributes.
+        """
         return self.attributes.copy()
 
     @classmethod
     def getHook(cls, kind):
+        """
+        Find an entity hook based on class kind.
+        """
         if cls.KIND == kind:
             return cls
         else:
@@ -73,16 +89,20 @@ class EntityHook(collections.Mapping):
 
     @property
     def description(self):
+        """ Return the description of this entity. """
         return 'No description.'
 
     @property
     def friendlyName(self):
+        """Return a user-friendly name for this entity."""
         if 'friendlyName' in self:
             return self['friendlyName']
         else:
             return self.entity.name
 
     def viaTemplate(self, attributes):
+        """Format attributes using this entity as a template."""
+        # TODO use archon.common.Merge
         result = copy.deepcopy(self.attributes)
         stack = [(result, attributes)]
         while stack:
@@ -98,9 +118,15 @@ class EntityHook(collections.Mapping):
 
 
 class MutableEntityHook(EntityHook, collections.MutableMapping):
+    """
+    A mutable entity hook.
+    """
     mutable = True
 
     def copy(self):
+        """
+        Returns a shallow-copy of the attributes dictionary.
+        """
         return self.attributes.copy()
 
 
@@ -154,6 +180,7 @@ class MessageTemplateEntityHook(EntityHook):
 class PlayerEntityHook(MutableEntityHook):
     KIND = "player"
 
+    """The equations used to calculate stats based on acumen."""
     equations = {
         "increasing": {
             "equation": lambda x: 1 / (1 + math.exp(-x)),
@@ -189,9 +216,17 @@ class PlayerEntityHook(MutableEntityHook):
 
     @classmethod
     def defaultInstance(cls):
+        """Return the default instance of the player."""
         return cls.templates['default'].copy(instanced=False)
 
     def damage(self, magnitude, category, kind, target):
+        """Damage a vital or stat of this player.
+
+        :param magnitude: Amount of damage (use negative to heal).
+        :param category: Either `'vital'` or `'stat'`.
+        :param kind: Either an acumen type, or None, used to determine
+                     absorption amount.
+        :param target: Either a vital or stat name."""
         # XXX category ignored - how to deal with damaged stats?
         if kind is None:
             absorb = 0
@@ -218,30 +253,37 @@ class PlayerEntityHook(MutableEntityHook):
 
     @property
     def character(self):
+        """Return the character information dictionary."""
         return self.attributes['character']
 
     @property
     def inventory(self):
+        """Return the inventory list."""
         return self.attributes['inventory']
 
     @property
     def equip(self):
+        """The equip dictionary."""
         return self.attributes['equip']
 
     @property
     def acumen(self):
+        """The acumen dictionary."""
         return self.attributes['acumen']
 
     @property
     def vitals(self):
+        """The vitals dictionary."""
         return self.attributes['vitals']
 
     @property
     def level(self):
+        """The level of the character."""
         return math.floor(sum(abs(x) for x in self.acumen.values()) / 100)
 
     @property
     def maxVitals(self):
+        """The maximum vital amount."""
         res = {}
         for vital, multipliers in self.attributes['maxVitals'].items():
             res[vital] = round(sum(
@@ -251,6 +293,7 @@ class PlayerEntityHook(MutableEntityHook):
 
     @property
     def stats(self):
+        """The stats dictionary."""
         allStats = collections.defaultdict(dict)
         template = self.templates['default'].attributes['stats']['template']
         for acumenName, acumenSkill in self.acumen.items():
@@ -272,6 +315,17 @@ class PlayerEntityHook(MutableEntityHook):
 
 
 class Entity(object):
+    """
+    The basic game object.
+
+    Entities are usually not directly modified unless they have been copied
+    first. When an entity is used in a room, a copy is created for that
+    particular area. This copy is stored in a different location in the
+    datastore: it is stored in the same datastore as the player under a
+    sub-datastore named "instances".
+    """
+
+    """The instances datastore in the player's datastore."""
     instances = None
 
     def __init__(self, name, kind, cache, attributes={}, prototype=None,
@@ -351,15 +405,17 @@ class Entity(object):
 
     @property
     def description(self):
+        """The description for the entity."""
         return self.attributes.description
 
     @property
     def friendlyName(self):
-        """The entity name for display purposes, defaults to name."""
+        """The entity name for display purposes; defaults to name."""
         return self.attributes.friendlyName
 
     @property
     def attributes(self):
+        """The attributes dictionary or entity hook."""
         return self._attributes
 
     @attributes.setter
@@ -371,7 +427,7 @@ class Entity(object):
         """
         The datastore/cache this entity is located in.
 
-        .. warning:: Do NOT use this directly; use :py:meth:`Room.entityFor`
+        .. warning:: Do NOT use this directly; use :meth:`Room.entityFor`
                      instead in most cases.
         """
         return self._entityCache
@@ -382,10 +438,12 @@ class Entity(object):
 
     @property
     def location(self):
+        """The location of this entity in the datastore."""
         return '.'.join([self._location.fullName, self.name])
 
     @property
     def mutable(self):
+        """Returns whether this entity is mutable or not."""
         return self.attributes.mutable and not self.prototype
 
     def __repr__(self):
@@ -397,7 +455,11 @@ class EntityData(collections.namedtuple(
     'EntityData',
     'objectLocation key location description prefix options'
     )):
+    """
+    Contains the metadata used by a room to describe an entity.
+    """
     def save(self):
+        """Saves the metadata."""
         data = {key: val for key, val in self._asdict().items() if val}
         data['entity'] = data['objectLocation']
         del data['objectLocation'], data['key']
@@ -409,6 +471,7 @@ class EntityData(collections.namedtuple(
 
 
 class EntityKey(collections.namedtuple('EntityKey', 'key prefix')):
+    """Contains the entity's name and its "prefix" (a, an, another, etc.)"""
     def __str__(self):
         return ' '.join([self.prefix, self.key])
 
@@ -417,6 +480,14 @@ class EntityKey(collections.namedtuple('EntityKey', 'key prefix')):
 
 
 class Room(Entity):
+    """
+    The basic room type, a special-cased :class:`Entity`.
+
+    Rooms contain other entities. All player movement and interaction occurs
+    within rooms; however, rooms do not contain the actual entity objects,
+    simply metadata to describe them. When an interaction occurs, a copy is
+    created of the object and is stored in a room-specific cache.
+    """
     ROOM_ENTITY_KIND = 'room'
     onEnter = archon.common.signal('room.enter')
 
@@ -480,17 +551,21 @@ class Room(Entity):
             self._entityCopies[key] = instance
 
     def addRoom(self, direction, target):
+        """Add an exit to this room."""
         self._outputs[direction] = target
 
     def remove(self, key):
+        """Remove an entity from this room."""
         del self.contents[key]
         del self._entityCopies[key]
 
     def clearContents(self):
+        """Clear the contents of this room."""
         self.contents.clear()
         self._entityCopies.clear()
 
     def entityFor(self, key):
+        """Retrieve or create a copy of an entity in this room."""
         if key not in self._entityCopies:
             loc = self.contents[key].objectLocation
             self._entityCopies[key] = self._entityCache.lookup(loc).copy()
@@ -523,16 +598,23 @@ class Room(Entity):
                 [self.describe(key) for key in sorted(self.outputs)])
 
     def enter(self, elapsedTime):
+        """Enter the room at the given time."""
         self.attributes['time'] = elapsedTime
         self.onEnter.send(self)
 
     def exit(self):
+        """Exit the room.
+
+        :returns: datetime -- The current time
+        """
         return self.attributes['time']
 
     def copy(self):
+        """Copy the room - this will return the room itself."""
         return self  # Rooms are mutable singletons
 
     def save(self):
+        """Create a saveable representation of the room."""
         res = {"contents": {}, "outputs": {},
                "describe": self._description,
                "attributes": self.attributes.save()}

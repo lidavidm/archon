@@ -3,17 +3,28 @@ import blinker
 
 
 def signal(name):
+    """Creates an event signal; based on blinker's signal."""
     return blinker.signal(name)
 
 
 class DenotedNotFoundError(Exception): pass
 
 
-class DenotedInvalidError(Exception): pass
+class DenotedInvalidError(Exception):
+    """Some function failed :meth:`denoter.verify`."""
 
 
 class denoter:
-    """Denote a function as something."""
+    """
+    Decorator to denote a function as having some purpose.
+
+    This class is used as a decorator to associate a list of names with a
+    function, which, for example, can be used to denote certain functions as
+    commands and provide their command names. Subclass this to provide
+    semantic usage information; when doing so, make sure to create a
+    `functions` class attribute (or else the attribute of the superclass
+    will be used).
+    """
     functions = {}
 
     def __init__(self, *names):
@@ -34,6 +45,7 @@ class denoter:
 
     @classmethod
     def contains(cls, func):
+        """Checks if this denoter class has a particular function."""
         return func in cls.functions
 
     def verify(self, func):
@@ -47,6 +59,7 @@ class denoter:
 
     @classmethod
     def get(cls, name):
+        """Get a particular function."""
         try:
             return cls.functions[name]
         except KeyError:

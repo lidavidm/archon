@@ -1,3 +1,7 @@
+"""
+Defines the game database, a mapping from JSON to game objects.
+"""
+
 import os
 import json
 import types
@@ -8,6 +12,9 @@ import archon.datahandlers
 
 
 class DataThunk:
+    """
+    Represents an unloaded object.
+    """
     def __init__(self, ds, key, data):
         self.ds = ds
         self.key = key
@@ -29,6 +36,9 @@ class DataThunk:
 # storage mechanism and a JSON type, or a DB and binary) Probably not
 # needed, though
 class Datastore:
+    """
+    The basic Datastore class.
+    """
 
     def __init__(self, parent=None):
         pass
@@ -115,17 +125,20 @@ class GameDatastore(Datastore):
                       cls=EntityJSONEncoder)
 
     def add(self, key, item):
+        """Add an item into the datastore."""
         self._cache[key] = item
         if not isinstance(item, DataThunk):
             self._didLoad[key] = True  # Strict add
 
     def remove(self, key):
+        """Remove an item from the datastore."""
         del self._cache[key]
 
     def keys(self):
         return self._cache.keys()
 
     def create(self, key):
+        """Create a sub-datastore with the given name."""
         assert key not in self
         fullpath = os.path.join(self._path, key)
         os.mkdir(fullpath)
@@ -148,10 +161,12 @@ class GameDatastore(Datastore):
 
     @property
     def name(self):
+        """The name of this datastore (the folder name)."""
         return self._name
 
     @property
     def fullName(self):
+        """The full name: the name of the parent with my name."""
         names = [self.name]
         current = self
         while current.parent:
@@ -161,6 +176,7 @@ class GameDatastore(Datastore):
 
     @property
     def root(self):
+        """The root, which contains all other datastores."""
         if self.parent:
             return self.parent.root
         else:
@@ -186,6 +202,7 @@ class GameDatastore(Datastore):
             yield key
 
     def datastoreFor(self, key):
+        """Find the containing datastore of the given key."""
         if self.isRoot and key.split('.', 1)[0] == self.name:
             return self.datastoreFor(key.split('.', 1)[1])
         elif key.startswith('.'):  # absolute lookup
