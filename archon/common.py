@@ -66,6 +66,26 @@ class denoter:
             raise DenotedNotFoundError
 
 
+class MergeItemSemigroup:
+    def msum(self, orig, new):
+        return new
+
+    def mdifference(self, orig, new):
+        return new
+
+
+class NumericItemSemigroup(MergeItemSemigroup):
+    def msum(self, orig, new):
+        if type(orig) in (int, float) and type(new) in (int, float):
+            return new + orig
+        return new
+
+    def mdifferenceN(self, orig, new):
+        if type(orig) in (int, float) and type(new) in (int, float):
+            return new - orig
+        return new
+
+
 class Merge:
     """
     Merge two dictionaries together using a patch dictionary.
@@ -73,10 +93,12 @@ class Merge:
     This does not support dictionaries nested within lists, or patching
     lists (they are treated as atomic values as strings and numbers are).
     """
-    def __init__(self, source, dest=None, patch=None, unsafe=False):
+    def __init__(self, source, dest=None, patch=None, unsafe=False,
+                 sgroup=MergeItemSemigroup()):
         self.source = source
         self.dest = {}
         self.patch = patch
+        self.sgroup = sgroup
         if dest:
             if unsafe:
                 self.dest = dest
@@ -90,20 +112,18 @@ class Merge:
         if not redo and self.dest:
             return self.dest
         self.dest = copy.deepcopy(self.source)
-        # stack = [Merge(self.source[key], self.dest[key],
-        #                patch=patch, unsafe=True)
-        #          for key, patch in self.patch.items()]
         stack = [self]
         while stack:
             merge = stack.pop()
             for key, value in merge.created.items():
-                merge.dest[key] = value
+                merge.dest[key] = self.sgroup.msum(
+                    merge.dest.get(key), value)
             for key in merge.deleted:
                 del merge.dest[key]
             for key, patch in merge.updated.items():
                 stack.append(
                     Merge(merge.source[key], merge.dest[key], patch=patch,
-                          unsafe=True))
+                          unsafe=True, sgroup=self.sgroup))
         return self.dest
 
     def compared(self, redo=False):
@@ -122,7 +142,8 @@ class Merge:
                         merge.update(key, {})
                         stack.append(
                             Merge(merge.source[key], data,
-                                  patch=merge.patch['update'][key]))
+                                  patch=merge.patch['update'][key],
+                                  sgroup=self.sgroup))
                     else:
                         merge.create(key, data)
             for key in merge.source:
@@ -133,7 +154,8 @@ class Merge:
     def create(self, key, data):
         if "create" not in self.patch:
             self.patch["create"] = {}
-        self.patch["create"][key] = data
+        self.patch["create"][key] = self.sgroup.mdifference(
+            self.source.get(key), data)
 
     def delete(self, key):
         if "delete" not in self.patch:

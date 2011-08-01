@@ -25,4 +25,5 @@ def chat(output, context, player, *npc: find):
         output.display(choice.contents)
         output.display("")
         for action, params in choice.actions:
-            conversation.actions.get(action, lambda *args: None)(*params)
+            conversation.actions.get(action, lambda *args: None)(
+                output, context, player, *params)

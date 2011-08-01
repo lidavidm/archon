@@ -15,9 +15,9 @@
                 "feet": null
             },
             "character": {
-                "name": "",
-                "description": "",
-                "gender": ""
+                "name": "Cordelia",
+                "description": "A newcomer to this land.",
+                "gender": "female"
             },
             "acumen": {
                 "physical": 0,

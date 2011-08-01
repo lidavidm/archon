@@ -1,0 +1,21 @@
+{
+    "type": "data",
+    "data": {
+        "name": "Iron",
+        "item_types": {
+            "sword": {
+                "attributes": {
+                    "effect": {
+                        "data": {
+                            "damage": {
+                                "magnitude": [1, 1],
+                                "drain": 1,
+                                "fatigue": [0, 1]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

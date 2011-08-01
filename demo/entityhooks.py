@@ -161,12 +161,12 @@ class Conversation:
         self.topicIndex = collections.OrderedDict(
             enumerate(topics.items()))
         self.topicIndex[len(self.topicIndex)] = ("bye", None)
-        self.actions = {'visible': self.visible}
+        self.actions = {'visible': self.visible, 'script', self.script}
 
     def isEnd(self, choice):
         return choice == len(self.topicIndex) - 1
 
-    def visible(self, *topics):
+    def visible(self, output, context, player, *topics):
         self.topicIndex.popitem()  # remove "bye"
         base = len(self.topicIndex)
         currentTopics = [topic[0] for topic in self.topicIndex.values()]
@@ -177,6 +177,11 @@ class Conversation:
             self.topicIndex[base + offset] = (topic, self._hidden[topic])
             del self._hidden[topic]
         self.topicIndex[len(self.topicIndex)] = ("bye", None)
+
+    def script(self, output, context, player, *scripts):
+        for script in scripts:
+            s = self.cache.lookup(script)
+            s.execute('main', output, context, player)
 
     @property
     def topics(self):

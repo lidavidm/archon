@@ -1,52 +1,47 @@
 #!/usr/bin/env python3
-import random
-import base64
 import datetime
+
+classes = {
+    "Hunter": [{"physical": 50, "mental": 30, "spiritual": 30},
+               {"body": "data.items.armor.leather_body",
+                "legs": "data.items.armor.leather_legs",
+                "feet": "data.items.armor.leather_boots",
+                "left hand": "data.items.weapons.iron_dagger"},
+               []],
+    "Mage": [{"physical": 30, "mental": 50, "spiritual": 30},
+             {"body": "data.items.armor.mage_blouse",
+              "legs": "data.items.armor.mage_skirt",
+              "feet": "data.items.armor.leather_boots",
+              "left hand": "data.items.weapons.wooden_staff"},
+             []],
+    "Swordfighter": [{"physical": 50, "mental": 30, "spiritual": 30},
+                     {"body": "data.items.armor.chain_body",
+                      "legs": "data.items.armor.chain_legs",
+                      "feet": "data.items.armor.chain_boots",
+                      "left hand": "data.items.weapons.iron_sword_short"},
+                     []]
+}
 
 
 def main(output, context, player):
-    output.display('Welcome to the customization routine.')
-    name = output.prompt('Name? ')
-    gender = output.prompt("What's your gender? ")
-    description = output.prompt('Describe yourself briefly: ')
-    player.attributes.character.update(
-        name=name,
-        gender=gender,
-        description=description
-        )
-
-    output.display('''Your acumen in the three traits, Physical, Mental, and
-    Spiritual, is determined randomly at the beginning. The values will be
-    generated now. Enter [y/yes] to accept them, or [n/no] to decline and
-    try again. Only three tries are allowed.
-    ''')
-
-    acumen = player.attributes.acumen
+    output.display('Welcome, newcomer.')
+    output.display('What was your work in your homeland?')
+    prof = output.menu('[{key}]: {description}', '> ', 'Invalid choice.',
+                       *classes.keys())
+    acumen, equipment, inventory = classes[prof]
+    player.attributes.acumen.update(acumen)
+    equip = {slot: player.cache.lookup(loc) for slot, loc in equip}
+    inventory = map(player.cache.lookup, inventory)
+    player.attributes.equip.update(equip)
+    player.attributes.inventory.update(inventory)
     statFormat = '  {stat}: {value[0]:.2} to {value[1]:.2} multiplier'
-    for tries in range(3):
-        for trait in acumen:
-            acumen[trait] = random.randint(10, 40)
-        output.display('Try #{}'.format(tries + 1))
-        player.attributes.acumen.update(acumen)
-        stats = player.attributes.stats
-        for trait in sorted(acumen):
-            output.display('{trait}: {value}'.format(
-                    trait=trait, value=acumen[trait]
+    stats = player.attributes.stats
+    for trait in sorted(player.attributes.acumen):
+        output.display('{trait}: {value}'.format(
+                trait=trait, value=acumen[trait]
+                ))
+        for stat in sorted(stats[trait]):
+            output.display(statFormat.format(
+                    stat=stat, value=stats[trait][stat]
                     ))
-            for stat in sorted(stats[trait]):
-                output.display(statFormat.format(
-                        stat=stat, value=stats[trait][stat]
-                        ))
-        if tries != 2 and output.question('Accept? '):
-            break
-
     player.attributes.vitals.update(player.attributes.maxVitals)
-
-    context.outputs['on'] = context.entityCache.root['data.areas.room']
-    context.remove(context.naturalFind('customizer'))
-    output.display(
-        'Welcome, {name}, to the demo. Try `go on` to continue.'.format(
-            name=name
-            )
-        )
-    return datetime.timedelta(minutes=20)
