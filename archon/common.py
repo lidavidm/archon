@@ -80,7 +80,7 @@ class NumericItemSemigroup(MergeItemSemigroup):
             return new + orig
         return new
 
-    def mdifferenceN(self, orig, new):
+    def mdifference(self, orig, new):
         if type(orig) in (int, float) and type(new) in (int, float):
             return new - orig
         return new
