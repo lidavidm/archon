@@ -1,0 +1,25 @@
+{
+    "type": "entity",
+    "data": {
+        "kind": "weapon",
+        "attributes":{
+            "friendlyName": "{name} Dagger",
+            "describe": "A plain {name_l} Dagger.",
+            "take": true,
+            "equip": ["left hand", "right hand"],
+            "effect":{
+                "template": "data.effects.template_melee",
+                "data": {
+                    "damage":{
+                        "target": "vital:physical:health",
+                        "magnitude": [0, 3],
+                        "success": 1.00,
+                        "drain": 1,
+                        "fatigue": [1, 2],
+                        "cooldown": 0
+                    }
+                }
+            }
+        }
+    }
+}

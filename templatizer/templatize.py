@@ -19,9 +19,14 @@ def main():
     types = []
     for t in args.types:
         types.append(datastore['types'].raw(t, '.json'))
+    patches = {}
+    for keys, patch in family['data']['item_types'].items():
+        keys = keys.split(',')
+        for key in keys:
+            patches[key.strip()] = patch
     for name, t in types:
-        if name in family['data']['item_types']:
-            patch = family['data']['item_types'][name]
+        if name in patches:
+            patch = patches[name]
             stack = [(patch, t['data'])]
             while stack:
                 current, target = stack.pop()

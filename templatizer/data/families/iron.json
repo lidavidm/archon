@@ -5,7 +5,7 @@
         "name_l": "iron",
         "outputName": "iron_{type}",
         "item_types": {
-            "sword": {
+            "sword, sword_short, dagger": {
                 "attributes": {
                     "effect": {
                         "data": {
