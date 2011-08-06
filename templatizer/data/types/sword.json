@@ -4,7 +4,7 @@
         "kind": "weapon",
         "attributes":{
             "friendlyName": "{name} Sword",
-            "describe": "A plain {name} sword.",
+            "describe": "A plain {name_l} sword.",
             "take": true,
             "equip": ["left hand", "right hand"],
             "effect":{
