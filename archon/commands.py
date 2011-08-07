@@ -219,8 +219,7 @@ def use(output, context, player, *item: find):
     if function == 'script':
         script = context.entityCache.lookup(arguments[0])
         try:
-            elapsedTime = script.execute('main', output, context, player)
-            context.attributes['time'] += elapsedTime
+            script.execute('main', output, context, player)
         except:  # yes, everything
             output.error("It doesn't work.")
             if output.permissions.get('debug', False):

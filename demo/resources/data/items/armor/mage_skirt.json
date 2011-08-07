@@ -1,0 +1,26 @@
+{
+ "data": {
+  "attributes": {
+   "friendlyName": "Mage Skirt", 
+   "equip": [
+    "legs"
+   ], 
+   "modifier": {
+    "data": {
+     "damage": {
+      "magnitude": [
+       -1, 
+       0
+      ], 
+      "target": "vital:physical:health"
+     }
+    }, 
+    "template": "data.effects.template_modifier"
+   }, 
+   "describe": "A mage Skirt.", 
+   "take": true
+  }, 
+  "kind": "armor"
+ }, 
+ "type": "entity"
+}

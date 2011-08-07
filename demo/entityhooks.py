@@ -54,6 +54,20 @@ class Effect:
         else:
             raise NotEnoughAP
 
+    def modify(self, other):
+        """
+        Creates a new effect using this effect to modify the other.
+
+        Messages and the :attr:`hit` flag are not affected.
+        """
+        return Effect(
+            other.hit,
+            self.target,
+            self.magnitude + other.magnitude,
+            self.turns + other.turns,
+            self.drain + other.drain,
+            other.messages)
+
     def __repr__(self):
         a = "<Effect {hit} {target} {magnitude} {turns} {drain} {messages}>"
         return a.format(**self.__dict__)
@@ -161,7 +175,7 @@ class Conversation:
         self.topicIndex = collections.OrderedDict(
             enumerate(topics.items()))
         self.topicIndex[len(self.topicIndex)] = ("bye", None)
-        self.actions = {'visible': self.visible, 'script', self.script}
+        self.actions = {'visible': self.visible, 'script': self.script}
 
     def isEnd(self, choice):
         return choice == len(self.topicIndex) - 1

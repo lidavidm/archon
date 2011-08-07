@@ -6,7 +6,7 @@
             "friendlyName": "{name} Sword",
             "describe": "A plain {name_l} sword.",
             "take": true,
-            "equip": ["left hand", "right hand"],
+            "equip": ["body"],
             "effect":{
                 "template": "data.effects.template_melee",
                 "data": {

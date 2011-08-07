@@ -1,0 +1,26 @@
+{
+ "data": {
+  "attributes": {
+   "friendlyName": "Chain Boots", 
+   "equip": [
+    "feet"
+   ], 
+   "modifier": {
+    "data": {
+     "damage": {
+      "magnitude": [
+       -2, 
+       -1
+      ], 
+      "target": "vital:physical:health"
+     }
+    }, 
+    "template": "data.effects.template_modifier"
+   }, 
+   "describe": "A set of chain boots.", 
+   "take": true
+  }, 
+  "kind": "armor"
+ }, 
+ "type": "entity"
+}

@@ -1,0 +1,26 @@
+{
+ "data": {
+  "attributes": {
+   "friendlyName": "Leather Boots", 
+   "equip": [
+    "feet"
+   ], 
+   "modifier": {
+    "data": {
+     "damage": {
+      "magnitude": [
+       -2, 
+       0
+      ], 
+      "target": "vital:physical:health"
+     }
+    }, 
+    "template": "data.effects.template_modifier"
+   }, 
+   "describe": "A set of leather boots.", 
+   "take": true
+  }, 
+  "kind": "armor"
+ }, 
+ "type": "entity"
+}

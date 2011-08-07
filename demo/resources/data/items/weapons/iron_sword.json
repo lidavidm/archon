@@ -1,22 +1,22 @@
 {
  "data": {
   "attributes": {
-   "friendlyName": "Iron Short Sword", 
+   "friendlyName": "Iron Sword", 
    "equip": [
     "left hand", 
     "right hand"
    ], 
-   "describe": "A plain iron sword, but slightly shorter", 
+   "describe": "A plain iron sword.", 
    "take": true, 
    "effect": {
     "data": {
      "damage": {
-      "drain": 3, 
+      "drain": 4, 
       "target": "vital:physical:health", 
       "success": 1.0, 
       "magnitude": [
        1, 
-       5
+       6
       ], 
       "cooldown": 0, 
       "fatigue": [

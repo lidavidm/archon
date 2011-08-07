@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import datetime
-
 classes = {
     "Hunter": [{"physical": 50, "mental": 30, "spiritual": 30},
                {"body": "data.items.armor.leather_body",
@@ -25,15 +23,17 @@ classes = {
 
 def main(output, context, player):
     output.display('Welcome, newcomer.')
-    output.display('What was your work in your homeland?')
+    output.display('I see you appear to be a...')
+    choices = list(classes.keys())
     prof = output.menu('[{key}]: {description}', '> ', 'Invalid choice.',
-                       *classes.keys())
-    acumen, equipment, inventory = classes[prof]
+                       *choices)
+    acumen, equipment, inventory = classes[choices[prof]]
     player.attributes.acumen.update(acumen)
-    equip = {slot: player.cache.lookup(loc) for slot, loc in equip}
-    inventory = map(player.cache.lookup, inventory)
+    equip = {slot: player.entityCache.lookup(loc)
+             for slot, loc in equipment.items()}
+    inventory = map(player.entityCache.lookup, inventory)
     player.attributes.equip.update(equip)
-    player.attributes.inventory.update(inventory)
+    player.attributes.inventory.extend(inventory)
     statFormat = '  {stat}: {value[0]:.2} to {value[1]:.2} multiplier'
     stats = player.attributes.stats
     for trait in sorted(player.attributes.acumen):

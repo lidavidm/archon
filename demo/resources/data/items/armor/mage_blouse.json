@@ -1,0 +1,26 @@
+{
+ "data": {
+  "attributes": {
+   "friendlyName": "Mage Blouse", 
+   "equip": [
+    "body"
+   ], 
+   "modifier": {
+    "data": {
+     "damage": {
+      "magnitude": [
+       -1, 
+       0
+      ], 
+      "target": "vital:physical:health"
+     }
+    }, 
+    "template": "data.effects.template_modifier"
+   }, 
+   "describe": "A mage blouse.", 
+   "take": true
+  }, 
+  "kind": "armor"
+ }, 
+ "type": "entity"
+}

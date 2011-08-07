@@ -1,0 +1,26 @@
+{
+ "data": {
+  "attributes": {
+   "friendlyName": "Chain Body", 
+   "equip": [
+    "body"
+   ], 
+   "modifier": {
+    "data": {
+     "damage": {
+      "magnitude": [
+       -4, 
+       -1
+      ], 
+      "target": "vital:physical:health"
+     }
+    }, 
+    "template": "data.effects.template_modifier"
+   }, 
+   "describe": "A set of chain body armor.", 
+   "take": true
+  }, 
+  "kind": "armor"
+ }, 
+ "type": "entity"
+}

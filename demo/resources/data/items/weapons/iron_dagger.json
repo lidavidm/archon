@@ -1,25 +1,34 @@
 {
-    "type": "entity",
+ "data": {
+  "attributes": {
+   "friendlyName": "Iron Dagger", 
+   "equip": [
+    "left hand", 
+    "right hand"
+   ], 
+   "describe": "A plain iron Dagger.", 
+   "take": true, 
+   "effect": {
     "data": {
-        "kind": "weapon",
-        "attributes":{
-            "friendlyName": "Iron Dagger",
-            "describe": "A small iron dagger.",
-            "take": true,
-            "equip": ["left hand", "right hand"],
-            "effect":{
-                "template": "data.effects.template_melee",
-                "data": {
-                    "damage":{
-                        "target": "vital:physical:health",
-                        "magnitude": [0, 5],
-                        "success": 1.00,
-                        "drain": 2,
-                        "fatigue": [1, 2],
-                        "cooldown": 0
-                    }
-                }
-            }
-        }
-    }
+     "damage": {
+      "drain": 2, 
+      "target": "vital:physical:health", 
+      "success": 1.0, 
+      "magnitude": [
+       1, 
+       4
+      ], 
+      "cooldown": 0, 
+      "fatigue": [
+       1, 
+       3
+      ]
+     }
+    }, 
+    "template": "data.effects.template_melee"
+   }
+  }, 
+  "kind": "weapon"
+ }, 
+ "type": "entity"
 }

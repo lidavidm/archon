@@ -104,6 +104,7 @@ def fight(output, context, player, *enemies: archon.commands.findMulti):
     scene = context.entityCache.lookup(
         context.area.attributes['battleScene']
         )
+    # TODO fallback for no area
     scene.attributes['turn'] = 0
     scene.entityCache = context.entityCache
     enemyList = []
@@ -149,6 +150,9 @@ def performAttacks(output, context, user, target, acumenType, *weapons):
     for weapon in weapons:
         wEffect = weapon.attributes.effect.attributes
         effect = wEffect.instance(acumen, stats, user=user, target=target)
+        for item in target.attributes.equip.values():
+            if item and item.kind == 'armor':
+                item.attributes.modifier.modify(effect)
         try:
             realDamage = effect.apply(user, target)
             battlecommand('battle').data.effects[user].append(
