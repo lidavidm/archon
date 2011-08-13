@@ -1,0 +1,21 @@
+{
+    "type": "entity",
+    "data": {
+        "kind": "armor",
+        "attributes":{
+            "friendlyName": "{name} Body",
+            "describe": "A set of {name_l} body armor.",
+            "take": true,
+            "equip": ["body"],
+            "modifier":{
+                "template": "data.effects.template_modifier",
+                "data": {
+                    "damage":{
+                        "target": "vital:physical:health",
+                        "magnitude": [-3, 0]
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,21 @@
+{
+    "type": "entity",
+    "data": {
+        "kind": "armor",
+        "attributes":{
+            "friendlyName": "{name} Boots",
+            "describe": "A set of {name_l} boots.",
+            "take": true,
+            "equip": ["feet"],
+            "modifier":{
+                "template": "data.effects.template_modifier",
+                "data": {
+                    "damage":{
+                        "target": "vital:physical:health",
+                        "magnitude": [-1, 0]
+                    }
+                }
+            }
+        }
+    }
+}

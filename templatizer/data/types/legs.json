@@ -1,0 +1,21 @@
+{
+    "type": "entity",
+    "data": {
+        "kind": "armor",
+        "attributes":{
+            "friendlyName": "{name} Legs",
+            "describe": "A set of {name_l} leg armor.",
+            "take": true,
+            "equip": ["legs"],
+            "modifier":{
+                "template": "data.effects.template_modifier",
+                "data": {
+                    "damage":{
+                        "target": "vital:physical:health",
+                        "magnitude": [-2, 0]
+                    }
+                }
+            }
+        }
+    }
+}

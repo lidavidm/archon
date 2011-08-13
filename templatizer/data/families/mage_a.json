@@ -1,0 +1,21 @@
+{
+    "type": "data",
+    "data": {
+        "name": "Mage",
+        "name_l": "mage",
+        "outputName": "mage_{type}",
+        "item_types": {
+            "blouse, skirt": {
+                "attributes": {
+                    "modifier": {
+                        "data": {
+                            "damage": {
+                                "magnitude": [-1, 0]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

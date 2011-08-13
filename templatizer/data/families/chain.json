@@ -1,0 +1,21 @@
+{
+    "type": "data",
+    "data": {
+        "name": "Chain",
+        "name_l": "chain",
+        "outputName": "chain_{type}",
+        "item_types": {
+            "body, legs, boots": {
+                "attributes": {
+                    "modifier": {
+                        "data": {
+                            "damage": {
+                                "magnitude": [-1, -1]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

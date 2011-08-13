@@ -1,0 +1,21 @@
+{
+    "type": "data",
+    "data": {
+        "name": "Leather",
+        "name_l": "leather",
+        "outputName": "leather_{type}",
+        "item_types": {
+            "body, legs, boots": {
+                "attributes": {
+                    "modifier": {
+                        "data": {
+                            "damage": {
+                                "magnitude": [-1, 0]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
