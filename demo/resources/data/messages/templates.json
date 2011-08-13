@@ -18,8 +18,9 @@
                     "present": "is",
                     "preterite": "was"
                 },
-                "pronoun": "her",
-                "possessive": "{user.friendlyName}'s"
+                "pronoun": "she",
+                "possessive": "{user.friendlyName}'s",
+                "possessive_pronoun": "her"
             }
         }
     }

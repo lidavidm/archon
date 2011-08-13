@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     interface = archon.interface.ConsoleInterface(
         permissions={'debug': True},
-        messageTemplates=data['messages']
+        messageTemplates=data['messages']['templates']
         )
 
     while True:
@@ -36,7 +36,7 @@ if __name__ == '__main__':
                                 'Invalid choice.',
                                 'New Game', 'Load', 'Quit')
         if choice == 0:
-            room = data['areas.newGame.newGame']
+            room = data['areas.marcellus.marcellia.square']
             player = archon.objects.PlayerEntityHook.defaultInstance()
             player.name = base64.urlsafe_b64encode(
                 uuid.uuid4().bytes).decode('utf-8')

@@ -17,7 +17,7 @@
                 "options": "one-way,to:room2"
             },
             "person, a": {
-                "entity": "data.npcs.town_npc"
+               "entity": "data.npcs.town_npc"
             }
         },
         "outputs":{

@@ -157,7 +157,10 @@ class GameDatastore(Datastore):
         if os.path.isfile(fullpath):
             if archon.datahandlers.dataparser.contains(format):
                 loader = archon.datahandlers.dataparser.get(format)
-                return (key, loader(open(fullpath).read()))
+                data = loader(open(fullpath).read())
+                if not data:
+                    raise ValueError('Error loading data from ' + fullpath)
+                return key, data
             else:
                 raise ValueError(
                     'Format {} unsupported (key {} in {})'.format(
