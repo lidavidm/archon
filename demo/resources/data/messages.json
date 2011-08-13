@@ -9,14 +9,16 @@
                     "present": "are",
                     "preterite": "were"
                 },
+                "pronoun": "you",
                 "possessive": "your"
             },
-            "third_person": {
+            "third_person_female": {
                 "noun": "{user.friendlyName}",
                 "to_be": {
                     "present": "is",
                     "preterite": "was"
                 },
+                "pronoun": "her",
                 "possessive": "{user.friendlyName}'s"
             }
         }

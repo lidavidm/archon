@@ -157,23 +157,45 @@ class RoomEntityHook(MutableEntityHook):
         return data
 
 
-class AttributeDict(dict):
+class TemplatingDict(dict):
+    def __init__(self, dictionary, **kwargs):
+        dictionary.update(kwargs)
+        super().__init__(dictionary)
+        self.kwargs = kwargs
+
     def __getattr__(self, key):
-        if key in self:
-            item = self[key]
+        if key.endswith('_capitalized'):
+            return super().__getitem__(key[:-12]).capitalize()
+        elif key in self:
+            item = super().__getitem__(key)
             if isinstance(item, dict):
-                return AttributeDict(item)
+                return TemplatingDict(item, **self.kwargs)
+            elif isinstance(item, str) and '{' in item and '}' in item:
+                return item.format(**self)
             return item
         raise AttributeError(key)
+
+    __getitem__ = __getattr__
 
 
 class MessageTemplateEntityHook(EntityHook):
     KIND = "message_template"
+    templates = {}
 
-    def __getitem__(self, key):
-        item = super().__getitem__(key)
+    def __init__(self, entity, attributes):
+        super().__init__(entity, attributes)
+        for key, template in attributes.items():
+            MessageTemplateEntityHook.templates[key] = template
+
+    @classmethod
+    def format(cls, mode, text, *args, **kwargs):
+        return text.format(*args, **cls.template(mode, **kwargs))
+
+    @classmethod
+    def template(cls, key, **kwargs):
+        item = cls.templates[key]
         if isinstance(item, dict):
-            return AttributeDict(item)
+            return TemplatingDict(item, **kwargs)
         return item
 
 

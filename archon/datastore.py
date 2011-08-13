@@ -158,6 +158,13 @@ class GameDatastore(Datastore):
             if archon.datahandlers.dataparser.contains(format):
                 loader = archon.datahandlers.dataparser.get(format)
                 return (key, loader(open(fullpath).read()))
+            else:
+                raise ValueError(
+                    'Format {} unsupported (key {} in {})'.format(
+                        format, key, self.name))
+        else:
+            raise IOError('No such key {} (format {}) in {}'.format(
+                    key, format, self.name))
 
     @property
     def name(self):
