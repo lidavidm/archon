@@ -1,0 +1,10 @@
+{
+    "type": "area",
+    "data": {
+        "name": "Marcellia",
+        "attributes": {
+            "describe": "Marcellia, a small town surrounding Marcellus Castle.",
+            "battleScene": "data.areas.battle_scenes.cave"
+        }
+    }
+}

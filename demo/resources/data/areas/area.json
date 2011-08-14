@@ -1,0 +1,10 @@
+{
+    "type": "area",
+    "data": {
+        "name": "Generic Area",
+        "attributes": {
+            "describe": "CHANGE THIS AREA",
+            "battleScene": "data.areas.battle_scenes.cave"
+        }
+    }
+}

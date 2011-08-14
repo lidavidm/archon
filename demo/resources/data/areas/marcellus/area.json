@@ -1,0 +1,10 @@
+{
+    "type": "area",
+    "data": {
+        "name": "Marcellus",
+        "attributes": {
+            "describe": "The Kingdom of Marcellus.",
+            "battleScene": "data.areas.battle_scenes.cave"
+        }
+    }
+}

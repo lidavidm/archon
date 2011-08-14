@@ -1,0 +1,10 @@
+{
+    "type": "entity",
+    "data": {
+        "kind": "npc",
+        "attributes":{
+            "describe": "A test NPC.",
+            "dialouge": ["generic"]
+        }
+    }
+}
