@@ -1,0 +1,27 @@
+{
+    "type": "entity",
+    "data": {
+        "kind": "message_template",
+        "attributes": {
+            "second_person": {
+                "noun": "you",
+                "to_be": {
+                    "present": "are",
+                    "preterite": "were"
+                },
+                "pronoun": "you",
+                "possessive": "your"
+            },
+            "third_person_female": {
+                "noun": "{user.friendlyName}",
+                "to_be": {
+                    "present": "is",
+                    "preterite": "was"
+                },
+                "pronoun": "she",
+                "possessive": "{user.friendlyName}'s",
+                "possessive_pronoun": "her"
+            }
+        }
+    }
+}
