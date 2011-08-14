@@ -140,6 +140,7 @@ class MessagesEntityHook(archon.entity.EntityHook):
 def empty(text):
     return not text
 
+
 @transform('prepend')
 def prepend(text, char):
     return char + text

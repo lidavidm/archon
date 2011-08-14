@@ -157,7 +157,9 @@ class GameDatastore(Datastore):
         if os.path.isfile(fullpath):
             if archon.datahandlers.dataparser.contains(format):
                 loader = archon.datahandlers.dataparser.get(format)
-                data = loader(open(fullpath).read())
+                f = open(fullpath)
+                data = loader(f.read())
+                f.close()
                 if not data:
                     raise ValueError('Error loading data from ' + fullpath)
                 return key, data
