@@ -74,9 +74,10 @@ class MessageTemplateEntityHook(archon.entity.EntityHook):
             key = ''.join(['{__MTEH', str(key), '}'])
             original = ''.join(['{', original, '}'])
             subtext = original.format(*args, **formatKeys)
-            subtext = cls.formatExtension(subtext, extension)
+            if extension:
+                subtext = cls.formatExtension(subtext, extension)
             text = text.replace(key, subtext)
-        return text
+        return text.format(*args, **formatKeys)
 
     @classmethod
     def formatExtension(cls, text, fmt):
@@ -144,3 +145,8 @@ def empty(text):
 @transform('prepend')
 def prepend(text, char):
     return char + text
+
+
+@transform('drop')
+def drop(text):
+    return ''

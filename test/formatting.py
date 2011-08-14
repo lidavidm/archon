@@ -14,6 +14,9 @@ class TestFormatting(unittest.TestCase):
         res = self.messages.format('third_person_female',
                                    '{test@prepend("b")}', test='a')
         self.assertEqual(res, 'ba')
+        res = self.messages.format('third_person_female',
+                                   '{test@drop}', test='a')
+        self.assertEqual(res, '')
         self.assertRaises(ValueError, self.messages.format,
                           'third_person_female',
                           '{test@!@#@}', test='a')
@@ -21,9 +24,45 @@ class TestFormatting(unittest.TestCase):
                           'third_person_female',
                           '{test@i_do_not_exist}', test='a')
 
+    def test_method(self):
+        res = self.messages.format('third_person_female',
+                                   '{test@.upper}', test='a')
+        self.assertEqual(res, 'A')
+        self.assertRaises(AttributeError, self.messages.format,
+                          'third_person_female',
+                          '{test@.i_do_not_exist}', test='a')
+
+    def test_predicate(self):
+        res = self.messages.format('third_person_female',
+                                   '{test@empty}', test='')
+        self.assertEqual(res, '')
+        res = self.messages.format('third_person_female',
+                                   '{test@!empty}', test='')
+        self.assertEqual(res, '')
+
+    def test_composition(self):
+        res = self.messages.format('third_person_female',
+                                   '{test@drop + !empty}', test='a')
+        self.assertEqual(res, '')
+        res = self.messages.format('third_person_female',
+                                   '{test@.upper + prepend("a")}', test='b')
+        self.assertEqual(res, 'AB')
+
 
 class TestMessages(unittest.TestCase):
-    pass
+    def setUp(self):
+        self.ds = archon.datastore.GameDatastore('data')
+        self.messages = self.ds['formatting']['templates'].attributes
+        self.friendlyName = 'Cordelia'
+
+    def test_third_female(self):
+        res = self.messages.format('third_person_female',
+                                   '{noun}', user=self)
+        self.assertEqual(res, self.friendlyName)
+        res = self.messages.format('third_person_female',
+                                   '{noun} {to_be.present} {possessive}',
+                                   user=self)
+        self.assertEqual(res, "Cordelia is Cordelia's")
 
 
 class TestFormattedMessages(unittest.TestCase):
