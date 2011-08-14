@@ -1,6 +1,7 @@
 import copy
 import collections
 
+
 class EntityHookNotFoundError(Exception): pass
 
 
@@ -121,6 +122,7 @@ class MutableEntityHook(EntityHook, collections.MutableMapping):
         Returns a shallow-copy of the attributes dictionary.
         """
         return self.attributes.copy()
+
 
 class Entity(object):
     """
@@ -257,23 +259,3 @@ class Entity(object):
     def __repr__(self):
         return "<Entity '{}' name={} kind={}>".format(
             self.friendlyName, self.name, self.kind)
-
-
-class EntityData(collections.namedtuple(
-    'EntityData',
-    'objectLocation key location description prefix messages options'
-    )):
-    """
-    Contains the metadata used by a room to describe an entity.
-    """
-    def save(self):
-        """Saves the metadata."""
-        data = {key: val for key, val in self._asdict().items() if val}
-        data['entity'] = data['objectLocation']
-        data['messages'] = data['messages'].location
-        del data['objectLocation'], data['key']
-        if 'prefix' in data:
-            del data['prefix']
-        if 'options' in data:
-            data['options'] = ','.join(data['options'])
-        return data

@@ -11,6 +11,7 @@ import archon.templating
 from archon.entity import (Entity, EntityHook, EntityHookNotFoundError,
                            MutableEntityHook)
 
+
 class RoomEntityHook(MutableEntityHook):
     KIND = "room"
 
@@ -357,6 +358,26 @@ class Room(Entity):
     @property
     def inputs(self):
         pass
+
+
+class EntityData(collections.namedtuple(
+    'EntityData',
+    'objectLocation key location description prefix messages options'
+    )):
+    """
+    Contains the metadata used by a room to describe an entity.
+    """
+    def save(self):
+        """Saves the metadata."""
+        data = {key: val for key, val in self._asdict().items() if val}
+        data['entity'] = data['objectLocation']
+        data['messages'] = data['messages'].location
+        del data['objectLocation'], data['key']
+        if 'prefix' in data:
+            del data['prefix']
+        if 'options' in data:
+            data['options'] = ','.join(data['options'])
+        return data
 
 
 class UnionDict(dict):

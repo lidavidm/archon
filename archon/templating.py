@@ -4,15 +4,14 @@ import ast
 import archon.common
 import archon.entity
 
-class templatefunc(archon.common.denoter):
+
+class transform(archon.common.denoter):
     functions = {}
 
-class StopExtension(Exception):
-    def __init__(self, text):
-        self.text = text
 
-    def repr(self):
-        return '<StopExtension: "{}">'.format(self.text)
+class predicate(archon.common.denoter):
+    functions = {}
+
 
 class TemplatingDict(dict):
     def __init__(self, dictionary, **kwargs):
@@ -63,13 +62,13 @@ class MessageTemplateEntityHook(archon.entity.EntityHook):
         """
         replNumber = -1
         replFormats = {}  # value is 2-tuple (format, extension)
+
         def repl(match):
             nonlocal replNumber
             replNumber += 1
             replFormats[replNumber] = match.group(1, 2)
             return ''.join(['{__MTEH', str(replNumber), '}'])
         text = cls.fieldRe.sub(repl, text)
-        print(replFormats)
         formatKeys = cls.template(mode, **kwargs)
         for key, (original, extension) in replFormats.items():
             key = ''.join(['{__MTEH', str(key), '}'])
@@ -85,23 +84,39 @@ class MessageTemplateEntityHook(archon.entity.EntityHook):
 
         :param text: The expanded original part of the format string.
         :param fmt: The extended part of the format string."""
-        fmt = fmt.split('+')
-        for func in reversed(fmt):
+        for func in reversed(fmt.split('+')):
             func = func.strip()
             match = cls.funcRe.match(func)
+            if not match:
+                raise ValueError("Invalid expression " + func)
             func, args = match.groups()
-            if func.startswith('.'):
-                text = getattr(text, func[1:])()
+            res = cls.evaluate(text, func, args)
+            if res is True:
+                continue
+            elif res is False:
+                return text
             else:
-                if args:
-                    args = map(ast.literal_eval, args.split(','))
-                else:
-                    args = []
-                try:
-                    text = templatefunc.get(func)(text, *args)
-                except StopExtension as e:
-                    return e.text
+                text = res
         return text
+
+    @classmethod
+    def evaluate(cls, text, func, args):
+        if func.startswith('!'):
+            return not cls.evaluate(text, func[1:], args)
+        elif func.startswith('.'):
+            return getattr(text, func[1:])()
+        else:
+            if args:
+                args = map(ast.literal_eval, args.split(','))
+            else:
+                args = []
+            if predicate.contains(func):
+                return predicate.get(func)(text, *args)
+            elif transform.contains(func):
+                return transform.get(func)(text, *args)
+            else:
+                raise ValueError(
+                    "Format function {} not found".format(func))
 
     @classmethod
     def template(cls, key, **kwargs):
@@ -121,12 +136,10 @@ class MessagesEntityHook(archon.entity.EntityHook):
             *args, **kwargs)
 
 
-@templatefunc('empty')
+@predicate('empty')
 def empty(text):
-    if not text:
-        return text
-    raise StopExtension(text)
+    return not text
 
-@templatefunc('prepend')
+@transform('prepend')
 def prepend(text, char):
     return char + text
