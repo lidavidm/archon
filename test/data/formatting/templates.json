@@ -3,6 +3,15 @@
     "data": {
         "kind": "message_template",
         "attributes": {
+            "first_person": {
+                "noun": "{user.friendlyName}",
+                "to_be": {
+                    "present": "am",
+                    "preterite": "was"
+                },
+                "pronoun": "I",
+                "possessive": "my"
+            },
             "second_person": {
                 "noun": "you",
                 "to_be": {

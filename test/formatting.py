@@ -66,8 +66,15 @@ class TestMessages(unittest.TestCase):
 
 
 class TestFormattedMessages(unittest.TestCase):
-    pass
+    def setUp(self):
+        self.ds = archon.datastore.GameDatastore('data')
+        self.messages = self.ds['formatting']['templates'].attributes
+        self.friendlyName = 'Cordelia'
 
+    def test_first_person(self):
+        text = 'Hello! {pronoun@.capitalize} {to_be.present} {noun}.'
+        res = self.messages.format('first_person', text, user=self)
+        self.assertEqual(res, "Hello! I am Cordelia.")
 
 if __name__ == '__main__':
     unittest.main()
