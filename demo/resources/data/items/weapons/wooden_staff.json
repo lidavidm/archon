@@ -7,6 +7,7 @@
             "describe": "A mage's basic wooden staff.",
             "take": true,
             "equip": ["left hand", "right hand"],
+            "value": 40,
             "effect":{
                 "template": "data.effects.template_melee",
                 "data": {
