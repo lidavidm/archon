@@ -37,6 +37,7 @@ class TemplatingDict(dict):
 class MessageTemplateEntityHook(archon.entity.EntityHook):
     KIND = "message_template"
     templates = {}
+    splitRe = re.compile(r"({[^{}]*?@.*?})")
     fieldRe = re.compile(r"{([^{}]*?)@(.*?)}")
     funcRe = re.compile(r"(.?[a-zA-Z0-9]*)(?:\((.*)\))?")
 
@@ -62,23 +63,17 @@ class MessageTemplateEntityHook(archon.entity.EntityHook):
         """
         replNumber = -1
         replFormats = {}  # value is 2-tuple (format, extension)
-
-        def repl(match):
-            nonlocal replNumber
-            replNumber += 1
-            replFormats[replNumber] = match.group(1, 2)
-            return ''.join(['{__MTEH', str(replNumber), '}'])
-        text = cls.fieldRe.sub(repl, text)
+        pieces = cls.splitRe.split(text)
         formatKeys = cls.template(mode, **kwargs)
-        for key, (original, extension) in replFormats.items():
-            key = ''.join(['{__MTEH', str(key), '}'])
-            original = ''.join(['{', original, '}'])
-            subtext = original.format(*args, **formatKeys)
-            if extension:
-                subtext = cls.formatExtension(subtext, extension)
-            text = text.replace(key, subtext)
-
-        return text.format(*args, **formatKeys)
+        for index, piece in enumerate(pieces):
+            res = cls.fieldRe.match(piece)
+            if res:
+                original, extension = res.groups()
+                print(repr(original), repr(extension))
+                original = ''.join(['{', original, '}'])
+                subtext = original.format(*args, **formatKeys)
+                pieces[index] = cls.formatExtension(subtext, extension)
+        return ''.join(pieces).format(*args, **formatKeys)
 
     @classmethod
     def formatExtension(cls, text, fmt):
