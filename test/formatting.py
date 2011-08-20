@@ -48,6 +48,12 @@ class TestFormatting(unittest.TestCase):
                                    '{test@.upper + prepend("a")}', test='b')
         self.assertEqual(res, 'AB')
 
+    def test_regression_adjacent_directives(self):
+        res = self.messages.format('third_person_female',
+                                   '{first}{second@prepend("a")}', first=2,
+                                   second=3)
+        self.assertEqual(res, '2a3')
+
 
 class TestMessages(unittest.TestCase):
     def setUp(self):
