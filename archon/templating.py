@@ -37,7 +37,7 @@ class TemplatingDict(dict):
 class MessageTemplateEntityHook(archon.entity.EntityHook):
     KIND = "message_template"
     templates = {}
-    fieldRe = re.compile(r"{(.*)@(.*?)}")
+    fieldRe = re.compile(r"{([^{}]*?)@(.*?)}")
     funcRe = re.compile(r"(.?[a-zA-Z0-9]*)(?:\((.*)\))?")
 
     def __init__(self, entity, attributes):
@@ -77,6 +77,7 @@ class MessageTemplateEntityHook(archon.entity.EntityHook):
             if extension:
                 subtext = cls.formatExtension(subtext, extension)
             text = text.replace(key, subtext)
+
         return text.format(*args, **formatKeys)
 
     @classmethod

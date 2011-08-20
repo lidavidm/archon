@@ -9,7 +9,7 @@
         "contents": {
             "guard, a": {
                 "entity": "data.npcs.generic_male",
-                "description": "puzzled - perhaps you should talk to him.",
+                "description": "puzzled - perhaps you should talk to him",
                 "messages": "data.messages.male_template"
             },
             "woman, a": {
