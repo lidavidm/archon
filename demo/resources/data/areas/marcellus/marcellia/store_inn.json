@@ -1,0 +1,15 @@
+{
+    "type": "room",
+    "data": {
+        "describe": "the inn for visiting travellers.",
+        "attributes": {
+            "friendlyName": "Marcellia, Central District, Inn",
+            "kind": "indoors"
+        },
+        "contents": {
+        },
+        "outputs":{
+            "out": "central"
+        }
+    }
+}

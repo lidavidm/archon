@@ -1,9 +1,9 @@
 {
     "type": "room",
     "data": {
-        "describe": "the town square of Marcellia, the capital of Marcellus.",
+        "describe": "Marcellia's central district, bustling with activity.",
         "attributes": {
-            "friendlyName": "Marcellia, Square",
+            "friendlyName": "Marcellia, Central District",
             "kind": "outdoors"
         },
         "contents": {
@@ -19,8 +19,11 @@
             }
         },
         "outputs":{
-            "central district": "central",
-            "castle": "castle.hall"
+            "square": "square",
+            "outer district": "outer",
+            "general store": "store_general",
+            "blacksmith": "store_blacksmith",
+            "inn": "store_inn"
         }
     }
 }

@@ -1,0 +1,15 @@
+{
+    "type": "room",
+    "data": {
+        "describe": "Marcellia's outer district, filled with small houses.",
+        "attributes": {
+            "friendlyName": "Marcellia, Outer District",
+            "kind": "outdoors"
+        },
+        "contents": {
+        },
+        "outputs":{
+            "central district": "central"
+        }
+    }
+}

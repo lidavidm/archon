@@ -1,0 +1,16 @@
+{
+    "type": "room",
+    "data": {
+        "describe": "the town square of Marcellia, the capital of Marcellus.",
+        "attributes": {
+            "friendlyName": "Marcellia Castle, Hall",
+            "kind": "indoors"
+        },
+        "contents": {
+        },
+        "outputs":{
+            "square": "data.areas.marcellus.marcellia.square"
+        }
+    }
+}
+

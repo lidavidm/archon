@@ -1,0 +1,15 @@
+{
+    "type": "room",
+    "data": {
+        "describe": "the town blacksmith.",
+        "attributes": {
+            "friendlyName": "Marcellia, Central District, Blacksmith",
+            "kind": "indoors"
+        },
+        "contents": {
+        },
+        "outputs":{
+            "out": "central"
+        }
+    }
+}
