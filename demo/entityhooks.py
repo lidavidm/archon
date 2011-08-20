@@ -172,34 +172,37 @@ class Conversation:
         for dialouge in self.dialouges:
             topics.update(dialouge['visible'])
             self._hidden.update(dialouge['invisible'])
-        self.topicIndex = collections.OrderedDict(
-            enumerate(topics.items()))
-        self.topicIndex[len(self.topicIndex)] = ("bye", None)
+        self.topicIndex = list(topics.items())
+        self.topicIndex.append(("bye", None))
         self.actions = {'visible': self.visible, 'script': self.script}
 
     def isEnd(self, choice):
         return choice == len(self.topicIndex) - 1
 
+    def removeTopic(self, topic):
+        for index, (t, _) in enumerate(self.topicIndex):
+            if t == topic:
+                del self.topicIndex[index]
+                return
+
     def visible(self, output, context, player, *topics):
-        self.topicIndex.popitem()  # remove "bye"
-        base = len(self.topicIndex)
-        currentTopics = [topic[0] for topic in self.topicIndex.values()]
-        topics = enumerate(
+        self.topicIndex.pop()  # remove "bye"
+        topics = (
             t for t in topics if t in self._hidden and
-            t not in currentTopics)
-        for offset, topic in topics:
-            self.topicIndex[base + offset] = (topic, self._hidden[topic])
+            t not in self.topicIndex)
+        for topic in topics:
+            self.topicIndex.append((topic, self._hidden[topic]))
             del self._hidden[topic]
-        self.topicIndex[len(self.topicIndex)] = ("bye", None)
+        self.topicIndex.append(("bye", None))
 
     def script(self, output, context, player, *scripts):
         for script in scripts:
             s = self.cache.lookup(script)
-            s.execute('main', output, context, player)
+            s.execute('main', output, context, player, self)
 
     @property
     def topics(self):
-        return (topic[0] for topic in self.topicIndex.values())
+        return (t[0] for t in self.topicIndex)
 
 
 class NPCEntityHook(archon.objects.MutableEntityHook):

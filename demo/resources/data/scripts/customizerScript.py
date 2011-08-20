@@ -21,8 +21,8 @@ classes = {
 }
 
 
-def main(output, context, player):
-    output.display('Welcome, newcomer.')
+def main(output, context, player, conversation):
+    conversation.removeTopic('greetings')
     output.display('I see you appear to be a...')
     choices = list(classes.keys())
     prof = output.menu('[{key}]: {description}', '> ', 'Invalid choice.',

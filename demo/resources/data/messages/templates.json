@@ -21,6 +21,16 @@
                 "pronoun": "she",
                 "possessive": "{user.friendlyName}'s",
                 "possessive_pronoun": "her"
+            },
+            "third_person_male": {
+                "noun": "{user.friendlyName}",
+                "to_be": {
+                    "present": "is",
+                    "preterite": "was"
+                },
+                "pronoun": "he",
+                "possessive": "{user.friendlyName}'s",
+                "possessive_pronoun": "his"
             }
         }
     }

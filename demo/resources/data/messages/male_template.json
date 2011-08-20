@@ -3,7 +3,7 @@
     "data": {
         "kind": "messages",
         "attributes": {
-            "mode": "third_person_female",
+            "mode": "third_person_male",
             "messages": {
                 "summary": "There is {entityData.key}{entityData.location}.",
                 "description": "{pronoun_capitalized} {to_be.present} {entityData.description}."

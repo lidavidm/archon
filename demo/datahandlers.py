@@ -17,7 +17,7 @@ def parse(item):
 @archon.datahandlers.dataparser('.chat')
 def chatType(contents):
     wrapper = textwrap.TextWrapper()
-    actionRegex = re.compile('@([\w]+) *([\w ,]*)')
+    actionRegex = re.compile('@([\w]+) *(.*)')
     topics = {"invisible": {}, "visible": {}}
     topic, text, actions = '', [], []
     for line in contents.split('\n'):

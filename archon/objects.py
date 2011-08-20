@@ -294,7 +294,6 @@ class Room(Entity):
                     entity = self.entityFor(key)
                     return entity.description
                 else:
-                    print(entity)
                     messages = entity.messages.attributes
                     text = [messages.message('summary', entityData=entity)]
                     if entity.description:

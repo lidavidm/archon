@@ -69,7 +69,6 @@ class MessageTemplateEntityHook(archon.entity.EntityHook):
             res = cls.fieldRe.match(piece)
             if res:
                 original, extension = res.groups()
-                print(repr(original), repr(extension))
                 original = ''.join(['{', original, '}'])
                 subtext = original.format(*args, **formatKeys)
                 pieces[index] = cls.formatExtension(subtext, extension)
