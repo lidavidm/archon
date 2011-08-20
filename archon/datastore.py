@@ -233,6 +233,10 @@ class GameDatastore(Datastore):
             raise KeyError(key)
         return ds._cache[key]
 
+    def fullPathFor(self, key):
+        return '.'.join([self.datastoreFor(key).fullName,
+                         key.split('.')[-1]])
+
     def __getitem__(self, key):
         thunk = self.thunkFor(key)
         if isinstance(thunk, DataThunk):

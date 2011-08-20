@@ -5,23 +5,23 @@ classes = {
                 "legs": "data.items.armor.leather_legs",
                 "feet": "data.items.armor.leather_boots",
                 "left hand": "data.items.weapons.iron_dagger"},
-               []],
+               {}],
     "Mage": [{"physical": 30, "mental": 50, "spiritual": 30},
              {"body": "data.items.armor.mage_blouse",
               "legs": "data.items.armor.mage_skirt",
               "feet": "data.items.armor.leather_boots",
               "left hand": "data.items.weapons.wooden_staff"},
-             []],
+             {}],
     "Swordfighter": [{"physical": 50, "mental": 30, "spiritual": 30},
                      {"body": "data.items.armor.chain_body",
                       "legs": "data.items.armor.chain_legs",
                       "feet": "data.items.armor.chain_boots",
                       "left hand": "data.items.weapons.iron_sword_short"},
-                     []]
+                     {}]
 }
 
 
-def main(output, context, player, conversation):
+def main(output, context, player, npc, conversation):
     conversation.removeTopic('greetings')
     output.display('I see you appear to be a...')
     choices = list(classes.keys())
@@ -31,7 +31,6 @@ def main(output, context, player, conversation):
     player.attributes.acumen.update(acumen)
     equip = {slot: player.entityCache.lookup(loc)
              for slot, loc in equipment.items()}
-    inventory = map(player.entityCache.lookup, inventory)
     player.attributes.equip.update(equip)
     player.attributes.inventory.extend(inventory)
     statFormat = '  {stat}: {value[0]:.2} to {value[1]:.2} multiplier'

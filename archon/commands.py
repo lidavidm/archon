@@ -231,7 +231,7 @@ def use(output, context, player, *item: find):
 @command('go')
 def go(output, context, player, *args):
     '''Go in the specified direction.'''
-    direction = args[0]  # XXX multiword directions?
+    direction = ' '.join(args)
     target = context.outputs.get(direction)
     if target:
         if target.area != context.area and target.area:

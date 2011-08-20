@@ -164,7 +164,8 @@ ChatTopic = collections.namedtuple('ChatTopic', 'contents actions')
 
 
 class Conversation:
-    def __init__(self, cache, *dialouge):
+    def __init__(self, npc, cache, *dialouge):
+        self.npc = npc
         self.cache = cache
         self.dialouges = [self.cache.lookup(d).attributes for d in dialouge]
         topics = {}
@@ -195,10 +196,9 @@ class Conversation:
             del self._hidden[topic]
         self.topicIndex.append(("bye", None))
 
-    def script(self, output, context, player, *scripts):
-        for script in scripts:
-            s = self.cache.lookup(script)
-            s.execute('main', output, context, player, self)
+    def script(self, output, context, player, script, *args):
+        s = self.cache.lookup(script)
+        s.execute('main', output, context, player, self.npc, self, *args)
 
     @property
     def topics(self):
@@ -210,5 +210,6 @@ class NPCEntityHook(archon.objects.MutableEntityHook):
 
     def __init__(self, entity, attributes):
         super().__init__(entity, attributes)
-        self.conversation = Conversation(self.entity.entityCache,
+        self.conversation = Conversation(self.entity,
+                                         self.entity.entityCache,
                                          *self.attributes['dialouge'])

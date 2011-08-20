@@ -39,6 +39,61 @@ class RoomEntityHook(MutableEntityHook):
         return data
 
 
+class InventoryProxy:
+    """
+    Stores inventory information in a dictionary.
+
+    The keys are the locations of the entities. If the entity kind is
+    mutable, then the value is a list of entities; else, it is a count
+    denoting the quantity held.
+    """
+    def __init__(self, items, cache):
+        self.inventory = {}
+        self.cache = cache
+
+        for path, values in items.items():
+            path = cache.fullPathFor(path)
+            self.inventory[path] = values
+
+    def add(self, item, quantity=1):
+        if isinstance(item, Entity):
+            if item.mutable:
+                if item.location not in self.inventory:
+                    self.inventory[item.location] = []
+                self.inventory[item.location].append(item)
+            else:
+                if item.location not in self.inventory:
+                    self.inventory[item.location] = 0
+                self.inventory[item.location] += 1
+        else:
+            item = self.cache.fullPathFor(item)
+            if item not in self.inventory:
+                self.inventory[item] = 0
+            self.inventory[item] += 1
+
+    def remove(self, item, quantity='all'):
+        if isinstance(item, Entity):
+            pass
+
+    def locations(self):
+        """Iterate through the entity locations of held items."""
+        pass
+
+    def counts(self):
+        """Iterate through the counts of held items."""
+        pass
+
+    def entities(self):
+        """Iterate through the 3-tuples (location, count, instances).
+
+        If the entity is immutable, ``instances`` will be a one-item
+        list. Else, it will be the list of entity instances."""
+        pass
+
+    def save(self):
+        pass
+
+
 class PlayerEntityHook(MutableEntityHook):
     KIND = "player"
 
@@ -68,13 +123,7 @@ class PlayerEntityHook(MutableEntityHook):
             # be a copy of an entity that already loaded the equipped items
             if isinstance(location, str):
                 attributes['equip'][slot] = cache.lookup(location)
-        inventory = attributes['inventory']
-        attributes['inventory'] = []
-        for location in inventory:
-            if isinstance(location, str):
-                attributes['inventory'].append(cache.lookup(location))
-            else:
-                attributes['inventory'].append(location)
+        self.inventory = InventoryProxy(attributes['inventory'], cache)
 
     @classmethod
     def defaultInstance(cls):
@@ -107,6 +156,9 @@ class PlayerEntityHook(MutableEntityHook):
         for slot, entity in self.attributes['equip'].items():
             if entity:
                 data['equip'][slot] = entity.location
+        for entity, count in self.attributes['inventory'].items():
+            # TODO save inventory
+            pass
         return data
 
     @property
@@ -120,8 +172,8 @@ class PlayerEntityHook(MutableEntityHook):
 
     @property
     def inventory(self):
-        """Return the inventory list."""
-        return self.attributes['inventory']
+        """Return the inventory."""
+        return self.inventory
 
     @property
     def equip(self):
@@ -310,10 +362,11 @@ class Room(Entity):
             elif key in self.outputs:
                 return 'You can go {}.'.format(key)
         else:
+            outputs = 'Adjoining areas: ' + ', '.join(self.outputs)
             return '\n'.join(
                 ['You are in ' + self._description] +
                 [self.describe(key) for key in sorted(self.contents)] +
-                [self.describe(key) for key in sorted(self.outputs)])
+                [outputs])
 
     def enter(self, elapsedTime):
         """Enter the room at the given time."""
