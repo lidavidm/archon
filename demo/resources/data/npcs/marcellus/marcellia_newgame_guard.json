@@ -1,0 +1,10 @@
+{
+    "type": "entity",
+    "data": {
+        "kind": "npc",
+        "attributes":{
+            "describe": "A guard in Marcellia.",
+            "dialouge": ["data.npcs.generic", "newGame"]
+        }
+    }
+}

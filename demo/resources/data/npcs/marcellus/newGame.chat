@@ -1,0 +1,6 @@
+greetings
+    Hello, and welcome, newcomer. This is Marcellia, the capital of the
+    kingdom of Marcellus, one of the many located in the Heartland.
+    @script data.scripts.customizerScript
+help
+    This is help for the game.
