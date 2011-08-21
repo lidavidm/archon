@@ -32,7 +32,8 @@ def main(output, context, player, npc, conversation):
     equip = {slot: player.entityCache.lookup(loc)
              for slot, loc in equipment.items()}
     player.attributes.equip.update(equip)
-    player.attributes.inventory.extend(inventory)
+    for loc, count in inventory:
+        player.attributes.inventory.add(loc, quantity=count)
     statFormat = '  {stat}: {value[0]:.2} to {value[1]:.2} multiplier'
     stats = player.attributes.stats
     for trait in sorted(player.attributes.acumen):

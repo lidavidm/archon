@@ -7,7 +7,7 @@
                 "name": "Imp (Tester)",
                 "description": "An imp, designed for your testing pleasure."
             },
-            "inventory": [],
+            "inventory": {},
             "equip": {
                 "left hand": null,
                 "right hand": "data.items.iron_sword",

@@ -75,20 +75,10 @@ def findMulti(output, context, player, *args):
 
 
 def findInventory(output, context, player, *args):
-    '''Lookup an item by friendly name or index.'''
-    if not args:
-        return []
-    criterion = ' '.join(args)
+    '''Lookup an item by friendly name or location.'''
     try:
-        criterion = int(criterion)
-        return list(sorted(player.attributes.inventory,
-                           key=lambda k: k.friendlyName))[criterion]
-    except IndexError:
-        raise output.error("Invalid index.")
-    except ValueError:
-        for item in player.attributes.inventory:
-            if item.friendlyName == criterion:
-                return item
+        return player.attributes.inventory.find(*args)
+    except KeyError:
         raise output.error("Item not found.")
 
 
@@ -136,14 +126,15 @@ def inventory(output, context, player, *args):
         'Inventory ({length})'.format(
             length=len(player.attributes.inventory)
             ))
-    for index, item in enumerate(sorted(player.attributes.inventory,
-                                        key=lambda k: k.friendlyName)):
-        output.display('{}. {}'.format(index, item.friendlyName))
+    for loc, count, items in sorted(player.attributes.inventory.entities(),
+                                    key=lambda k: k[0]):
+        output.display('{}: {}'.format(items[0].friendlyName, count))
+    output.display('')
     return context
 
 
 @command('equip')
-def equip(output, context, player, *args: findInventory):
+def equip(output, context, player, *args):
     if not args:
         for slot, item in sorted(player.attributes.equip.items()):
             if item is None:
@@ -154,26 +145,31 @@ def equip(output, context, player, *args: findInventory):
                     slot=slot, item=item
                     ))
     else:
-        args = args[0]
-        if not args.attributes.get('equip'):
-            raise output.error('Cannot equip item.')
-        elif (list(player.attributes.equip.values()).count(args) ==
-              player.attributes.inventory.count(args)):
-            raise output.error('Already equipped all of that item.')
-        else:
-            possibleSlots = args.attributes['equip']
+        slot, criterion = ' '.join(args).split(':')
+        try:
+            inventory = player.attributes.inventory
             equip = player.attributes.equip
-            for slot in possibleSlots:
-                if slot not in equip or not equip[slot]:
-                    equip[slot] = args
-                    break
-            equip[possibleSlots[0]] = args
+            item = inventory.find(*criterion.split())
+            if not item.attributes.get('equip'):
+                raise output.error('Cannot equip item.')
+            possibleSlots = item.attributes['equip']
+            if slot not in possibleSlots:
+                output.display('Unsupported equip location.')
+                raise output.error('Supported locations: ' +
+                                   ', '.join(possibleSlots))
+            if equip.get(slot):
+                inventory.add(equip[slot])
+            equip[slot] = item
+            inventory.remove(item)
+        except KeyError:
+            raise output.error('Could not find item.')
 
 
 @command('unequip')
 def unequip(output, context, player, *args: findEquip):
     slot, item = args
     player.attributes.equip[slot] = None
+    player.attributes.inventory.add(item)
     output.display('Unequipped item {} from {}'.format(
             item.friendlyName, slot))
 
@@ -188,7 +184,7 @@ def take(output, context, player, *item: find):
         data, item = item[0]
         if not item.attributes.get("take", False):
             raise output.error("You can't take that.")
-        player.attributes.inventory.append(item)
+        player.attributes.inventory.add(item)
         context.remove(data.key)
 
 

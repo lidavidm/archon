@@ -64,34 +64,81 @@ class InventoryProxy:
             else:
                 if item.location not in self.inventory:
                     self.inventory[item.location] = 0
-                self.inventory[item.location] += 1
+                self.inventory[item.location] += quantity
         else:
             item = self.cache.fullPathFor(item)
             if item not in self.inventory:
                 self.inventory[item] = 0
-            self.inventory[item] += 1
+            self.inventory[item] += quantity
 
     def remove(self, item, quantity='all'):
         if isinstance(item, Entity):
-            pass
+            loc = item.location
+            if loc in self.inventory:
+                if item.mutable:
+                    self.inventory[loc].remove(item)
+                else:
+                    self.inventory[loc] -= 1
+                if not self.inventory[loc]:
+                    del self.inventory[loc]
+        else:
+            item = self.cache.fullPathFor(item)
+            if item in self.inventory:
+                self.inventory[item] -= 1
+                if not self.inventory[item]:
+                    del self.inventory[item]
 
     def locations(self):
         """Iterate through the entity locations of held items."""
-        pass
+        return self.inventory.keys()
 
     def counts(self):
-        """Iterate through the counts of held items."""
-        pass
+        """Iterate through the locations and counts of held items."""
+        for loc, items in self.inventory.items():
+            if isinstance(items, list):
+                yield (loc, len(items))
+            else:
+                yield (loc, items)
 
     def entities(self):
-        """Iterate through the 3-tuples (location, count, instances).
+        """
+        Iterate through the 3-tuples (location, count, instances).
 
         If the entity is immutable, ``instances`` will be a one-item
-        list. Else, it will be the list of entity instances."""
-        pass
+        list. Else, it will be the list of entity instances.
+        """
+        for loc, items in self.inventory.items():
+            if isinstance(items, list):
+                yield (loc, len(items), items)
+            else:
+                yield (loc, items, [self.cache.lookup(loc)])
+
+    def find(self, *args):
+        """Find an item by location or friendly name."""
+        if not args:
+            return []
+        if len(args) == 1:
+            # Possibly a location
+            if args[0] in self.locations():
+                return self.get(args[0])
+        criterion = ' '.join(args).lower()
+        for loc, count, items in self.entities():
+            for item in items:
+                if item.friendlyName.lower() == criterion:
+                    return item
+        raise KeyError
 
     def save(self):
-        pass
+        res = {}
+        for loc, items in self.inventory.items():
+            if isinstance(items, list):
+                res[loc] = map(lambda x: x.location, items)
+            else:
+                res[loc] = items
+        return res
+
+    def __len__(self):
+        return sum(d[1] for d in self.entities())
 
 
 class PlayerEntityHook(MutableEntityHook):
@@ -123,7 +170,7 @@ class PlayerEntityHook(MutableEntityHook):
             # be a copy of an entity that already loaded the equipped items
             if isinstance(location, str):
                 attributes['equip'][slot] = cache.lookup(location)
-        self.inventory = InventoryProxy(attributes['inventory'], cache)
+        self._inventory = InventoryProxy(attributes['inventory'], cache)
 
     @classmethod
     def defaultInstance(cls):
@@ -156,9 +203,7 @@ class PlayerEntityHook(MutableEntityHook):
         for slot, entity in self.attributes['equip'].items():
             if entity:
                 data['equip'][slot] = entity.location
-        for entity, count in self.attributes['inventory'].items():
-            # TODO save inventory
-            pass
+        data['inventory'] = self.inventory.save()
         return data
 
     @property
@@ -173,7 +218,7 @@ class PlayerEntityHook(MutableEntityHook):
     @property
     def inventory(self):
         """Return the inventory."""
-        return self.inventory
+        return self._inventory
 
     @property
     def equip(self):

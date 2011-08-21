@@ -8,7 +8,7 @@
                 "description": "",
                 "ai": "script('.data.scripts.combat_ai', 'basic_ai')"
             },
-            "inventory": [],
+            "inventory": {},
             "equip": {
                 "left hand": null,
                 "right hand": null,
